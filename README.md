@@ -1,4 +1,4 @@
-# E-Commerce Website
+# E-Commerce Website(E-पसल)
 
 An online store where users can browse products, add them to their cart, and make purchases. Built with React, Redux, and integrated with payment functionality.
 
@@ -23,9 +23,10 @@ Check out the live website [here](https://e-pasal-two.vercel.app/)
 
 ## Installation
 1. Clone the repository:
-   git clone https://github.com/your-username/your-repo.git
+   git clone https://github.com/your-username/your-repo.git](https://github.com/uniquebhattarai/E-pasal
 
 2.Install dependencies
   npm install
+  
  3. Run the project:
  npm start
