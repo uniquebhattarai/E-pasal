@@ -13,7 +13,7 @@ function Cart() {
   return (
     <div className="p-6">
       {cart.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-4 ">
           {cart.map((item) => (
             <CartItem key={item._id} item={item} />
           ))}
