@@ -23,10 +23,13 @@ Check out the live website [here](https://e-pasal-two.vercel.app/)
 
 ## Installation
 1. Clone the repository:
+   
    git clone https://github.com/uniquebhattarai/E-pasal
 
-2.Install dependencies
+2.Install dependencies:
+
   npm install
   
  3. Run the project:
+    
  npm start
