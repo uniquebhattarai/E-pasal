@@ -40,7 +40,7 @@ app.use(
   })
 );
 
-// Connect to Cloudinary
+// Connect to  Cloudinary
 cloudinaryConnect();
 
 // Setting up routes

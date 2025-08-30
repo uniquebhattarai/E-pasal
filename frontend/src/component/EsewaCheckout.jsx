@@ -3,6 +3,9 @@ import axios from "axios";
 
 const EsewaCheckout = ({ totalAmount, orderId }) => {
   const [loading, setLoading] = useState(false);
+  
+   const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
+  const VITE_FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
 
   const handlePayment = async () => {
     console.log("Checkout called with:", totalAmount, orderId);
@@ -15,11 +18,11 @@ const EsewaCheckout = ({ totalAmount, orderId }) => {
     setLoading(true);
 
     try {
-      const { data } = await axios.post("http://localhost:3069/api/v1/payment/init", {
+      const { data } = await axios.post(`${VITE_BASE_URL}/payment/init`, {
         amount: totalAmount,
         transaction_uuid: orderId,
-        success_url: "http://localhost:5173/payment-success",
-        failure_url: "http://localhost:5173/payment-failure",
+        success_url: `${VITE_FRONTEND_URL}/payment-success`,
+        failure_url: `${VITE_FRONTEND_URL}/payment-failure`,
         tax_amount: 0,
         product_delivery_charge: 0,
         product_service_charge: 0,
