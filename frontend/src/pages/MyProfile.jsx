@@ -1,7 +1,9 @@
 import { RiEditBoxLine } from "react-icons/ri"
-import { useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
-
+import { userdetails } from "../services/Api"
+import { useState, useEffect } from "react"
+import { ApiConnector } from "../services/ApiConnector"
+ 
 
 function IconBtn({ text, onClick, children }) {
   return (
@@ -15,7 +17,6 @@ function IconBtn({ text, onClick, children }) {
   )
 }
 
-
 function formattedDate(dateString) {
   if (!dateString) return null
   const date = new Date(dateString)
@@ -27,8 +28,38 @@ function formattedDate(dateString) {
 }
 
 export default function MyProfile() {
-  const { user } = useSelector((state) => state.profile)
+  const [user, setUser] = useState(null)
   const navigate = useNavigate()
+
+  const fetchUser = async () => {
+    try {
+      const token = JSON.parse(localStorage.getItem("token")); // parse the string to get the actual token
+
+
+      if (!token) {
+        navigate("/login"); // redirect if token not found
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+
+      const result = await ApiConnector("GET", userdetails.USER_DETAILS_API, null, headers);
+
+      if (result.data.success) {
+        setUser(result.data.data);
+      } else {
+        console.log("Failed to fetch user:", result.data.message);
+      }
+    } catch (error) {
+      console.log("Could not fetch user", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser()
+  }, [])
 
   if (!user) {
     return <p className="text-gray-400">Loading profile...</p>

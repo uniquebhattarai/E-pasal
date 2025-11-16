@@ -1,21 +1,25 @@
 import { useState } from "react";
 import { 
-  VscSettingsGear, 
-  VscAccount, 
-  VscDashboard, 
-  VscVm, 
-  VscAdd, 
-  VscMortarBoard, 
-  VscArchive, 
-  VscSignOut
-} from "react-icons/vsc";
-import { useSelector, useDispatch } from "react-redux";
+  Settings, 
+  User, 
+  LayoutDashboard, 
+  Users, 
+  Plus, 
+  ShoppingBag, 
+  ShoppingCart, 
+  LogOut,
+  CheckCircle,
+  X
+} from "lucide-react";
+
 import { NavLink, useNavigate } from "react-router-dom";
-import { toast } from "react-hot-toast";
+import { useSelector, useDispatch } from "react-redux";
 
 import { setToken } from "../slices/AuthSlice";
 import { setUser } from "../slices/ProfileSlice";
 import { resetCart } from "../slices/CartSlice";
+import { toast } from "react-hot-toast";
+
 
 // Account types
 export const ACCOUNT_TYPE = {
@@ -25,47 +29,48 @@ export const ACCOUNT_TYPE = {
 
 // Sidebar links
 const sidebarLinks = [
-  { id: 1, name: "My Profile", path: "/dashboard/my-profile", icon: VscAccount },
-  { id: 2, name: "Dashboard", path: "/dashboard/admin", type: ACCOUNT_TYPE.ADMIN, icon: VscDashboard },
-  { id: 3, name: "Manage Users", path: "/dashboard/manage-users", type: ACCOUNT_TYPE.ADMIN, icon: VscVm },
-  { id: 4, name: "Add Product", path: "/dashboard/add-product", type: ACCOUNT_TYPE.ADMIN, icon: VscAdd },
-  { id: 5, name: "My Orders", path: "/dashboard/my-orders", type: ACCOUNT_TYPE.CUSTOMER, icon: VscMortarBoard },
-  { id: 6, name: "Cart", path: "/dashboard/cart", type: ACCOUNT_TYPE.CUSTOMER, icon: VscArchive },
+  { id: 1, name: "My Profile", path: "/dashboard/my-profile", icon: User },
+  { id: 2, name: "Dashboard", path: "/dashboard/admin", type: ACCOUNT_TYPE.ADMIN, icon: LayoutDashboard },
+  { id: 3, name: "Manage Users", path: "/dashboard/manage-users", type: ACCOUNT_TYPE.ADMIN, icon: Users },
+  { id: 4, name: "Add Product", path: "/dashboard/add-product", type: ACCOUNT_TYPE.ADMIN, icon: Plus },
+  { id: 5, name: "My Orders", path: "/dashboard/my-orders", type: ACCOUNT_TYPE.CUSTOMER, icon: ShoppingBag },
+  { id: 6, name: "Cart", path: "/dashboard/cart", type: ACCOUNT_TYPE.CUSTOMER, icon: ShoppingCart },
 ];
 
-// Reusable icon button
-function IconBtn({ onclick, text, disabled, outline = false, customClasses, type }) {
-  return (
-    <button
-      disabled={disabled}
-      onClick={onclick}
-      type={type || "button"}
-      className={`px-4 py-2 rounded-md font-semibold transition-colors ${
-        outline
-          ? "border border-gray-300 bg-transparent text-white hover:bg-gray-200 hover:text-black"
-          : "bg-green-600 text-white hover:bg-green-700"
-      } ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${customClasses}`}
-    >
-      {text}
-    </button>
-  );
-}
 
 // Confirmation modal
 function ConfirmationModal({ modalData }) {
   return (
-    <div className="fixed inset-0 z-[1000] grid place-items-center bg-black/50 backdrop-blur-sm">
-      <div className="w-11/12 max-w-[380px] rounded-lg border border-green-500 bg-white p-6 shadow-xl">
-        <p className="text-xl font-bold text-gray-900">{modalData?.text1}</p>
-        <p className="mt-2 mb-5 text-gray-600">{modalData?.text2}</p>
-        <div className="flex items-center gap-x-4">
-          <IconBtn
-            onclick={modalData?.btn1Handler}
-            text={modalData?.btn1Text}
-          />
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn">
+      <div className="w-11/12 max-w-md rounded-2xl bg-white p-6 shadow-2xl transform animate-scaleIn">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+            <LogOut className="w-6 h-6 text-red-600" />
+          </div>
+
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-gray-900 mb-1">{modalData?.text1}</h3>
+            <p className="text-gray-600 text-sm">{modalData?.text2}</p>
+          </div>
+
           <button
-            className="cursor-pointer rounded-md bg-gray-200 py-2 px-5 font-semibold text-gray-700 hover:bg-gray-300 transition-colors"
             onClick={modalData?.btn2Handler}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3 mt-6">
+          <button
+            onClick={modalData?.btn1Handler}
+            className="flex-1 px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold"
+          >
+            {modalData?.btn1Text}
+          </button>
+          <button
+            onClick={modalData?.btn2Handler}
+            className="flex-1 px-4 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold"
           >
             {modalData?.btn2Text}
           </button>
@@ -75,11 +80,14 @@ function ConfirmationModal({ modalData }) {
   );
 }
 
+
 // Sidebar component
 export default function Sidebar() {
-  const { user } = useSelector((state) => state.profile);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const { user } = useSelector((state) => state.profile);
+
   const [confirmationModal, setConfirmationModal] = useState(null);
 
   const handleLogout = () => {
@@ -95,50 +103,97 @@ export default function Sidebar() {
 
   return (
     <>
-      <div className="flex h-[calc(100vh-3.5rem)] min-w-[240px] flex-col bg-gradient-to-b from-green-600 to-green-700 text-white py-8 shadow-lg">
+      <div className="flex h-[calc(100vh-4rem)] min-w-[280px] flex-col bg-gradient-to-br from-green-600 via-green-700 to-emerald-700 shadow-2xl">
         
-        {/* Sidebar links */}
-        <div className="flex flex-col px-4">
-          {sidebarLinks.map((link) => {
-            if (link.type && user?.accountType !== link.type) return null;
-            return (
-              <NavLink
-                key={link.id}
-                to={link.path}
-                className={({ isActive }) =>
-                  `px-4 py-2 rounded-md text-sm font-medium flex items-center gap-x-2 transition-all ${
-                    isActive
-                      ? "bg-green-800 text-yellow-300 shadow-md"
-                      : "text-gray-100 hover:bg-green-500 hover:text-white"
-                  }`
-                }
-              >
-                <link.icon className="text-lg" />
-                <span>{link.name}</span>
-              </NavLink>
-            );
-          })}
+        {/* Header */}
+        <div className="px-6 py-6 border-b border-green-500/30">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+              <LayoutDashboard className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-white font-bold text-lg">Dashboard</h2>
+              <p className="text-green-100 text-xs">{user?.accountType} Panel</p>
+            </div>
+          </div>
         </div>
 
-        {/* Divider */}
-        <div className="mx-auto my-6 h-[1px] w-10/12 bg-green-500/50" />
+        {/* Navigation Links */}
+        <div className="flex-1 overflow-y-auto px-4 py-6">
+          <div className="space-y-1">
 
-        {/* Settings + Logout */}
-        <div className="flex flex-col px-4">
+            {sidebarLinks.map((link) => {
+              if (link.type && user?.accountType !== link.type) return null;
+              const Icon = link.icon;
+
+              return (
+                <NavLink
+                  key={link.id}
+                  to={link.path}
+                  className={({ isActive }) =>
+                    `group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                      isActive
+                        ? "bg-white text-green-700 shadow-lg"
+                        : "text-white hover:bg-white/10 hover:translate-x-1"
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <div
+                        className={`p-2 rounded-lg transition-colors ${
+                          isActive
+                            ? "bg-green-100"
+                            : "bg-white/10 group-hover:bg-white/20"
+                        }`}
+                      >
+                        <Icon
+                          className={`w-5 h-5 ${
+                            isActive ? "text-green-700" : "text-white"
+                          }`}
+                        />
+                      </div>
+
+                      <span className="font-semibold">{link.name}</span>
+
+                      {isActive && (
+                        <CheckCircle className="w-4 h-4 ml-auto text-green-600" />
+                      )}
+                    </>
+                  )}
+                </NavLink>
+              );
+            })}
+
+          </div>
+
+          {/* Divider */}
+          <div className="my-6 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+          {/* Settings */}
           <NavLink
             to="/dashboard/settings"
             className={({ isActive }) =>
-              `px-4 py-2 rounded-md text-sm font-medium flex items-center gap-x-2 transition-all ${
+              `group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                 isActive
-                  ? "bg-green-800 text-yellow-300 shadow-md"
-                  : "text-gray-100 hover:bg-green-500 hover:text-white"
+                  ? "bg-white text-green-700 shadow-lg"
+                  : "text-white hover:bg-white/10 hover:translate-x-1"
               }`
             }
           >
-            <VscSettingsGear className="text-lg" />
-            <span>Settings</span>
+            <div
+              className={`p-2 rounded-lg transition-colors ${
+                window.location.pathname === "/dashboard/settings"
+                  ? "bg-green-100"
+                  : "bg-white/10 group-hover:bg-white/20"
+              }`}
+            >
+              <Settings className="w-5 h-5 text-white" />
+            </div>
+            <span className="font-semibold">Settings</span>
           </NavLink>
 
+          {/* Logout */}
           <button
             onClick={() =>
               setConfirmationModal({
@@ -150,15 +205,35 @@ export default function Sidebar() {
                 btn2Handler: () => setConfirmationModal(null),
               })
             }
-            className="mt-2 px-4 py-2 rounded-md text-sm font-medium flex items-center gap-x-2 text-gray-100 hover:bg-red-600 transition-colors"
+            className="w-full group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-white hover:bg-red-500/20 transition-all duration-200 hover:translate-x-1 mt-2"
           >
-            <VscSignOut className="text-lg" />
-            <span>Logout</span>
+            <div className="p-2 rounded-lg bg-white/10 group-hover:bg-red-500/30 transition-colors">
+              <LogOut className="w-5 h-5 text-white" />
+            </div>
+            <span className="font-semibold">Logout</span>
           </button>
         </div>
       </div>
 
       {confirmationModal && <ConfirmationModal modalData={confirmationModal} />}
+
+      {/* Animations */}
+      <style jsx>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+          from { transform: scale(0.95); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out;
+        }
+        .animate-scaleIn {
+          animation: scaleIn 0.2s ease-out;
+        }
+      `}</style>
     </>
   );
 }
