@@ -70,11 +70,13 @@ E-Pasal/
 **Homepage**  
 ![Homepage](./screenshots/HomePage.png)
 
-**Category List**  
+**Category List** 
+![Category](./screenshots/Category.png)
+
+
+**Single Category View** 
 ![Category List](./screenshots/CategoryList.png)
 
-**Single Category View**  
-![Category](./screenshots/Category.png)
 
 ---
 
