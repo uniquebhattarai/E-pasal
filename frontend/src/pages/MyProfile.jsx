@@ -33,27 +33,18 @@ export default function MyProfile() {
 
   const fetchUser = async () => {
     try {
-      const token = JSON.parse(localStorage.getItem("token")); // parse the string to get the actual token
 
-
-      if (!token) {
-        navigate("/login"); // redirect if token not found
-        return;
-      }
-
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
-
-      const result = await ApiConnector("GET", userdetails.USER_DETAILS_API, null, headers);
+      const result = await ApiConnector("GET", userdetails.USER_DETAILS_API);
 
       if (result.data.success) {
         setUser(result.data.data);
       } else {
         console.log("Failed to fetch user:", result.data.message);
+        navigate("/login");
       }
     } catch (error) {
       console.log("Could not fetch user", error);
+      navigate("/login");
     }
   };
 

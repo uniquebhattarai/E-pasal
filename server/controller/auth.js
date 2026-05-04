@@ -29,7 +29,7 @@ exports.sendOtp = async (req, res) => {
       specialChars: false,
     });
 
-    console.log("OTP generated:", otp);
+    console.info("OTP generated and sent via email.");
 
 
     let result = await OTP.findOne({ otp });
@@ -45,12 +45,12 @@ exports.sendOtp = async (req, res) => {
   
     const otpPayload = { email: email.toLowerCase(), otp };
     const otpBody = await OTP.create(otpPayload);
-    console.log("OTP saved in DB:", otpBody);
+    console.info("OTP record created in DB.");
 
     return res.status(200).json({
       success: true,
       message: "OTP sent successfully",
-      otp, 
+      // otp is intentionally NOT returned — user must check their email
     });
 
   } catch (error) {
@@ -193,9 +193,9 @@ exports.login = async (req, res) => {
         httpOnly: true,
       };
 
+      // Token is set in the httpOnly cookie — do NOT expose it in the response body
       return res.cookie("token", token, options).status(200).json({
         success: true,
-        token,
         user: userDetails,
         message: "Logged in successfully",
       });

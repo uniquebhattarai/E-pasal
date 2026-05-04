@@ -26,18 +26,17 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    // Token now lives in httpOnly cookie — JS cannot access it.
+    // We restore only the non-sensitive user profile from localStorage.
     const user = localStorage.getItem("user");
 
-    // Clear invalid token/user
-    if (!token || !user) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+    if (user) {
+      // We know the user was logged in; token cookie is sent automatically.
+      dispatch(setToken("cookie")); // truthy sentinel so PrivateRoute works
+      dispatch(setUser(JSON.parse(user)));
+    } else {
       dispatch(setToken(null));
       dispatch(setUser(null));
-    } else {
-      dispatch(setToken(JSON.parse(token)));
-      dispatch(setUser(JSON.parse(user)));
     }
   }, [dispatch]);
 
@@ -58,8 +57,6 @@ function App() {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/payment-failure" element={<PaymentFailure />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
-  
-        
 
          <Route path="/dashboard/*" element={<PrivateRoute><Dashboard /></PrivateRoute>}>
          <Route path="my-profile" element={<MyProfile />} />

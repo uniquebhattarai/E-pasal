@@ -37,33 +37,32 @@ function Login() {
         password,
       });
 
-      dispatch(setToken(response.data.token));
+      // Token is now in the httpOnly cookie set by the server — never touch it from JS.
+      // Only persist the non-sensitive user profile in localStorage.
+      dispatch(setToken("cookie")); // truthy sentinel for PrivateRoute
       dispatch(setUser(response.data.user));
-
-      localStorage.setItem("token", JSON.stringify(response.data.token));
       localStorage.setItem("user", JSON.stringify(response.data.user));
 
       toast.success("Logged in successfully!");
       setMessage({ type: "success", text: "Logged in successfully!" });
-
       setIsLoading(false);
       navigate("/");
     } catch (error) {
       console.log("Login error:", error);
       setIsLoading(false);
-
       toast.error("Login failed. Please try again.");
       setMessage({ type: "error", text: "Invalid email or password." });
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex  items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
           <form onSubmit={handleOnSubmit} className="space-y-6">
+            <p className="text-3xl text-center text-emerald-600 mb-10 font-bold">Log in</p>
+
             {/* Success & Error messages */}
-            <p className=" text-3xl text-center text-emerald-600 mb-10 font-bold ">Log in </p> 
             {message.text && (
               <div
                 className={`p-4 rounded-xl ${
@@ -78,16 +77,11 @@ function Login() {
 
             {/* Email */}
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-semibold text-gray-700 mb-2"
-              >
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
                 Email Address
               </label>
-
               <div className="relative">
                 <Mail className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-
                 <input
                   required
                   type="email"
@@ -105,16 +99,11 @@ function Login() {
 
             {/* Password */}
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-semibold text-gray-700 mb-2"
-              >
+              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
                 Password
               </label>
-
               <div className="relative">
                 <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-
                 <input
                   required
                   type={showPassword ? "text" : "password"}
@@ -127,20 +116,14 @@ function Login() {
                   focus:ring-2 focus:ring-emerald-500 focus:border-transparent
                   bg-gray-50 focus:bg-white transition duration-200 outline-none"
                 />
-
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
                   className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition"
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
-
               <Link
                 to="/forgot-password"
                 className="block text-right text-sm text-emerald-600 mt-2 hover:text-emerald-700"
@@ -163,19 +146,12 @@ function Login() {
                     fill="none"
                     viewBox="0 0 24 24"
                   >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path
                       className="opacity-75"
                       fill="currentColor"
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
+                    />
                   </svg>
                   Signing in...
                 </>
@@ -191,9 +167,7 @@ function Login() {
               <span className="w-full border-t border-gray-300"></span>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500">
-                New to our platform?
-              </span>
+              <span className="px-4 bg-white text-gray-500">New to our platform?</span>
             </div>
           </div>
 

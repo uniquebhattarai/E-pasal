@@ -1,36 +1,65 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const EsewaCheckout = ({ totalAmount, orderId }) => {
+
+const EsewaCheckout = ({ totalAmount }) => {
   const [loading, setLoading] = useState(false);
-  
-   const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
-  const VITE_FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
+
+  const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
 
   const handlePayment = async () => {
-    console.log("Checkout called with:", totalAmount, orderId);
-
-    if (!totalAmount || !orderId) {
-      alert("Payment data missing! Make sure totalAmount and orderId are provided.");
+    if (!totalAmount) {
+      alert("Payment data missing! Make sure totalAmount is provided.");
       return;
     }
+
+
+    const transaction_uuid = `epsl-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+    
+    const envUrl = (import.meta.env.VITE_FRONTEND_URL || "").trim();
+    const origin = window.location.origin;
+
+   
+    const isSafeUrl = (url) => url.startsWith("https://");
+
+
+    let baseUrl;
+    if (isSafeUrl(envUrl)) {
+      baseUrl = envUrl;
+    } else if (isSafeUrl(origin)) {
+      baseUrl = origin;
+    } else {
+      // Local dev: localhost or http — eSewa won't accept these, use production URL
+      baseUrl = "https://e-pasal.vercel.app";
+    }
+
+    const successUrl = `${baseUrl}/payment-success`;
+    const failureUrl = `${baseUrl}/payment-failure`;
+
+  
 
     setLoading(true);
 
     try {
-      const { data } = await axios.post(`${VITE_BASE_URL}/payment/init`, {
-        amount: totalAmount,
-        transaction_uuid: orderId,
-        success_url: `${VITE_FRONTEND_URL}/payment-success`,
-        failure_url: `${VITE_FRONTEND_URL}/payment-failure`,
-        tax_amount: 0,
-        product_delivery_charge: 0,
-        product_service_charge: 0,
-      });
+      const { data } = await axios.post(
+        `${VITE_BASE_URL}/payment/init`,
+        {
+          amount: totalAmount,
+          transaction_uuid,
+          success_url: successUrl,
+          failure_url: failureUrl,
+          tax_amount: 0,
+          product_delivery_charge: 0,
+          product_service_charge: 0,
+        },
+        { withCredentials: true }
+      );
 
       if (data.success) {
-        // Dynamically create a form and submit to eSewa
-          console.log("Submitting to eSewa with these fields:", data.fields);
+        console.log("[eSewa] Submitting form to:", data.formUrl);
+
+        // Dynamically create a form and POST to eSewa
         const form = document.createElement("form");
         form.method = "POST";
         form.action = data.formUrl;
@@ -49,8 +78,11 @@ const EsewaCheckout = ({ totalAmount, orderId }) => {
         alert("Failed to initialize payment: " + data.message);
       }
     } catch (err) {
-      console.error(err);
-      alert("Error connecting to backend: " + (err.response?.data?.message || err.message));
+      console.error("[eSewa] Error:", err);
+      alert(
+        "Error connecting to backend: " +
+          (err.response?.data?.message || err.message)
+      );
     } finally {
       setLoading(false);
     }
@@ -59,8 +91,10 @@ const EsewaCheckout = ({ totalAmount, orderId }) => {
   return (
     <button
       onClick={handlePayment}
-      className={`bg-green-600 text-white py-2 px-4 rounded-md ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
       disabled={loading}
+      className={`bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-2.5 px-6 rounded-xl shadow hover:shadow-lg transition-all duration-200 active:scale-95 ${
+        loading ? "opacity-50 cursor-not-allowed" : ""
+      }`}
     >
       {loading ? "Processing..." : "Pay with eSewa"}
     </button>

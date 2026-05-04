@@ -1,188 +1,219 @@
 import { useRef, useState, useEffect } from "react"
-import { User, LogOut, Settings, Package, Heart, ChevronDown } from "lucide-react"
-import { AiOutlineCaretDown } from "react-icons/ai"
-import { VscDashboard, VscSignOut } from "react-icons/vsc"
+import { User, LogOut, Settings, Package, Heart, ChevronDown, ShieldCheck } from "lucide-react"
 import { useDispatch, useSelector } from "react-redux"
 import { Link, useNavigate } from "react-router-dom"
 import { toast } from "react-hot-toast"
 
-// Redux actions
 import { setToken } from "../slices/AuthSlice"
 import { setUser } from "../slices/ProfileSlice"
 import { resetCart } from "../slices/CartSlice"
 
+/* ── Avatar with initials fallback ───────────────────────────────────────── */
+function Avatar({ src, firstName = "", lastName = "", size = "sm" }) {
+  const [err, setErr] = useState(false)
+  const initials = `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase() || "U"
+  const dim = size === "lg" ? "w-11 h-11 text-sm" : "w-8 h-8 text-xs"
+
+  return !src || err ? (
+    <span
+      className={`${dim} rounded-full bg-gradient-to-br from-violet-500 to-purple-700 
+                  flex items-center justify-center font-bold text-white flex-shrink-0 select-none`}
+    >
+      {initials}
+    </span>
+  ) : (
+    <img
+      src={src}
+      alt={firstName}
+      onError={() => setErr(true)}
+      className={`${dim} rounded-full object-cover flex-shrink-0`}
+    />
+  )
+}
+
+/* ── Single menu row ─────────────────────────────────────────────────────── */
+function Row({ to, icon: Icon, color, label, sub, onClick }) {
+  return (
+    <Link
+      to={to}
+      onClick={onClick}
+      className="flex items-center gap-3 px-3 py-2.5 rounded-xl
+                 hover:bg-gray-50 transition-colors duration-150 group"
+    >
+      <span
+        className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
+                    ${color} group-hover:scale-110 transition-transform duration-150`}
+      >
+        <Icon size={15} />
+      </span>
+      <span className="min-w-0">
+        <p className="text-[13px] font-semibold text-gray-800 leading-tight">{label}</p>
+        <p className="text-[11px] text-gray-400 leading-tight">{sub}</p>
+      </span>
+    </Link>
+  )
+}
+
+/* ── Main component ──────────────────────────────────────────────────────── */
 export default function ProfileDropdown() {
-  const { user } = useSelector((state) => state.profile)
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
+  const { user }  = useSelector((s) => s.profile)
+  const dispatch  = useDispatch()
+  const navigate  = useNavigate()
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
-  // Close dropdown on outside click
   useEffect(() => {
-    function handleClickOutside(e) {
-      if (ref.current && !ref.current.contains(e.target)) {
-        setOpen(false)
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
   }, [])
 
   if (!user) return null
 
-  // Logout Function
+  const close = () => setOpen(false)
+
   const handleLogout = () => {
     dispatch(setToken(null))
     dispatch(setUser(null))
     dispatch(resetCart())
-
     localStorage.removeItem("token")
     localStorage.removeItem("user")
-
-    toast.success("Logged Out")
+    toast.success("Logged out successfully!")
     navigate("/")
-    setOpen(false)
+    close()
   }
+
+  const isAdmin = user?.accountType === "Admin" || user?.role === "admin"
 
   return (
     <div className="relative" ref={ref}>
-      {/* Button */}
-      <button
-        onClick={() => setOpen((prev) => !prev)}
-        className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white text-green-700 font-medium 
-                   hover:bg-green-50 transition-all duration-200 shadow-md hover:shadow-lg"
-      >
-        <img
-          src={user?.image}
-          alt={`profile-${user?.firstName}`}
-          className="w-8 h-8 rounded-full object-cover ring-2 ring-green-500"
-        />
-        <span className="hidden sm:block font-semibold">{user?.firstName}</span>
 
+      {/* ── Trigger ── */}
+      <button
+        id="profile-dropdown-trigger"
+        onClick={() => setOpen((p) => !p)}
+        className="flex items-center gap-2 p-1 pr-2.5 rounded-full
+                   bg-white/15 hover:bg-white/25 backdrop-blur-sm
+                   border border-white/20 hover:border-white/40
+                   transition-all duration-200"
+      >
+        <Avatar src={user?.image} firstName={user?.firstName} lastName={user?.lastName} size="sm" />
+        <span className="hidden sm:block text-sm font-semibold text-white">
+          {user?.firstName}
+        </span>
         <ChevronDown
-          className={`w-4 h-4 transition-transform duration-200 ${
-            open ? "rotate-180" : ""
-          }`}
+          size={14}
+          className={`text-white/70 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
         />
       </button>
 
-      {/* Dropdown */}
+      {/* ── Dropdown ── */}
       {open && (
         <>
-          {/* Mobile overlay */}
-          <div
-            className="fixed inset-0 z-40 md:hidden"
-            onClick={() => setOpen(false)}
-          />
+          <div className="fixed inset-0 z-40 md:hidden" onClick={close} />
 
-          <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl py-2 z-50 
-                          border border-gray-100 overflow-hidden">
-            
-            {/* User Header */}
-            <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50">
-              <div className="flex items-center space-x-3">
-                <img
-                  src={user?.image}
-                  alt={user?.firstName}
-                  className="w-12 h-12 rounded-full object-cover ring-2 ring-green-500"
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-gray-800 truncate">
+          <div
+            id="profile-dropdown-menu"
+            className="absolute right-0 mt-3 w-64 z-50
+                       bg-white rounded-2xl overflow-hidden
+                       shadow-[0_8px_40px_rgba(0,0,0,0.18)]
+                       border border-gray-100"
+            style={{ animation: "slideDown .2s cubic-bezier(.22,1,.36,1) both" }}
+          >
+
+            {/* header */}
+            <div className="px-4 py-4">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Avatar
+                    src={user?.image}
+                    firstName={user?.firstName}
+                    lastName={user?.lastName}
+                    size="lg"
+                  />
+                  {/* online dot */}
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 
+                                   rounded-full border-2 border-gray-950" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-black truncate leading-tight">
                     {user?.firstName} {user?.lastName}
                   </p>
-                  <p className="text-xs text-gray-600 truncate">{user?.email}</p>
+                  <p className="text-[11px] text-gray-400 truncate mt-0.5">{user?.email}</p>
+                  {isAdmin && (
+                    <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-semibold
+                                     bg-violet-500/20 text-violet-300 px-2 py-0.5 rounded-full">
+                      <ShieldCheck size={9} /> Admin
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Menu Items */}
-            <div className="py-2">
-              {/* Dashboard/My Profile */}
-              <Link
+            {/* menu */}
+            <div className="p-2 space-y-0.5">
+              <Row
                 to="/dashboard/my-profile"
-                onClick={() => setOpen(false)}
-                className="flex items-center space-x-3 px-4 py-3 hover:bg-green-50 text-gray-700 transition-colors group"
-              >
-                <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center 
-                                group-hover:bg-green-200 transition-colors">
-                  <User className="w-4 h-4 text-green-700" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">My Profile</p>
-                  <p className="text-xs text-gray-500">View and edit profile</p>
-                </div>
-              </Link>
-
-              {/* Orders */}
-              <Link
+                icon={User}
+                color="bg-emerald-100 text-emerald-700"
+                label="My Profile"
+                sub="View and edit profile"
+                onClick={close}
+              />
+              <Row
                 to="/dashboard/orders"
-                onClick={() => setOpen(false)}
-                className="flex items-center space-x-3 px-4 py-3 hover:bg-green-50 text-gray-700 transition-colors group"
-              >
-                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center 
-                                group-hover:bg-blue-200 transition-colors">
-                  <Package className="w-4 h-4 text-blue-700" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">My Orders</p>
-                  <p className="text-xs text-gray-500">Track your orders</p>
-                </div>
-              </Link>
-
-              {/* Wishlist */}
-              <Link
+                icon={Package}
+                color="bg-blue-100 text-blue-700"
+                label="My Orders"
+                sub="Track your orders"
+                onClick={close}
+              />
+              <Row
                 to="/dashboard/wishlist"
-                onClick={() => setOpen(false)}
-                className="flex items-center space-x-3 px-4 py-3 hover:bg-green-50 text-gray-700 transition-colors group"
-              >
-                <div className="w-8 h-8 rounded-lg bg-pink-100 flex items-center justify-center 
-                                group-hover:bg-pink-200 transition-colors">
-                  <Heart className="w-4 h-4 text-pink-700" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">Wishlist</p>
-                  <p className="text-xs text-gray-500">Your saved items</p>
-                </div>
-              </Link>
-
-              {/* Settings */}
-              <Link
+                icon={Heart}
+                color="bg-rose-100 text-rose-600"
+                label="Wishlist"
+                sub="Your saved items"
+                onClick={close}
+              />
+              <Row
                 to="/dashboard/settings"
-                onClick={() => setOpen(false)}
-                className="flex items-center space-x-3 px-4 py-3 hover:bg-green-50 text-gray-700 transition-colors group"
-              >
-                <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center 
-                                group-hover:bg-purple-200 transition-colors">
-                  <Settings className="w-4 h-4 text-purple-700" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">Settings</p>
-                  <p className="text-xs text-gray-500">Account preferences</p>
-                </div>
-              </Link>
+                icon={Settings}
+                color="bg-violet-100 text-violet-700"
+                label="Settings"
+                sub="Account preferences"
+                onClick={close}
+              />
             </div>
 
-            {/* Logout */}
-            <div className="border-t border-gray-100 mt-2">
+            {/* divider + logout */}
+            <div className="px-2 pb-2">
+              <div className="h-px bg-gray-100 mb-2" />
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-3 px-4 py-3 hover:bg-red-50 text-red-600 
-                           transition-colors w-full text-left group"
+                className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl
+                           hover:bg-red-50 transition-colors duration-150 group"
               >
-                <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center 
-                                group-hover:bg-red-200 transition-colors">
-                  <LogOut className="w-4 h-4 text-red-700" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">Logout</p>
-                  <p className="text-xs text-red-400">Sign out of your account</p>
-                </div>
+                <span className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center
+                                  flex-shrink-0 group-hover:scale-110 transition-transform duration-150">
+                  <LogOut size={15} />
+                </span>
+                <span className="text-left">
+                  <p className="text-[13px] font-semibold text-red-600 leading-tight">Logout</p>
+                  <p className="text-[11px] text-red-400 leading-tight">Sign out of your account</p>
+                </span>
               </button>
             </div>
           </div>
         </>
       )}
+
+      <style>{`
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-10px) scale(.97); }
+          to   { opacity: 1; transform: translateY(0)    scale(1);   }
+        }
+      `}</style>
     </div>
   )
 }

@@ -52,14 +52,12 @@ export default function Settings() {
       const formData = new FormData()
       formData.append("displayPicture", imageFile)
 
+      // Cookie is sent automatically via withCredentials — no Authorization header needed
       const response = await ApiConnector(
         "put",
         updatedisplaypicture.UPDATE_DISPLAY_PICTURE_API,
         formData,
-        {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        }
+        { "Content-Type": "multipart/form-data" }
       )
 
       if (!response.success) throw new Error(response.message)
@@ -78,7 +76,9 @@ export default function Settings() {
   }, [imageFile])
 
   // ---------- Edit Profile ----------
+  // Two separate form instances — profile and password have independent state
   const { register, handleSubmit, reset } = useForm()
+  const { register: registerPwd, handleSubmit: handleSubmitPwd } = useForm()
   useEffect(() => {
     if (user) {
       reset({
@@ -106,13 +106,11 @@ export default function Settings() {
         },
       }
 
+      // Cookie is sent automatically via withCredentials — no Authorization header needed
       const response = await ApiConnector(
         "put",
         updateprofile.UPDATE_PROFILE_API,
-        payload,
-        {
-          Authorization: `Bearer ${token}`,
-        }
+        payload
       )
 
       if (!response.success) throw new Error(response.message)
@@ -137,13 +135,11 @@ export default function Settings() {
   const submitPasswordForm = async (data) => {
     const toastId = toast.loading("Updating password...")
     try {
+      // Cookie is sent automatically via withCredentials — no Authorization header needed
       const response = await ApiConnector(
         "post",
         changepassword.CHANGE_PASSWORD_API,
-        data,
-        {
-          Authorization: `Bearer ${token}`,
-        }
+        data
       )
 
       if (!response.success) throw new Error(response.message)
@@ -169,13 +165,10 @@ export default function Settings() {
   const handleDeleteAccount = async () => {
     const toastId = toast.loading("Deleting account...")
     try {
+      // Cookie is sent automatically via withCredentials — no Authorization header needed
       const response = await ApiConnector(
         "delete",
-        deleteprofile.DELETE_PROFILE_API,
-        null,
-        {
-          Authorization: `Bearer ${token}`,
-        }
+        deleteprofile.DELETE_PROFILE_API
       )
 
       if (!response.success) throw new Error(response.message)
@@ -285,7 +278,7 @@ export default function Settings() {
 
       {/* Update Password Form */}
       <form
-        onSubmit={handleSubmit(submitPasswordForm)}
+        onSubmit={handleSubmitPwd(submitPasswordForm)}
         className="space-y-4 rounded-2xl border border-green-300 bg-white/80 backdrop-blur-sm p-6 shadow-md hover:shadow-lg transition"
       >
         <h2 className="text-lg font-semibold text-green-900">Change Password</h2>
@@ -293,7 +286,7 @@ export default function Settings() {
           <input
             type={showOldPassword ? "text" : "password"}
             placeholder="Old Password"
-            {...register("oldPassword")}
+            {...registerPwd("oldPassword")}
             className="w-full rounded-md border border-gray-300 bg-white/70 p-2 text-green-900 focus:border-green-500 focus:ring-1 focus:ring-green-500"
           />
           <span
@@ -307,7 +300,7 @@ export default function Settings() {
           <input
             type={showNewPassword ? "text" : "password"}
             placeholder="New Password"
-            {...register("newPassword")}
+            {...registerPwd("newPassword")}
             className="w-full rounded-md border border-gray-300 bg-white/70 p-2 text-green-900 focus:border-green-500 focus:ring-1 focus:ring-green-500"
           />
           <span

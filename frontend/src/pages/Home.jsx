@@ -7,12 +7,39 @@ import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { ShoppingCart, Heart, Star } from "lucide-react";
 
+// ── Skeleton card ──────────────────────────────────────────────
+function ProductSkeleton() {
+  return (
+    <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+      {/* image placeholder */}
+      <div className="skeleton h-48 w-full rounded-none" />
+      <div className="p-4 space-y-3">
+        {/* title */}
+        <div className="skeleton h-5 w-3/4 rounded-md" />
+        {/* description lines */}
+        <div className="skeleton h-3.5 w-full rounded-md" />
+        <div className="skeleton h-3.5 w-5/6 rounded-md" />
+        {/* rating row */}
+        <div className="flex items-center gap-2">
+          <div className="skeleton h-4 w-4 rounded-full" />
+          <div className="skeleton h-3.5 w-16 rounded-md" />
+        </div>
+        {/* price */}
+        <div className="skeleton h-6 w-24 rounded-md" />
+        {/* button */}
+        <div className="skeleton h-11 w-full rounded-xl mt-2" />
+      </div>
+    </div>
+  );
+}
+
+// ── Main page ──────────────────────────────────────────────────
 function Home() {
   const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [wishlist, setWishlist] = useState(new Set());
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
   const { token } = useSelector((state) => state.auth);
 
   const fetchProduct = async () => {
@@ -20,11 +47,11 @@ function Home() {
       const result = await ApiConnector("GET", products.PRODUCTS_API);
       if (result.data.success) {
         setList(result.data.products);
-      } else {
-        console.log("Failed to fetch products:", result.message);
       }
     } catch (error) {
-      console.log("Could not fetch product", error);
+      console.log("Could not fetch products", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -34,10 +61,9 @@ function Home() {
 
   const toggleWishlist = (id) => {
     setWishlist((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) newSet.delete(id);
-      else newSet.add(id);
-      return newSet;
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
     });
   };
 
@@ -48,19 +74,25 @@ function Home() {
       return;
     }
     dispatch(addToCart(item));
+    toast.success(`${item.name} added to cart`);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 px-4 py-10">
       <div className="max-w-7xl mx-auto">
-        {/* Products Grid */}
+        {/* Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 
-          {list.length > 0 ? (
+          {loading ? (
+            // Show 8 skeleton cards while loading
+            Array.from({ length: 8 }).map((_, i) => (
+              <ProductSkeleton key={i} />
+            ))
+          ) : list.length > 0 ? (
             list.map((item) => (
               <div
                 key={item._id}
-                className="bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden group"
+                className="bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden group border border-gray-100"
               >
                 {/* Image */}
                 <div className="relative h-48 w-full bg-gray-100 overflow-hidden">
@@ -68,11 +100,11 @@ function Home() {
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-green-100 to-emerald-100">
-                      <span className="text-4xl font-bold text-green-600">
+                      <span className="text-5xl font-bold text-green-600">
                         {item.name.charAt(0)}
                       </span>
                     </div>
@@ -81,10 +113,10 @@ function Home() {
                   {/* Wishlist */}
                   <button
                     onClick={() => toggleWishlist(item._id)}
-                    className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:scale-110 transition-transform"
+                    className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md hover:scale-110 transition-transform"
                   >
                     <Heart
-                      className={`w-5 h-5 ${
+                      className={`w-4 h-4 transition-colors ${
                         wishlist.has(item._id)
                           ? "fill-red-500 text-red-500"
                           : "text-gray-400"
@@ -93,49 +125,46 @@ function Home() {
                   </button>
                 </div>
 
-                {/* Product Details */}
+                {/* Details */}
                 <div className="p-4">
-                  <h3 className="font-bold text-lg text-gray-800 mb-2 line-clamp-1">
+                  <h3 className="font-bold text-gray-800 mb-1 line-clamp-1 text-base">
                     {item.name}
                   </h3>
-
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                  <p className="text-gray-500 text-xs mb-3 line-clamp-2 leading-relaxed">
                     {item.description}
                   </p>
 
                   {/* Rating */}
                   <div className="flex items-center gap-1 mb-3">
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm font-medium text-gray-700">
+                    <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                    <span className="text-xs font-semibold text-gray-700">
                       {item.rating || "4.5"}
                     </span>
-                    <span className="text-xs text-gray-500 ml-1">
-                      (120 reviews)
-                    </span>
+                    <span className="text-xs text-gray-400">(120)</span>
                   </div>
 
                   {/* Price */}
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-xl font-bold text-emerald-600 mb-3">
                     Rs {item.price}
                   </p>
 
                   {/* Add to Cart */}
                   <button
                     onClick={() => handleAddToCart(item)}
-                    className="mt-3 w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow hover:shadow-lg active:scale-95"
                   >
-                    <ShoppingCart className="w-5 h-5" />
+                    <ShoppingCart className="w-4 h-4" />
                     Add to Cart
                   </button>
                 </div>
               </div>
             ))
           ) : (
-            <p className="text-gray-500 col-span-full text-center py-10 text-lg">
-              No products found.
-            </p>
+            <div className="col-span-full flex flex-col items-center justify-center py-20 text-gray-400">
+              <ShoppingCart className="w-16 h-16 mb-4 opacity-30" />
+              <p className="text-lg font-medium">No products found.</p>
+            </div>
           )}
-
         </div>
       </div>
     </div>
@@ -143,4 +172,3 @@ function Home() {
 }
 
 export default Home;
- 

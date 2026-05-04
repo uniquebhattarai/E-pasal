@@ -8,20 +8,20 @@ function Cart() {
   const { cart } = useSelector((state) => state.cart);
 
   const totalAmount = cart.reduce((acc, item) => acc + item.price, 0);
-  const orderId = "order-" + Date.now();
 
   return (
     <div className="p-6">
       {cart.length > 0 ? (
-        <div className="space-y-4 ">
+        <div className="space-y-4">
           {cart.map((item) => (
             <CartItem key={item._id} item={item} />
           ))}
           <div className="mt-4 text-right">
             <p className="text-lg font-semibold">
-              Total: Rs {cart.reduce((acc, item) => acc + item.price, 0)}
+              Total: Rs {totalAmount}
             </p>
-             <EsewaCheckout totalAmount={totalAmount} orderId={orderId} />
+            {/* orderId is now generated fresh inside EsewaCheckout on every click */}
+            <EsewaCheckout totalAmount={totalAmount} />
           </div>
         </div>
       ) : (

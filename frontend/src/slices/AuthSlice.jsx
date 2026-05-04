@@ -1,26 +1,29 @@
-import {createSlice} from "@reduxjs/toolkit"
+import { createSlice } from "@reduxjs/toolkit";
 
-const initialState={
-    signupData:null,
-    loading:false,
-    token:localStorage.getItem("token")?JSON.parse(localStorage.getItem("token")):null
+// Token is now stored in an httpOnly cookie — NOT in localStorage.
+// We keep a boolean `isLoggedIn` flag in Redux (derived from user presence)
+// so the app knows if the user is authenticated after a page refresh.
+const initialState = {
+  signupData: null,
+  loading: false,
+  token: null,  // no longer read from localStorage
+};
 
-}
- const AuthSlice = createSlice ({
-    name:"auth",
-    initialState:initialState,
-    reducers:{
-        setToken(state,value){
-            state.token=value.payload;
-        },
-        setSignupData(state,value){
-            state.signupData=value.payload;
-        },
-        setLoading(state,value){
-            state.loading = value.payload;
-        }
-    }
+const AuthSlice = createSlice({
+  name: "auth",
+  initialState: initialState,
+  reducers: {
+    setToken(state, value) {
+      state.token = value.payload;
+    },
+    setSignupData(state, value) {
+      state.signupData = value.payload;
+    },
+    setLoading(state, value) {
+      state.loading = value.payload;
+    },
+  },
 });
 
-export const{setToken,setSignupData,setLoading}= AuthSlice.actions;
+export const { setToken, setSignupData, setLoading } = AuthSlice.actions;
 export default AuthSlice.reducer;

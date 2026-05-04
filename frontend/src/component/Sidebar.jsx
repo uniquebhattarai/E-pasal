@@ -94,8 +94,10 @@ export default function Sidebar() {
     dispatch(setToken(null));
     dispatch(setUser(null));
     dispatch(resetCart());
-    localStorage.removeItem("token");
+    // Token lives in httpOnly cookie — cleared server-side on logout.
+    // Only remove the non-sensitive user object from localStorage.
     localStorage.removeItem("user");
+    localStorage.removeItem("token"); // remove any legacy key
     toast.success("Logged Out");
     navigate("/");
     setConfirmationModal(null);
