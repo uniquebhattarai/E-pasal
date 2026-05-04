@@ -22,7 +22,6 @@ const CartSlice = createSlice({
       const index = state.cart.findIndex((item) => item._id === product._id)
 
       if (index >= 0) {
-        
         toast.error("Item is already in cart")
         return
       }
@@ -36,6 +35,7 @@ const CartSlice = createSlice({
       localStorage.setItem("total", JSON.stringify(state.total))
       localStorage.setItem("totalItems", JSON.stringify(state.totalItems))
      
+      toast.success(`${product.name} added to cart`)
     },
     removeFromCart: (state, action) => {
       const productId = action.payload

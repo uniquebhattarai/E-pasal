@@ -31,7 +31,7 @@ const EsewaCheckout = ({ totalAmount }) => {
       baseUrl = origin;
     } else {
       // Local dev: localhost or http — eSewa won't accept these, use production URL
-      baseUrl = "https://e-pasal.vercel.app";
+      baseUrl = "https://e-pasal-two.vercel.app";
     }
 
     const successUrl = `${baseUrl}/payment-success`;

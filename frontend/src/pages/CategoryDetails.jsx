@@ -68,7 +68,6 @@ function CategoryDetails() {
       return;
     }
     dispatch(addToCart(product));
-    toast.success(`${product.name} added to cart`);
   };
 
   return (

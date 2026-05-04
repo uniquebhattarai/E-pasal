@@ -74,7 +74,6 @@ function Home() {
       return;
     }
     dispatch(addToCart(item));
-    toast.success(`${item.name} added to cart`);
   };
 
   return (
