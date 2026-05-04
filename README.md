@@ -63,6 +63,50 @@ E-Pasal/
 
 ---
 
+## 📸 Screenshots
+
+### Public Pages
+
+**Homepage**  
+![Homepage](./screenshots/HomePage.png)
+
+**Category List**  
+![Category List](./screenshots/CategoryList.png)
+
+**Single Category View**  
+![Category](./screenshots/Category.png)
+
+---
+
+### Authentication
+
+**Signup Page**  
+![Signup Page](./screenshots/Signup.png)
+
+**Verification Email**  
+![Verification Email](./screenshots/VerificationEmail.png)
+
+**OTP Verification**  
+![OTP Verification](./screenshots/SignupVerify.png)
+
+---
+
+### Shopping & Payment Flow
+
+**Shopping Cart**  
+![Shopping Cart](./screenshots/Cart.png)
+
+**eSewa Payment Processing**  
+![eSewa Step 1](./screenshots/Esewa1.png)
+![eSewa Step 2](./screenshots/Esewa2.png)
+![eSewa Step 3](./screenshots/Esewa3.png)
+![eSewa Step 4](./screenshots/Esewa4.png)
+
+**Payment Successful**  
+![Payment Successful](./screenshots/PaymentSuccessfull.png)
+
+---
+
 ## 🚀 Local Development
 
 ### Prerequisites
