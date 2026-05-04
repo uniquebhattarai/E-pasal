@@ -17,8 +17,8 @@ const EsewaCheckout = ({ totalAmount }) => {
     const transaction_uuid = `epsl-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
     
-    const envUrl = (import.meta.env.VITE_FRONTEND_URL || "").trim();
-    const origin = window.location.origin;
+    const envUrl = (import.meta.env.VITE_FRONTEND_URL || "").trim().replace(/\/$/, "");
+    const origin = window.location.origin.replace(/\/$/, "");
 
    
     const isSafeUrl = (url) => url.startsWith("https://");
