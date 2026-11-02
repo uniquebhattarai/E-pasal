@@ -11,6 +11,15 @@ const sizeClasses = {
   full: "max-w-[95vw] md:max-w-4xl",
 };
 
+const smSizeClasses = {
+  sm: "sm:max-w-sm",
+  md: "sm:max-w-md",
+  lg: "sm:max-w-lg",
+  xl: "sm:max-w-xl",
+  "2xl": "sm:max-w-2xl",
+  full: "sm:max-w-[95vw] md:max-w-4xl",
+};
+
 /**
  * Common Reusable Modal Component
  * Accessible, portal-based, handles ESC, backdrop clicks, and body scroll lock.
@@ -32,6 +41,7 @@ const Modal = ({
   closeOnEsc = true,
   className = "",
   bodyClassName = "",
+  fullScreenOnMobile = false,
 }) => {
   const isModalOpen = Boolean(isOpen || visible);
   const showCross = Boolean(showCloseButton && hasCross);
@@ -77,22 +87,34 @@ const Modal = ({
     return null;
   }
 
-  const maxWidthClass = sizeClasses[size] || sizeClasses.md;
+  const maxWidthClass = fullScreenOnMobile
+    ? `max-w-none ${smSizeClasses[size] || smSizeClasses.md}`
+    : (sizeClasses[size] || sizeClasses.md);
 
   return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       onClick={handleOverlayClick}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn"
+      className={`fixed inset-0 z-50 flex items-center justify-center animate-fadeIn ${
+        fullScreenOnMobile
+          ? "p-0 sm:p-4 bg-bg-card sm:bg-transparent overflow-hidden"
+          : "p-4"
+      }`}
     >
-      {/* Plain dim backdrop. No backdrop-filter: a full-viewport blur over the
-          product grid is very expensive to paint on large/retina screens. */}
-      <div aria-hidden="true" className="absolute inset-0 bg-black/65" />
+      {/* Plain dim backdrop. Hidden on mobile when fullScreenOnMobile is active. */}
+      <div
+        aria-hidden="true"
+        className={`absolute inset-0 bg-black/65 ${fullScreenOnMobile ? "hidden sm:block" : ""}`}
+      />
       <div
         ref={modalContentRef}
         onClick={(e) => e.stopPropagation()}
-        className={`relative w-full ${maxWidthClass} bg-bg-card border border-border-main rounded-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col no-scrollbar ${className}`}
+        className={`relative w-full ${maxWidthClass} bg-bg-card flex flex-col no-scrollbar ${
+          fullScreenOnMobile
+            ? "h-[100dvh] sm:h-auto sm:max-h-[95vh] border-0 sm:border sm:border-border-main rounded-none sm:rounded-2xl shadow-none sm:shadow-2xl overflow-hidden"
+            : "border border-border-main rounded-2xl shadow-2xl overflow-hidden max-h-[95vh]"
+        } ${className}`}
       >
         {/* Close "X" Button */}
         {showCross && onClose && (
@@ -100,7 +122,9 @@ const Modal = ({
             type="button"
             onClick={onClose}
             aria-label="Close modal"
-            className="absolute top-3.5 right-3.5 z-10 p-1.5 rounded-full text-text-light hover:text-text-main hover:bg-bg-disabled transition duration-150 focus:outline-none cursor-pointer"
+            className={`absolute z-10 p-1.5 rounded-full text-text-light hover:text-text-main hover:bg-bg-disabled transition duration-150 focus:outline-none cursor-pointer ${
+              fullScreenOnMobile ? "hidden sm:block sm:top-3.5 sm:right-3.5" : "top-3.5 right-3.5"
+            }`}
           >
             <X className="w-4 h-4" />
           </button>

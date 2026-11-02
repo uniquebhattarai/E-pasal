@@ -48,7 +48,7 @@ export default function LoginForm({ onSuccess, onSwitch, onError, onClose }) {
       onSubmit={handleSubmit}
     >
       {({ isSubmitting }) => (
-        <Form className="flex-1 flex flex-col gap-1">
+        <Form className="flex-1 min-h-0 flex flex-col h-full">
           <Input
             id="login-email"
             name="email"
@@ -82,7 +82,8 @@ export default function LoginForm({ onSuccess, onSwitch, onError, onClose }) {
             </Link>
           </div>
 
-          <div className="mt-auto">
+          {/* Bottom block: Login button, Or divider, and Sign up link placed at the bottom via mt-auto */}
+          <div className="mt-auto pt-4 sm:pt-6">
             <Button
               type="submit"
               variant="primary"
@@ -95,7 +96,7 @@ export default function LoginForm({ onSuccess, onSwitch, onError, onClose }) {
 
             <Divider />
 
-            <div className="text-center pt-1 text-sm text-text-muted">
+            <div className="text-center pt-0.5 sm:pt-1 text-sm text-text-muted">
               Don't have an account?{" "}
               <button
                 type="button"

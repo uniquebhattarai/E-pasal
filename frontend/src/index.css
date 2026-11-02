@@ -59,3 +59,11 @@ body::-webkit-scrollbar {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
 }
+
+/* ── Global input placeholder typography ── */
+input::placeholder,
+textarea::placeholder {
+  font-size: 0.75rem !important; /* 12px (text-xs) */
+  font-weight: 400;
+  color: var(--color-text-placeholder);
+}

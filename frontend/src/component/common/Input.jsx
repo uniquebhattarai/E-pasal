@@ -85,7 +85,7 @@ const BaseInput = forwardRef(
             placeholder={placeholder}
             autoComplete={autoComplete}
             required={required}
-            className={`w-full py-2.5 text-text-main placeholder:text-text-placeholder text-sm border rounded-xl transition duration-200 outline-none
+            className={`w-full py-2.5 text-text-main placeholder:text-text-placeholder placeholder:text-xs text-sm border rounded-xl transition duration-200 outline-none
               ${Icon ? "pl-11" : "pl-4"}
               ${RightIcon ? "pr-11" : "pr-4"}
               ${

@@ -40,10 +40,10 @@ function Category() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 px-4 pt-6 pb-24 md:py-8">
       <div className="max-w-7xl mx-auto">
-        {/* Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5">
+        {/* Grid: 1 in a row on mobile, 2 in a row on tab view, 4 on desktop */}
+        <div className="grid grid-cols-1 min-[500px]:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {loading ? (
             Array.from({ length: 8 }).map((_, i) => <CategorySkeleton key={i} />)
           ) : list.length > 0 ? (
