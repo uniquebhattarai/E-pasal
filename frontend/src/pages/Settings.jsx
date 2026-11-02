@@ -15,12 +15,12 @@ import {
   changepassword,
   deleteprofile,
 } from "../services/Api"
+import { Button } from "../component/common"
 
 const genders = ["Male", "Female", "Non-Binary", "Prefer not to say", "Other"]
 
 export default function Settings() {
   const { user } = useSelector((state) => state.profile)
-  const { token } = useSelector((state) => state.auth)
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
@@ -183,17 +183,17 @@ export default function Settings() {
 
   return (
     <div className="space-y-10">
-      <h1 className="text-3xl font-bold text-green-700">Settings</h1>
+      <h1 className="text-3xl font-bold text-primary">Settings</h1>
 
       {/* Profile Picture */}
-      <div className="flex items-center gap-x-6 rounded-2xl border border-green-300 bg-white/80 backdrop-blur-sm p-8 shadow-md hover:shadow-lg transition">
+      <div className="flex items-center gap-x-6 rounded-2xl border border-primary-border bg-white/80 backdrop-blur-sm p-8 shadow-md hover:shadow-lg transition">
         <img
           src={previewSource || user?.image}
           alt={`profile-${user?.firstName}`}
-          className="aspect-square w-20 rounded-full object-cover ring-2 ring-green-500"
+          className="aspect-square w-20 rounded-full object-cover ring-2 ring-primary"
         />
         <div className="space-y-3">
-          <p className="font-semibold text-green-900">Change Profile Picture</p>
+          <p className="font-semibold text-text-main">Change Profile Picture</p>
           <div className="flex gap-3">
             <input
               type="file"
@@ -202,22 +202,24 @@ export default function Settings() {
               className="hidden"
               accept="image/png, image/gif, image/jpeg"
             />
-            <button
+            <Button
               type="button"
               onClick={handleClick}
               disabled={loading}
-              className="rounded-md bg-green-600 px-5 py-2 text-white font-semibold shadow hover:bg-green-700"
+              size="sm"
             >
               Select
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={handleFileUpload}
-              disabled={loading}
-              className="flex items-center gap-2 rounded-md bg-green-600 px-5 py-2 text-white font-semibold shadow hover:bg-green-700"
+              loading={loading}
+              loadingText="Uploading..."
+              size="sm"
+              rightIcon={FiUpload}
             >
-              {loading ? "Uploading..." : "Upload"} <FiUpload />
-            </button>
+              Upload
+            </Button>
           </div>
         </div>
       </div>
@@ -225,9 +227,9 @@ export default function Settings() {
       {/* Edit Profile Form */}
       <form
         onSubmit={handleSubmit(submitProfileForm)}
-        className="space-y-4 rounded-2xl border border-green-300 bg-white/80 backdrop-blur-sm p-6 shadow-md hover:shadow-lg transition"
+        className="space-y-4 rounded-2xl border border-border-main bg-bg-card p-6 shadow-md hover:shadow-lg transition"
       >
-        <h2 className="text-lg font-semibold text-green-900">Edit Profile</h2>
+        <h2 className="text-lg font-semibold text-text-main">Edit Profile</h2>
         <div className="flex gap-4">
           <input
             type="text"
@@ -268,20 +270,17 @@ export default function Settings() {
           {...register("about")}
           className="w-full rounded-md border border-gray-300 bg-white/70 p-2 text-green-900 focus:border-green-500 focus:ring-1 focus:ring-green-500"
         />
-        <button
-          type="submit"
-          className="rounded-md bg-green-600 px-5 py-2 font-semibold text-white shadow hover:bg-green-700"
-        >
+        <Button type="submit" variant="primary" size="md">
           Update Profile
-        </button>
+        </Button>
       </form>
 
       {/* Update Password Form */}
       <form
         onSubmit={handleSubmitPwd(submitPasswordForm)}
-        className="space-y-4 rounded-2xl border border-green-300 bg-white/80 backdrop-blur-sm p-6 shadow-md hover:shadow-lg transition"
+        className="space-y-4 rounded-2xl border border-border-main bg-bg-card p-6 shadow-md hover:shadow-lg transition"
       >
-        <h2 className="text-lg font-semibold text-green-900">Change Password</h2>
+        <h2 className="text-lg font-semibold text-text-main">Change Password</h2>
         <div className="relative">
           <input
             type={showOldPassword ? "text" : "password"}
@@ -310,28 +309,25 @@ export default function Settings() {
             {showNewPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
           </span>
         </div>
-        <button
-          type="submit"
-          className="rounded-md bg-green-600 px-5 py-2 font-semibold text-white shadow hover:bg-green-700"
-        >
+        <Button type="submit" variant="primary" size="md">
           Change Password
-        </button>
+        </Button>
       </form>
 
       {/* Delete Account */}
-      <div className="flex gap-x-5 rounded-2xl border border-red-300 bg-red-50/90 backdrop-blur-sm p-8 shadow-md hover:shadow-lg transition">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-100">
-          <FiTrash2 className="text-2xl text-red-500" />
+      <div className="flex gap-x-5 rounded-2xl border border-danger-border bg-danger-light/90 backdrop-blur-sm p-8 shadow-md hover:shadow-lg transition">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-danger-light">
+          <FiTrash2 className="text-2xl text-danger" />
         </div>
         <div className="flex flex-col space-y-2">
-          <h2 className="text-lg font-semibold text-red-700">Delete Account</h2>
-          <p className="text-sm text-red-600">
+          <h2 className="text-lg font-semibold text-danger">Delete Account</h2>
+          <p className="text-sm text-danger/80">
             This action is permanent and will remove all your data. Please
             proceed carefully.
           </p>
           <button
             type="button"
-            className="w-fit cursor-pointer font-medium text-red-600 hover:underline"
+            className="w-fit cursor-pointer font-medium text-danger hover:underline"
             onClick={handleDeleteAccount}
           >
             I want to delete my account

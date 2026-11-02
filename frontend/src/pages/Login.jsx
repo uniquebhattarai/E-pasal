@@ -1,185 +1,141 @@
 import React, { useState } from "react";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Mail } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
 import { ApiConnector } from "../services/ApiConnector";
 import { login } from "../services/Api";
 import { toast } from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { setToken } from "../slices/AuthSlice";
 import { setUser } from "../slices/ProfileSlice";
+import { Input, Password, Button } from "../component/common";
+
+const loginSchema = Yup.object().shape({
+  email: Yup.string()
+    .email("Please enter a valid email address")
+    .required("Email is required"),
+  password: Yup.string().required("Password is required"),
+});
 
 function Login() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-  const { email, password } = formData;
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
-
+  const [serverError, setServerError] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleOnChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleOnSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setMessage({ type: "", text: "" });
+  const handleOnSubmit = async (values, { setSubmitting }) => {
+    setServerError("");
 
     try {
       const response = await ApiConnector("POST", login.LOGIN_API, {
-        email,
-        password,
+        email: values.email,
+        password: values.password,
       });
 
-      // Token is now in the httpOnly cookie set by the server — never touch it from JS.
-      // Only persist the non-sensitive user profile in localStorage.
-      dispatch(setToken("cookie")); // truthy sentinel for PrivateRoute
+      // Token is stored in httpOnly cookie set by server.
+      // Persist user profile in redux & localStorage.
+      dispatch(setToken("cookie"));
       dispatch(setUser(response.data.user));
       localStorage.setItem("user", JSON.stringify(response.data.user));
 
       toast.success("Logged in successfully!");
-      setMessage({ type: "success", text: "Logged in successfully!" });
-      setIsLoading(false);
       navigate("/");
     } catch (error) {
-      console.log("Login error:", error);
-      setIsLoading(false);
+      console.error("Login error:", error);
+      const errorMsg =
+        error.response?.data?.message || "Invalid email or password.";
+      setServerError(errorMsg);
       toast.error("Login failed. Please try again.");
-      setMessage({ type: "error", text: "Invalid email or password." });
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary-light via-white to-primary-subtle flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-          <form onSubmit={handleOnSubmit} className="space-y-6">
-            <p className="text-3xl text-center text-emerald-600 mb-10 font-bold">Log in</p>
+        <div className="bg-bg-card rounded-2xl shadow-xl border border-border-main p-8">
+          <p className="text-3xl text-center text-primary mb-8 font-bold">
+            Log in
+          </p>
 
-            {/* Success & Error messages */}
-            {message.text && (
-              <div
-                className={`p-4 rounded-xl ${
-                  message.type === "success"
-                    ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                    : "bg-red-50 text-red-800 border border-red-200"
-                }`}
-              >
-                <p className="text-sm font-medium">{message.text}</p>
-              </div>
-            )}
+          {/* Server Error Alert */}
+          {serverError && (
+            <div className="mb-6 p-4 rounded-xl bg-danger-light text-danger border border-danger-border">
+              <p className="text-sm font-medium">{serverError}</p>
+            </div>
+          )}
 
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                <input
-                  required
-                  type="email"
+          <Formik
+            initialValues={{ email: "", password: "" }}
+            validationSchema={loginSchema}
+            onSubmit={handleOnSubmit}
+          >
+            {({ isSubmitting }) => (
+              <Form className="space-y-5">
+                {/* Email Field */}
+                <Input
                   name="email"
-                  id="email"
-                  value={email}
-                  onChange={handleOnChange}
+                  type="email"
+                  label="Email Address"
                   placeholder="Enter your email"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl
-                  focus:ring-2 focus:ring-emerald-500 focus:border-transparent
-                  bg-gray-50 focus:bg-white transition duration-200 outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                <input
+                  icon={Mail}
+                  autoComplete="email"
                   required
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  id="password"
-                  value={password}
-                  onChange={handleOnChange}
-                  placeholder="Enter your password"
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl
-                  focus:ring-2 focus:ring-emerald-500 focus:border-transparent
-                  bg-gray-50 focus:bg-white transition duration-200 outline-none"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition"
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-              <Link
-                to="/forgot-password"
-                className="block text-right text-sm text-emerald-600 mt-2 hover:text-emerald-700"
-              >
-                Forgot Password?
-              </Link>
-            </div>
 
-            {/* Login Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-            >
-              {isLoading ? (
-                <>
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Signing in...
-                </>
-              ) : (
-                "Sign In"
-              )}
-            </button>
-          </form>
+                {/* Password Field (Separated out) */}
+                <div>
+                  <Password
+                    name="password"
+                    label="Password"
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    required
+                  />
+                  <div className="flex justify-end mt-2">
+                    <Link
+                      to="/forgot-password"
+                      className="text-sm font-medium text-primary hover:text-primary-hover transition"
+                    >
+                      Forgot Password?
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Login Button */}
+                <Button
+                  type="submit"
+                  variant="primary"
+                  fullWidth
+                  loading={isSubmitting}
+                  loadingText="Signing in..."
+                  className="mt-2"
+                >
+                  Sign In
+                </Button>
+              </Form>
+            )}
+          </Formik>
 
           {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-gray-300"></span>
+              <span className="w-full border-t border-border-main"></span>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500">New to our platform?</span>
+              <span className="px-4 bg-bg-card text-text-muted">
+                New to our platform?
+              </span>
             </div>
           </div>
 
           {/* Sign up link */}
-          <div className="text-center">
-            <Link
-              to="/signup"
-              className="inline-flex items-center justify-center w-full py-3 px-4 border-2 border-emerald-600 text-emerald-600 font-semibold rounded-xl hover:bg-emerald-50 transition duration-200"
-            >
+          <Link to="/signup" className="block">
+            <Button variant="outline" fullWidth>
               Create an account
-            </Link>
-          </div>
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

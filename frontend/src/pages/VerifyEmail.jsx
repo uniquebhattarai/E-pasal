@@ -3,15 +3,15 @@ import OtpInput from "react-otp-input";
 import { Link, useNavigate } from "react-router-dom";
 import { BiArrowBack } from "react-icons/bi";
 import { RxCountdownTimer } from "react-icons/rx";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { sendOtp, signUp } from "../services/Api";
 import { ApiConnector } from "../services/ApiConnector";
 import toast from "react-hot-toast";
+import { Button } from "../component/common";
 
 function VerifyEmail() {
   const [otp, setOtp] = useState("");
   const { signupData, loading } = useSelector((state) => state.auth);
-  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -92,30 +92,32 @@ function VerifyEmail() {
                 <input
                   {...props}
                   placeholder="-"
-                  className="w-12 h-12 lg:w-14 lg:h-14 border border-gray-300 rounded-lg text-lg font-semibold text-gray-900 text-center outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600"
+                  className="w-12 h-12 lg:w-14 lg:h-14 border border-border-input rounded-lg text-lg font-semibold text-text-main text-center outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               )}
               containerStyle={{ justifyContent: "space-between", gap: "0 8px" }}
             />
 
-            <button
+            <Button
               type="submit"
-              className="w-full bg-green-600 text-white font-semibold py-3 rounded-lg mt-6 hover:bg-green-700 transition-all duration-200 shadow-md"
+              variant="primary"
+              fullWidth
+              className="mt-6"
             >
               Verify Email
-            </button>
+            </Button>
           </form>
 
           {/* Footer actions */}
           <div className="mt-6 flex items-center justify-between text-sm">
             <Link to="/signup">
-              <p className="text-gray-600 flex items-center gap-x-2 hover:text-green-600 transition">
+              <p className="text-text-muted flex items-center gap-x-2 hover:text-primary transition">
                 <BiArrowBack /> Back To Signup
               </p>
             </Link>
             <button
               type="button"
-              className="flex items-center text-green-600 font-medium gap-x-2 hover:underline"
+              className="flex items-center text-primary font-medium gap-x-2 hover:underline"
               onClick={handleResendOtp}
             >
               <RxCountdownTimer /> Resend Code

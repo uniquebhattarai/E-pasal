@@ -1,0 +1,72 @@
+/* ==========================================================================
+   Base Design System Colors & Theme Variables
+   Changing variables here updates the theme across the entire application.
+   ========================================================================== */
+
+:root {
+  /* Brand / Primary Palette */
+  --color-primary: #059669;
+  --color-primary-hover: #047857;
+  --color-primary-active: #065f46;
+  --color-primary-light: #ecfdf5;
+  --color-primary-subtle: #d1fae5;
+  --color-primary-border: #a7f3d0;
+  --color-primary-ring: rgba(5, 150, 105, 0.25);
+
+  /* Danger / Error Palette */
+  --color-danger: #ef4444;
+  --color-danger-hover: #dc2626;
+  --color-danger-active: #b91c1c;
+  --color-danger-light: #fef2f2;
+  --color-danger-border: #fecaca;
+  --color-danger-ring: rgba(239, 68, 68, 0.25);
+
+  /* Neutrals & Text */
+  --color-text-main: #111827;
+  --color-text-muted: #4b5563;
+  --color-text-light: #9ca3af;
+  --color-text-placeholder: #9ca3af;
+
+  /* Surfaces & Backgrounds */
+  --color-bg-page: #f9fafb;
+  --color-bg-card: #ffffff;
+  --color-bg-input: #f9fafb;
+  --color-bg-input-focus: #ffffff;
+  --color-bg-disabled: #f3f4f6;
+
+  /* Borders */
+  --color-border-main: #e5e7eb;
+  --color-border-input: #d1d5db;
+  --color-border-focus: #059669;
+}
+
+@theme {
+  --color-primary: var(--color-primary);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-primary-active: var(--color-primary-active);
+  --color-primary-light: var(--color-primary-light);
+  --color-primary-subtle: var(--color-primary-subtle);
+  --color-primary-border: var(--color-primary-border);
+  --color-primary-ring: var(--color-primary-ring);
+
+  --color-danger: var(--color-danger);
+  --color-danger-hover: var(--color-danger-hover);
+  --color-danger-active: var(--color-danger-active);
+  --color-danger-light: var(--color-danger-light);
+  --color-danger-border: var(--color-danger-border);
+  --color-danger-ring: var(--color-danger-ring);
+
+  --color-text-main: var(--color-text-main);
+  --color-text-muted: var(--color-text-muted);
+  --color-text-light: var(--color-text-light);
+
+  --color-bg-page: var(--color-bg-page);
+  --color-bg-card: var(--color-bg-card);
+  --color-bg-input: var(--color-bg-input);
+  --color-bg-input-focus: var(--color-bg-input-focus);
+  --color-bg-disabled: var(--color-bg-disabled);
+
+  --color-border-main: var(--color-border-main);
+  --color-border-input: var(--color-border-input);
+}
+

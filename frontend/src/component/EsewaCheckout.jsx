@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { Button } from "./common";
 
 
 const EsewaCheckout = ({ totalAmount }) => {
@@ -89,15 +90,15 @@ const EsewaCheckout = ({ totalAmount }) => {
   };
 
   return (
-    <button
+    <Button
       onClick={handlePayment}
-      disabled={loading}
-      className={`bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-2.5 px-6 rounded-xl shadow hover:shadow-lg transition-all duration-200 active:scale-95 ${
-        loading ? "opacity-50 cursor-not-allowed" : ""
-      }`}
+      loading={loading}
+      loadingText="Processing..."
+      variant="primary"
+      size="md"
     >
-      {loading ? "Processing..." : "Pay with eSewa"}
-    </button>
+      Pay with eSewa
+    </Button>
   );
 };
 

@@ -1,94 +1,100 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { setLoading } from "../slices/AuthSlice";
+import { Mail } from "lucide-react";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
 import { ApiConnector } from "../services/ApiConnector";
 import { resetpasswordtoken } from "../services/Api";
 import { toast } from "react-hot-toast";
+import { Input, Button } from "../component/common";
+
+const forgotPasswordSchema = Yup.object().shape({
+  email: Yup.string()
+    .email("Please enter a valid email address")
+    .required("Email address is required"),
+});
 
 function ForgotPassword() {
   const [emailSent, setEmailSent] = useState(false);
-  const [email, setEmail] = useState("");
-  const { loading } = useSelector((state) => state.auth);
-  const dispatch = useDispatch();
+  const [sentEmailAddress, setSentEmailAddress] = useState("");
 
-  const submitHandler = async (e) => {
-    e.preventDefault();
-    dispatch(setLoading(true));
-
+  const handleOnSubmit = async (values, { setSubmitting }) => {
     try {
-      const response = await ApiConnector(
+      await ApiConnector(
         "POST",
         resetpasswordtoken.RESET_PASSWORD_TOKEN_API,
-        { email }
+        { email: values.email }
       );
       toast.success("Reset email sent successfully!");
+      setSentEmailAddress(values.email);
       setEmailSent(true);
     } catch (error) {
-      console.error(error);
+      console.error("Forgot password error:", error);
       toast.error("Failed to send reset email. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
-
-    dispatch(setLoading(false));
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary-light via-white to-primary-subtle flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-          <h1 className="text-3xl font-bold text-emerald-600 text-center mb-6">
+        <div className="bg-bg-card rounded-2xl shadow-xl border border-border-main p-8">
+          <h1 className="text-3xl font-bold text-primary text-center mb-4">
             {emailSent ? "Check Your Email" : "Reset Your Password"}
           </h1>
-          <p className="text-gray-600 text-center mb-6">
+          <p className="text-text-muted text-center mb-6 text-sm">
             {emailSent
-              ? `We have sent a password reset email to ${email}`
-              : "Please enter your valid email to reset your password"}
+              ? `We have sent a password reset email to ${sentEmailAddress}`
+              : "Please enter your registered email address to receive password reset instructions"}
           </p>
 
-          {!emailSent && (
-            <form onSubmit={submitHandler} className="space-y-6">
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-semibold text-gray-700 mb-2"
-                >
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className="w-full pl-3 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50 focus:bg-white transition duration-200 outline-none"
-                />
-              </div>
+          {!emailSent ? (
+            <Formik
+              initialValues={{ email: "" }}
+              validationSchema={forgotPasswordSchema}
+              onSubmit={handleOnSubmit}
+            >
+              {({ isSubmitting }) => (
+                <Form className="space-y-6">
+                  <Input
+                    name="email"
+                    type="email"
+                    label="Email Address"
+                    placeholder="Enter your email"
+                    icon={Mail}
+                    autoComplete="email"
+                    required
+                  />
 
-              <button
-                type="submit"
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? "Sending..." : "Reset Password"}
-              </button>
-            </form>
-          )}
-
-          {emailSent && (
-            <div className="text-center mt-6">
-              <button
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    fullWidth
+                    loading={isSubmitting}
+                    loadingText="Sending reset link..."
+                  >
+                    Reset Password
+                  </Button>
+                </Form>
+              )}
+            </Formik>
+          ) : (
+            <div className="space-y-4">
+              <Button
+                variant="outline"
+                fullWidth
                 onClick={() => setEmailSent(false)}
-                className="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition duration-200"
               >
                 Resend Email
-              </button>
+              </Button>
             </div>
           )}
 
           <div className="text-center mt-6">
             <Link
               to="/login"
-              className="text-emerald-600 font-semibold hover:underline"
+              className="text-primary font-semibold hover:underline text-sm inline-block"
             >
               Back to Login
             </Link>

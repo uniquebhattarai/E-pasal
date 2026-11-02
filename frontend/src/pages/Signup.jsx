@@ -1,234 +1,173 @@
 import React, { useState } from "react";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Mail, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
 import { ApiConnector } from "../services/ApiConnector";
 import { sendOtp } from "../services/Api";
 import { toast } from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { setSignupData } from "../slices/AuthSlice";
+import { Input, Password, Button } from "../component/common";
+
+const signupSchema = Yup.object().shape({
+  firstName: Yup.string()
+    .trim()
+    .min(2, "First name must be at least 2 characters")
+    .required("First name is required"),
+  lastName: Yup.string()
+    .trim()
+    .min(2, "Last name must be at least 2 characters")
+    .required("Last name is required"),
+  email: Yup.string()
+    .email("Please enter a valid email address")
+    .required("Email address is required"),
+  password: Yup.string()
+    .min(6, "Password must be at least 6 characters")
+    .required("Password is required"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password"), null], "Passwords do not match")
+    .required("Please confirm your password"),
+});
 
 function Signup() {
+  const [serverError, setServerError] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-
-  const { firstName, lastName, email, password, confirmPassword } = formData;
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
-
-  const handleOnChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleOnSubmit = async (e) => {
-    e.preventDefault();
-
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-
-    setIsLoading(true);
-    setMessage({ type: "", text: "" });
-    dispatch(setSignupData({ ...formData }));
+  const handleOnSubmit = async (values, { setSubmitting }) => {
+    setServerError("");
+    dispatch(setSignupData({ ...values }));
 
     try {
-      const response = await ApiConnector("POST", sendOtp.VERIFY_OTP, { email });
+      const response = await ApiConnector("POST", sendOtp.VERIFY_OTP, {
+        email: values.email,
+      });
 
       if (response.data.success) {
         toast.success("OTP sent to your email.");
-        setMessage({ type: "success", text: "OTP sent successfully!" });
         navigate("/verify-email");
       } else {
-        toast.error(response.data.message || "Failed to send OTP");
-        setMessage({ type: "error", text: response.data.message || "Failed to send OTP" });
+        const errorMsg = response.data.message || "Failed to send OTP";
+        setServerError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch (error) {
-      toast.error("Failed to send OTP, please try again");
-      setMessage({ type: "error", text: "Failed to send OTP" });
-      console.error(error);
+      console.error("Signup error:", error);
+      const errorMsg =
+        error.response?.data?.message ||
+        "Failed to send OTP, please try again";
+      setServerError(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setSubmitting(false);
     }
-    setIsLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary-light via-white to-primary-subtle flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-          <form onSubmit={handleOnSubmit} className="space-y-6">
-            <p className="text-3xl text-center text-emerald-600 mb-10 font-bold">
-              Create Account
-            </p>
+        <div className="bg-bg-card rounded-2xl shadow-xl border border-border-main p-8">
+          <p className="text-3xl text-center text-primary mb-8 font-bold">
+            Create Account
+          </p>
 
-            {/* Success & Error Messages */}
-            {message.text && (
-              <div
-                className={`p-4 rounded-xl ${
-                  message.type === "success"
-                    ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                    : "bg-red-50 text-red-800 border border-red-200"
-                }`}
-              >
-                <p className="text-sm font-medium">{message.text}</p>
-              </div>
-            )}
-
-            {/* First Name */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                First Name
-              </label>
-              <input
-                required
-                type="text"
-                name="firstName"
-                value={firstName}
-                onChange={handleOnChange}
-                placeholder="Enter your first name"
-                className="w-full pl-3 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition duration-200 outline-none bg-gray-50 focus:bg-white"
-              />
+          {/* Server Error Alert */}
+          {serverError && (
+            <div className="mb-6 p-4 rounded-xl bg-danger-light text-danger border border-danger-border">
+              <p className="text-sm font-medium">{serverError}</p>
             </div>
+          )}
 
-            {/* Last Name */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Last Name
-              </label>
-              <input
-                required
-                type="text"
-                name="lastName"
-                value={lastName}
-                onChange={handleOnChange}
-                placeholder="Enter your last name"
-                className="w-full pl-3 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition duration-200 outline-none bg-gray-50 focus:bg-white"
-              />
-            </div>
+          <Formik
+            initialValues={{
+              firstName: "",
+              lastName: "",
+              email: "",
+              password: "",
+              confirmPassword: "",
+            }}
+            validationSchema={signupSchema}
+            onSubmit={handleOnSubmit}
+          >
+            {({ isSubmitting }) => (
+              <Form className="space-y-4">
+                {/* First Name & Last Name */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Input
+                    name="firstName"
+                    type="text"
+                    label="First Name"
+                    placeholder="First name"
+                    icon={User}
+                    required
+                  />
+                  <Input
+                    name="lastName"
+                    type="text"
+                    label="Last Name"
+                    placeholder="Last name"
+                    icon={User}
+                    required
+                  />
+                </div>
 
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                <input
-                  required
-                  type="email"
+                {/* Email */}
+                <Input
                   name="email"
-                  value={email}
-                  onChange={handleOnChange}
+                  type="email"
+                  label="Email Address"
                   placeholder="Enter your email"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition duration-200 outline-none bg-gray-50 focus:bg-white"
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                <input
+                  icon={Mail}
+                  autoComplete="email"
                   required
-                  type={showPassword ? "text" : "password"}
+                />
+
+                {/* Separated Password Field */}
+                <Password
                   name="password"
-                  value={password}
-                  onChange={handleOnChange}
+                  label="Password"
                   placeholder="Enter your password"
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition duration-200 outline-none bg-gray-50 focus:bg-white"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition"
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-            </div>
-
-            {/* Confirm Password */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                <input
+                  autoComplete="new-password"
                   required
-                  type={showConfirmPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  value={confirmPassword}
-                  onChange={handleOnChange}
-                  placeholder="Confirm your password"
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition duration-200 outline-none bg-gray-50 focus:bg-white"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword((prev) => !prev)}
-                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition"
+
+                {/* Separated Confirm Password Field */}
+                <Password
+                  name="confirmPassword"
+                  label="Confirm Password"
+                  placeholder="Confirm your password"
+                  autoComplete="new-password"
+                  required
+                />
+
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  variant="primary"
+                  fullWidth
+                  loading={isSubmitting}
+                  loadingText="Signing up..."
+                  className="mt-6"
                 >
-                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-            </div>
+                  Sign Up
+                </Button>
 
-            {/* Signup Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-            >
-              {isLoading ? (
-                <>
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
+                {/* Sign in link */}
+                <div className="text-center pt-2">
+                  <span className="text-text-muted text-sm">
+                    Already have an account?{" "}
+                  </span>
+                  <Link
+                    to="/login"
+                    className="text-primary font-semibold hover:underline text-sm"
                   >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Signing up...
-                </>
-              ) : (
-                "Sign Up"
-              )}
-            </button>
-
-            {/* Sign in link */}
-            <div className="text-center mt-4">
-              <span className="text-gray-500 text-sm">Already have an account? </span>
-              <Link to="/login" className="text-emerald-600 font-semibold hover:underline">
-                Log in
-              </Link>
-            </div>
-          </form>
+                    Log in
+                  </Link>
+                </div>
+              </Form>
+            )}
+          </Formik>
         </div>
       </div>
     </div>
