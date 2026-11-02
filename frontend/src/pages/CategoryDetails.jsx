@@ -10,14 +10,14 @@ import { ShoppingCart, ArrowLeft } from "lucide-react";
 // ── Skeleton card ──────────────────────────────────────────────
 function ProductSkeleton() {
   return (
-    <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col justify-between">
       <div className="skeleton h-44 w-full rounded-none" />
-      <div className="p-4 space-y-3">
-        <div className="skeleton h-5 w-3/4 rounded-md" />
-        <div className="skeleton h-3.5 w-full rounded-md" />
-        <div className="skeleton h-3.5 w-5/6 rounded-md" />
-        <div className="skeleton h-5 w-24 rounded-md" />
-        <div className="skeleton h-10 w-full rounded-xl" />
+      <div className="p-3.5 space-y-2.5">
+        <div className="skeleton h-4 w-3/4 rounded" />
+        <div className="skeleton h-3 w-full rounded" />
+        <div className="skeleton h-3 w-4/5 rounded" />
+        <div className="skeleton h-5 w-20 rounded mt-1" />
+        <div className="skeleton h-8 w-full rounded-lg mt-2" />
       </div>
     </div>
   );
@@ -26,9 +26,9 @@ function ProductSkeleton() {
 // ── Header skeleton ─────────────────────────────────────────────
 function HeaderSkeleton() {
   return (
-    <div className="text-center mb-10 space-y-3">
-      <div className="skeleton h-8 w-48 rounded-lg mx-auto" />
-      <div className="skeleton h-4 w-72 rounded-md mx-auto" />
+    <div className="text-center mb-8 space-y-2">
+      <div className="skeleton h-7 w-48 rounded-lg mx-auto" />
+      <div className="skeleton h-3.5 w-72 rounded-md mx-auto" />
     </div>
   );
 }
@@ -41,7 +41,7 @@ function CategoryDetails() {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { token } = useSelector((state) => state.auth);
+  const token = useSelector((state) => state.auth.token);
 
   const fetchCategoryDetails = async () => {
     try {
@@ -88,34 +88,34 @@ function CategoryDetails() {
           <HeaderSkeleton />
         ) : (
           category && (
-            <div className="text-center mb-10">
-              <h1 className="text-3xl font-bold text-gray-800">{category.name}</h1>
-              <p className="text-gray-500 mt-2 text-sm max-w-xl mx-auto">{category.description}</p>
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{category.name}</h1>
+              <p className="text-gray-500 mt-1.5 text-xs sm:text-sm max-w-lg mx-auto">{category.description}</p>
             </div>
           )
         )}
 
         {/* Products grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5">
           {loading ? (
             Array.from({ length: 8 }).map((_, i) => <ProductSkeleton key={i} />)
           ) : category?.products?.length > 0 ? (
             category.products.map((product) => (
               <div
                 key={product._id}
-                className="bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden group border border-gray-100"
+                className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group border border-gray-100 flex flex-col justify-between"
               >
                 {/* Image */}
-                <div className="h-44 w-full bg-gray-100 overflow-hidden">
+                <div className="h-40 sm:h-44 w-full bg-gray-50 overflow-hidden relative">
                   {product.image ? (
                     <img
                       src={product.image}
                       alt={product.name}
-                      className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-green-100 to-emerald-100">
-                      <span className="text-4xl font-bold text-green-500">
+                      <span className="text-3xl font-bold text-green-500">
                         {product.name.charAt(0)}
                       </span>
                     </div>
@@ -123,30 +123,36 @@ function CategoryDetails() {
                 </div>
 
                 {/* Details */}
-                <div className="p-4">
-                  <h3 className="font-bold text-gray-800 mb-1 line-clamp-1 text-base">
+                <div className="p-3 sm:p-3.5 flex flex-col flex-1">
+                  <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1 text-xs sm:text-sm group-hover:text-emerald-600 transition-colors">
                     {product.name}
                   </h3>
-                  <p className="text-gray-500 text-xs mb-3 line-clamp-2 leading-relaxed">
+                  <p className="text-gray-500 text-[11px] sm:text-xs mb-2 line-clamp-2 leading-relaxed font-normal">
                     {product.description}
                   </p>
-                  <p className="text-xl font-bold text-emerald-600 mb-3">
-                    Rs {product.price}
-                  </p>
+                  
+                  {/* Price */}
+                  <div className="mt-auto pt-1 mb-2.5 flex items-baseline gap-1">
+                    <span className="text-xs font-semibold text-emerald-700">Rs</span>
+                    <span className="text-sm sm:text-base font-bold text-emerald-600 tracking-tight">
+                      {product.price}
+                    </span>
+                  </div>
+
                   <button
                     onClick={() => handleAddToCart(product)}
-                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow hover:shadow-lg active:scale-95"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white py-2 px-3 rounded-lg font-medium text-xs sm:text-sm transition-all duration-150 flex items-center justify-center gap-1.5 shadow-sm hover:shadow active:scale-[0.98] cursor-pointer"
                   >
-                    <ShoppingCart className="w-4 h-4" />
+                    <ShoppingCart className="w-3.5 h-3.5" />
                     Add to Cart
                   </button>
                 </div>
               </div>
             ))
           ) : (
-            <div className="col-span-full flex flex-col items-center justify-center py-20 text-gray-400">
-              <ShoppingCart className="w-16 h-16 mb-4 opacity-30" />
-              <p className="text-lg font-medium">No products in this category yet.</p>
+            <div className="col-span-full flex flex-col items-center justify-center py-16 text-gray-400">
+              <ShoppingCart className="w-12 h-12 mb-3 opacity-30" />
+              <p className="text-sm font-medium">No products in this category yet.</p>
             </div>
           )}
         </div>

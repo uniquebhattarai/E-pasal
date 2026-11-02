@@ -22,6 +22,7 @@ const BasePassword = forwardRef(
       error,
       touched = false,
       helperText,
+      reserveErrorSpace = false,
       wrapperClassName = "",
       labelClassName = "",
       inputClassName = "",
@@ -35,12 +36,12 @@ const BasePassword = forwardRef(
     const hasError = Boolean(touched && error);
 
     return (
-      <div className={`w-full flex flex-col space-y-1.5 ${wrapperClassName}`}>
+      <div className={`w-full flex flex-col ${wrapperClassName}`}>
         {/* Label */}
         {label && (
           <label
             htmlFor={inputId}
-            className={`block text-sm font-semibold transition-colors duration-200 ${
+            className={`block text-xs sm:text-sm font-medium mb-1 transition-colors duration-200 ${
               hasError ? "text-danger" : "text-text-main"
             } ${labelClassName}`}
           >
@@ -75,7 +76,7 @@ const BasePassword = forwardRef(
             placeholder={placeholder}
             autoComplete={autoComplete}
             required={required}
-            className={`w-full py-3 text-text-main placeholder:text-text-placeholder text-sm md:text-base border rounded-xl transition duration-200 outline-none
+            className={`w-full py-2.5 text-text-main placeholder:text-text-placeholder text-sm border rounded-xl transition duration-200 outline-none
               ${Icon ? "pl-11" : "pl-4"} pr-11
               ${
                 hasError
@@ -108,10 +109,20 @@ const BasePassword = forwardRef(
         </div>
 
         {/* Error message or helper text */}
-        {hasError ? (
-          <ErrorMessage message={error} />
+        {reserveErrorSpace ? (
+          <div className="min-h-[14px] mt-1 flex items-start">
+            {hasError ? (
+              <ErrorMessage message={error} />
+            ) : helperText ? (
+              <p className="text-[11px] text-text-muted">{helperText}</p>
+            ) : null}
+          </div>
+        ) : hasError ? (
+          <div className="mt-1">
+            <ErrorMessage message={error} />
+          </div>
         ) : helperText ? (
-          <p className="text-xs text-text-muted mt-1">{helperText}</p>
+          <p className="text-[11px] text-text-muted mt-1">{helperText}</p>
         ) : null}
       </div>
     );

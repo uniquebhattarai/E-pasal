@@ -93,17 +93,17 @@ export default function ProfileDropdown() {
         id="profile-dropdown-trigger"
         onClick={() => setOpen((p) => !p)}
         className="flex items-center gap-2 p-1 pr-2.5 rounded-full
-                   bg-white/15 hover:bg-white/25 backdrop-blur-sm
-                   border border-white/20 hover:border-white/40
+                   bg-white hover:bg-primary-light
+                   border border-border-main hover:border-primary-border
                    transition-all duration-200"
       >
         <Avatar src={user?.image} firstName={user?.firstName} lastName={user?.lastName} size="sm" />
-        <span className="hidden sm:block text-sm font-semibold text-white">
+        <span className="hidden sm:block text-sm font-semibold text-text-main">
           {user?.firstName}
         </span>
         <ChevronDown
           size={14}
-          className={`text-white/70 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+          className={`text-text-muted transition-transform duration-300 ${open ? "rotate-180" : ""}`}
         />
       </button>
 

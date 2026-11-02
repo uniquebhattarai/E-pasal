@@ -51,11 +51,11 @@ function UpdatePassword() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-light via-white to-primary-subtle flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-bg-card rounded-2xl shadow-xl border border-border-main p-8">
-        <h1 className="text-3xl font-bold text-primary text-center mb-3">
+      <div className="w-full max-w-md bg-bg-card rounded-2xl shadow-xl border border-border-main p-6 sm:p-8">
+        <h1 className="text-xl sm:text-2xl font-bold text-primary text-center mb-2 tracking-tight">
           Choose New Password
         </h1>
-        <p className="text-text-muted text-center mb-6 text-sm">
+        <p className="text-text-muted text-center mb-5 text-xs sm:text-sm">
           Almost done! Enter your new password below.
         </p>
 

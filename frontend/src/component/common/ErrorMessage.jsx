@@ -1,15 +1,15 @@
 import React from "react";
 import { AlertCircle } from "lucide-react";
 
-const ErrorMessage = ({ message, className = "" }) => {
+const ErrorMessage = ({ message, className = "", showIcon = false }) => {
   if (!message) return null;
 
   return (
     <p
-      className={`text-xs font-medium text-danger mt-1.5 flex items-center gap-1.5 animate-fadeIn ${className}`}
+      className={`text-[11px] font-normal text-danger flex items-center gap-1 animate-fadeIn leading-tight ${className}`}
     >
-      <AlertCircle className="w-3.5 h-3.5 shrink-0 text-danger" />
-      <span>{message}</span>
+      {showIcon && <AlertCircle className="w-3 h-3 shrink-0 text-danger" />}
+      <span className="truncate">{message}</span>
     </p>
   );
 };

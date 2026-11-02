@@ -39,11 +39,11 @@ function ForgotPassword() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-light via-white to-primary-subtle flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-bg-card rounded-2xl shadow-xl border border-border-main p-8">
-          <h1 className="text-3xl font-bold text-primary text-center mb-4">
+        <div className="bg-bg-card rounded-2xl shadow-xl border border-border-main p-6 sm:p-8">
+          <h1 className="text-xl sm:text-2xl font-bold text-primary text-center mb-2 tracking-tight">
             {emailSent ? "Check Your Email" : "Reset Your Password"}
           </h1>
-          <p className="text-text-muted text-center mb-6 text-sm">
+          <p className="text-text-muted text-center mb-5 text-xs sm:text-sm">
             {emailSent
               ? `We have sent a password reset email to ${sentEmailAddress}`
               : "Please enter your registered email address to receive password reset instructions"}

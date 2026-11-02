@@ -95,7 +95,8 @@ const EsewaCheckout = ({ totalAmount }) => {
       loading={loading}
       loadingText="Processing..."
       variant="primary"
-      size="md"
+      size="sm"
+      fullWidth
     >
       Pay with eSewa
     </Button>

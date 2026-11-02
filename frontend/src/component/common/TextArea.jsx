@@ -37,7 +37,7 @@ const BaseTextArea = forwardRef(
         {label && (
           <label
             htmlFor={inputId}
-            className={`block text-sm font-semibold transition-colors duration-200 ${
+            className={`block text-xs sm:text-sm font-medium transition-colors duration-200 ${
               hasError ? "text-danger" : "text-text-main"
             } ${labelClassName}`}
           >
@@ -58,7 +58,7 @@ const BaseTextArea = forwardRef(
           disabled={disabled}
           placeholder={placeholder}
           required={required}
-          className={`w-full p-3.5 text-text-main placeholder:text-text-placeholder text-sm md:text-base border rounded-xl transition duration-200 outline-none resize-y
+          className={`w-full p-3 text-text-main placeholder:text-text-placeholder text-xs sm:text-sm border rounded-xl transition duration-200 outline-none resize-y
             ${
               hasError
                 ? "border-danger bg-danger-light/30 focus:border-danger focus:ring-2 focus:ring-danger-ring"

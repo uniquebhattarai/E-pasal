@@ -1,18 +1,21 @@
 import React, { useState } from "react";
-import Logo from "../../public/logo.png";
+import Logo from "../../public/greenicon.png";
 import { Link, NavLink } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { FaCartShopping } from "react-icons/fa6";
 import {
   Menu,
   X,
 } from "lucide-react";
 import ProfileDropDown from "../component/ProfileDropDown";
+import { openAuthModal } from "../slices/AuthSlice";
+import { Button } from "./common";
 
 function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const dispatch = useDispatch();
 
-  const { token } = useSelector((state) => state.auth);
+  const token = useSelector((state) => state.auth.token);
   const { user } = useSelector((state) => state.profile);
   const { totalItems } = useSelector((state) => state.cart);
 
@@ -24,26 +27,26 @@ function Navbar() {
   ];
 
   return (
-    <nav className="bg-gradient-to-r from-green-700 via-green-600 to-emerald-600 shadow-lg sticky top-0 z-50">
+    <nav className="bg-white border-b border-border-main shadow-sm sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-14">
 
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <img src={Logo} width={150} height={40} alt="Logo" />
+            <img src={Logo} className="h-8 w-auto object-contain" alt="Logo" />
           </Link>
 
           {/* Desktop Menu */}
-          <ul className="hidden md:flex items-center gap-x-6 font-medium text-white">
+          <ul className="hidden md:flex items-center gap-x-1.5 font-medium">
             {navLinks.map((link) => (
               <li key={link.id}>
                 <NavLink
                   to={link.href}
                   className={({ isActive }) =>
-                    `px-4 py-2 rounded-lg transition ${
+                    `px-3.5 py-1.5 rounded-lg text-xs sm:text-sm transition ${
                       isActive
-                        ? "bg-white text-green-700 shadow-md"
-                        : "hover:bg-green-500"
+                        ? "bg-primary-light text-primary font-semibold"
+                        : "text-text-muted hover:bg-primary-light hover:text-primary"
                     }`
                   }
                 >
@@ -54,14 +57,14 @@ function Navbar() {
           </ul>
 
           {/* Right Section */}
-          <div className="hidden md:flex items-center gap-6 text-white">
+          <div className="hidden md:flex items-center gap-4 text-text-main">
 
             {/* Cart */}
             {user && user.accountType !== "Admin" && (
-              <Link to="/cart" className="relative">
-                <FaCartShopping className="text-2xl" />
+              <Link to="/cart" className="relative p-1">
+                <FaCartShopping className="text-xl" />
                 {totalItems > 0 && (
-                  <span className="absolute -top-2 -right-2 flex items-center justify-center w-5 h-5 bg-yellow-400 text-green-900 text-xs font-bold rounded-full shadow-md animate-bounce">
+                  <span className="absolute -top-1.5 -right-2 flex items-center justify-center w-4 h-4 bg-yellow-400 text-green-900 text-[10px] font-bold rounded-full shadow animate-bounce">
                     {totalItems}
                   </span>
                 )}
@@ -72,25 +75,19 @@ function Navbar() {
             {token ? (
               <ProfileDropDown />
             ) : (
-              <>
-                <Link to="/login">
-                  <button className="border border-green-700 bg-white text-green-700 px-4 py-2 rounded-lg font-semibold hover:bg-green-50">
-                    Log in
-                  </button>
-                </Link>
-                <Link to="/signup">
-                  <button className="border border-white bg-green-800 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-900">
-                    Sign up
-                  </button>
-                </Link>
-              </>
+              <Button
+                size="sm"
+                onClick={() => dispatch(openAuthModal("login"))}
+              >
+                Log in
+              </Button>
             )}
           </div>
 
           {/* Mobile Menu Button */}
           <button
             onClick={toggleMobileMenu}
-            className="md:hidden p-2 text-white"
+            className="md:hidden p-2 text-text-main"
           >
             {isMobileMenuOpen ? (
               <X className="w-6 h-6" />
@@ -102,8 +99,8 @@ function Navbar() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-green-700 py-4 rounded-lg mt-2">
-            <ul className="flex flex-col gap-2 text-white text-lg">
+          <div className="md:hidden bg-white border border-border-main py-4 rounded-lg mt-2 mb-3 shadow-sm">
+            <ul className="flex flex-col gap-2 text-text-main text-base">
 
               {navLinks.map((link) => (
                 <li key={link.id} className="px-4">
@@ -112,7 +109,7 @@ function Navbar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={({ isActive }) =>
                       `block w-full px-3 py-2 rounded-md ${
-                        isActive ? "bg-white text-green-700" : "hover:bg-green-500"
+                        isActive ? "bg-primary-light text-primary font-semibold" : "hover:bg-primary-light"
                       }`
                     }
                   >
@@ -140,17 +137,16 @@ function Navbar() {
 
               {/* Auth Buttons */}
               {!token && (
-                <div className="flex flex-col gap-2 mt-3 px-4">
-                  <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                    <button className="w-full bg-white text-green-700 px-4 py-2 rounded-lg font-semibold">
-                      Log in
-                    </button>
-                  </Link>
-                  <Link to="/signup" onClick={() => setIsMobileMenuOpen(false)}>
-                    <button className="w-full bg-green-900 text-white px-4 py-2 rounded-lg font-semibold">
-                      Sign up
-                    </button>
-                  </Link>
+                <div className="mt-3 px-4">
+                  <Button
+                    fullWidth
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      dispatch(openAuthModal("login"));
+                    }}
+                  >
+                    Log in
+                  </Button>
                 </div>
               )}
 

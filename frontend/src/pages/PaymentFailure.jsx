@@ -18,13 +18,13 @@ const PaymentFailure = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold text-red-700 mt-4">Payment Failed</h1>
-        <p className="mt-2 text-gray-600">
+        <h1 className="text-xl sm:text-2xl font-bold text-red-700 mt-4 tracking-tight">Payment Failed</h1>
+        <p className="mt-1.5 text-xs sm:text-sm text-gray-500">
           Oops! Something went wrong with your transaction. Please try again or contact support.
         </p>
         <button
           onClick={() => navigate("/")}
-          className="mt-6 bg-green-600 text-white px-6 py-2 rounded-lg shadow hover:bg-green-700 transition"
+          className="mt-5 bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold shadow hover:bg-emerald-700 transition cursor-pointer"
         >
           Try Again
         </button>

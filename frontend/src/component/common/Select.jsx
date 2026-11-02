@@ -37,7 +37,7 @@ const BaseSelect = forwardRef(
         {label && (
           <label
             htmlFor={selectId}
-            className={`block text-sm font-semibold transition-colors duration-200 ${
+            className={`block text-xs sm:text-sm font-medium transition-colors duration-200 ${
               hasError ? "text-danger" : "text-text-main"
             } ${labelClassName}`}
           >
@@ -56,7 +56,7 @@ const BaseSelect = forwardRef(
           onBlur={onBlur}
           disabled={disabled}
           required={required}
-          className={`w-full py-3 px-4 text-text-main text-sm md:text-base border rounded-xl transition duration-200 outline-none cursor-pointer
+          className={`w-full py-2.5 px-3.5 text-text-main text-xs sm:text-sm border rounded-xl transition duration-200 outline-none cursor-pointer
             ${
               hasError
                 ? "border-danger bg-danger-light/30 focus:border-danger focus:ring-2 focus:ring-danger-ring"

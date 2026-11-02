@@ -3,15 +3,17 @@ import OtpInput from "react-otp-input";
 import { Link, useNavigate } from "react-router-dom";
 import { BiArrowBack } from "react-icons/bi";
 import { RxCountdownTimer } from "react-icons/rx";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { sendOtp, signUp } from "../services/Api";
 import { ApiConnector } from "../services/ApiConnector";
 import toast from "react-hot-toast";
 import { Button } from "../component/common";
+import { openAuthModal } from "../slices/AuthSlice";
 
 function VerifyEmail() {
   const [otp, setOtp] = useState("");
   const { signupData, loading } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,8 +40,9 @@ function VerifyEmail() {
       });
 
       if (response.data.success) {
-        toast.success(" Account created successfully!");
-        navigate("/login"); 
+        toast.success("Account created successfully!");
+        dispatch(openAuthModal("login"));
+        navigate("/"); 
       } else {
         toast.error(response.data.message || " Verification failed");
       }
@@ -72,12 +75,12 @@ function VerifyEmail() {
       {loading ? (
         <div className="spinner"></div>
       ) : (
-        <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-8 border border-gray-200">
+        <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
           {/* Title */}
-          <h1 className="text-2xl lg:text-3xl font-bold text-center text-gray-900">
+          <h1 className="text-xl sm:text-2xl font-bold text-center text-gray-900 tracking-tight">
             Verify Your Email
           </h1>
-          <p className="text-gray-600 text-center mt-2">
+          <p className="text-gray-500 text-center mt-1.5 text-xs sm:text-sm">
             We've sent a 6-digit verification code to your email. Enter it below
             to activate your account.
           </p>
@@ -110,11 +113,16 @@ function VerifyEmail() {
 
           {/* Footer actions */}
           <div className="mt-6 flex items-center justify-between text-sm">
-            <Link to="/signup">
-              <p className="text-text-muted flex items-center gap-x-2 hover:text-primary transition">
-                <BiArrowBack /> Back To Signup
-              </p>
-            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                dispatch(openAuthModal("signup"));
+                navigate("/");
+              }}
+              className="text-text-muted flex items-center gap-x-2 hover:text-primary transition cursor-pointer"
+            >
+              <BiArrowBack /> Back To Signup
+            </button>
             <button
               type="button"
               className="flex items-center text-primary font-medium gap-x-2 hover:underline"

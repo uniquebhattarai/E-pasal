@@ -9,7 +9,7 @@ function IconBtn({ text, onClick, children }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 hover:scale-95 transition-all shadow-md"
+      className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 active:scale-95 transition shadow-sm cursor-pointer"
     >
       {children}
       {text}
@@ -58,21 +58,21 @@ export default function MyProfile() {
 
   return (
     <>
-      <h1 className="mb-10 text-3xl font-bold text-green-700">My Profile</h1>
+      <h1 className="mb-6 text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">My Profile</h1>
 
       {/* Profile Header */}
-      <div className="flex items-center justify-between rounded-2xl border border-green-300 bg-white/80 backdrop-blur-sm p-8 px-12 shadow-md transition hover:shadow-lg">
-        <div className="flex items-center gap-x-4">
+      <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-white p-5 sm:p-6 shadow-sm transition hover:shadow-md">
+        <div className="flex items-center gap-x-3.5">
           <img
             src={user?.image}
             alt={`profile-${user?.firstName}`}
-            className="aspect-square w-[78px] rounded-full object-cover ring-2 ring-green-500"
+            className="aspect-square w-14 h-14 rounded-full object-cover ring-2 ring-emerald-500"
           />
           <div>
-            <p className="text-lg font-semibold text-green-900">
+            <p className="text-sm sm:text-base font-semibold text-gray-900">
               {user?.firstName + " " + user?.lastName}
             </p>
-            <p className="text-sm text-gray-600">{user?.email}</p>
+            <p className="text-xs text-gray-500">{user?.email}</p>
           </div>
         </div>
         <IconBtn text="Edit" onClick={() => navigate("/dashboard/settings")}>
@@ -81,9 +81,9 @@ export default function MyProfile() {
       </div>
 
       {/* About Section */}
-      <div className="my-10 flex flex-col gap-y-6 rounded-2xl border border-green-300 bg-white/80 backdrop-blur-sm p-8 px-12 shadow-md hover:shadow-lg transition">
+      <div className="my-6 flex flex-col gap-y-4 rounded-xl border border-gray-100 bg-white p-5 sm:p-6 shadow-sm hover:shadow-md transition">
         <div className="flex w-full items-center justify-between">
-          <p className="text-lg font-semibold text-green-900">About</p>
+          <p className="text-sm sm:text-base font-semibold text-gray-900">About</p>
           <IconBtn text="Edit" onClick={() => navigate("/dashboard/settings")}>
             <RiEditBoxLine />
           </IconBtn>
@@ -91,60 +91,52 @@ export default function MyProfile() {
         <p
           className={`${
             user?.additionalDetails?.about
-              ? "text-gray-800"
+              ? "text-gray-700"
               : "text-gray-400 italic"
-          } text-sm font-medium`}
+          } text-xs sm:text-sm font-normal`}
         >
           {user?.additionalDetails?.about ?? "Write something about yourself..."}
         </p>
       </div>
 
       {/* Personal Details */}
-      <div className="my-10 flex flex-col gap-y-10 rounded-2xl border border-green-300 bg-white/80 backdrop-blur-sm p-8 px-12 shadow-md hover:shadow-lg transition">
+      <div className="my-6 flex flex-col gap-y-6 rounded-xl border border-gray-100 bg-white p-5 sm:p-6 shadow-sm hover:shadow-md transition">
         <div className="flex w-full items-center justify-between">
-          <p className="text-lg font-semibold text-green-900">Personal Details</p>
+          <p className="text-sm sm:text-base font-semibold text-gray-900">Personal Details</p>
           <IconBtn text="Edit" onClick={() => navigate("/dashboard/settings")}>
             <RiEditBoxLine />
           </IconBtn>
         </div>
-        <div className="flex max-w-[500px] justify-between">
-          {/* Left Column */}
-          <div className="flex flex-col gap-y-5">
-            <div>
-              <p className="mb-1 text-sm text-gray-500">First Name</p>
-              <p className="text-sm font-medium text-green-900">{user?.firstName}</p>
-            </div>
-            <div>
-              <p className="mb-1 text-sm text-gray-500">Email</p>
-              <p className="text-sm font-medium text-green-900">{user?.email}</p>
-            </div>
-            <div>
-              <p className="mb-1 text-sm text-gray-500">Gender</p>
-              <p className="text-sm font-medium text-green-900">
-                {user?.additionalDetails?.gender ?? "Add Gender"}
-              </p>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 max-w-lg">
+          <div>
+            <p className="mb-0.5 text-xs text-gray-400 font-medium">First Name</p>
+            <p className="text-xs sm:text-sm font-semibold text-gray-800">{user?.firstName}</p>
           </div>
-
-          {/* Right Column */}
-          <div className="flex flex-col gap-y-5">
-            <div>
-              <p className="mb-1 text-sm text-gray-500">Last Name</p>
-              <p className="text-sm font-medium text-green-900">{user?.lastName}</p>
-            </div>
-            <div>
-              <p className="mb-1 text-sm text-gray-500">Phone Number</p>
-              <p className="text-sm font-medium text-green-900">
-                {user?.additionalDetails?.contactNumber ?? "Add Contact Number"}
-              </p>
-            </div>
-            <div>
-              <p className="mb-1 text-sm text-gray-500">Date Of Birth</p>
-              <p className="text-sm font-medium text-green-900">
-                {formattedDate(user?.additionalDetails?.dateOfBirth) ??
-                  "Add Date Of Birth"}
-              </p>
-            </div>
+          <div>
+            <p className="mb-0.5 text-xs text-gray-400 font-medium">Last Name</p>
+            <p className="text-xs sm:text-sm font-semibold text-gray-800">{user?.lastName}</p>
+          </div>
+          <div>
+            <p className="mb-0.5 text-xs text-gray-400 font-medium">Email</p>
+            <p className="text-xs sm:text-sm font-semibold text-gray-800">{user?.email}</p>
+          </div>
+          <div>
+            <p className="mb-0.5 text-xs text-gray-400 font-medium">Phone Number</p>
+            <p className="text-xs sm:text-sm font-semibold text-gray-800">
+              {user?.additionalDetails?.contactNumber ?? "Not specified"}
+            </p>
+          </div>
+          <div>
+            <p className="mb-0.5 text-xs text-gray-400 font-medium">Gender</p>
+            <p className="text-xs sm:text-sm font-semibold text-gray-800">
+              {user?.additionalDetails?.gender ?? "Not specified"}
+            </p>
+          </div>
+          <div>
+            <p className="mb-0.5 text-xs text-gray-400 font-medium">Date Of Birth</p>
+            <p className="text-xs sm:text-sm font-semibold text-gray-800">
+              {formattedDate(user?.additionalDetails?.dateOfBirth) ?? "Not specified"}
+            </p>
           </div>
         </div>
       </div>

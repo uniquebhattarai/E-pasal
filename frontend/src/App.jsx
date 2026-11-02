@@ -4,6 +4,7 @@ import { setToken } from "./slices/AuthSlice";
 import { setUser } from "./slices/ProfileSlice";
 
 import Navbar from './component/Navbar';
+import AuthModal from './component/AuthModal';
 import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Cart from './pages/Cart';
@@ -42,9 +43,8 @@ function App() {
 
   return (
     <>
-      <div className='bg-green-600 border-b-[1px] border-b-green-700'>
-        <Navbar />
-      </div>
+      <AuthModal />
+      <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/cart" element={<Cart />} />

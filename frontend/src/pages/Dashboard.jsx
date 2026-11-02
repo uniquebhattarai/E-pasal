@@ -4,7 +4,7 @@ import Sidebar from "../component/Sidebar";
 
 function Dashboard() {
   const { loading: profileLoading } = useSelector((state) => state.profile);
-  const { loading: authLoading } = useSelector((state) => state.auth);
+  const authLoading = useSelector((state) => state.auth.loading);
 
   if (profileLoading || authLoading) {
     return (

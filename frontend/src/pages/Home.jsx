@@ -10,24 +10,24 @@ import { ShoppingCart, Heart, Star } from "lucide-react";
 // ── Skeleton card ──────────────────────────────────────────────
 function ProductSkeleton() {
   return (
-    <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col justify-between">
       {/* image placeholder */}
-      <div className="skeleton h-48 w-full rounded-none" />
-      <div className="p-4 space-y-3">
+      <div className="skeleton h-44 w-full rounded-none" />
+      <div className="p-3.5 space-y-2.5">
         {/* title */}
-        <div className="skeleton h-5 w-3/4 rounded-md" />
+        <div className="skeleton h-4 w-3/4 rounded" />
         {/* description lines */}
-        <div className="skeleton h-3.5 w-full rounded-md" />
-        <div className="skeleton h-3.5 w-5/6 rounded-md" />
+        <div className="skeleton h-3 w-full rounded" />
+        <div className="skeleton h-3 w-4/5 rounded" />
         {/* rating row */}
-        <div className="flex items-center gap-2">
-          <div className="skeleton h-4 w-4 rounded-full" />
-          <div className="skeleton h-3.5 w-16 rounded-md" />
+        <div className="flex items-center gap-1.5 pt-0.5">
+          <div className="skeleton h-3 w-3 rounded-full" />
+          <div className="skeleton h-3 w-12 rounded" />
         </div>
         {/* price */}
-        <div className="skeleton h-6 w-24 rounded-md" />
+        <div className="skeleton h-5 w-20 rounded mt-1" />
         {/* button */}
-        <div className="skeleton h-11 w-full rounded-xl mt-2" />
+        <div className="skeleton h-8 w-full rounded-lg mt-2" />
       </div>
     </div>
   );
@@ -40,7 +40,7 @@ function Home() {
   const [wishlist, setWishlist] = useState(new Set());
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { token } = useSelector((state) => state.auth);
+  const token = useSelector((state) => state.auth.token);
 
   const fetchProduct = async () => {
     try {
@@ -77,10 +77,10 @@ function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 px-4 py-10">
+    <div className="min-h-screen bg-white px-4 py-8">
       <div className="max-w-7xl mx-auto">
         {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5">
 
           {loading ? (
             // Show 8 skeleton cards while loading
@@ -91,19 +91,19 @@ function Home() {
             list.map((item) => (
               <div
                 key={item._id}
-                className="bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden group border border-gray-100"
+                className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group border border-gray-100 flex flex-col justify-between"
               >
                 {/* Image */}
-                <div className="relative h-48 w-full bg-gray-100 overflow-hidden">
+                <div className="relative h-40 sm:h-44 w-full bg-gray-50 overflow-hidden">
                   {item.image ? (
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-green-100 to-emerald-100">
-                      <span className="text-5xl font-bold text-green-600">
+                      <span className="text-3xl font-bold text-green-600">
                         {item.name.charAt(0)}
                       </span>
                     </div>
@@ -112,10 +112,10 @@ function Home() {
                   {/* Wishlist */}
                   <button
                     onClick={() => toggleWishlist(item._id)}
-                    className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md hover:scale-110 transition-transform"
+                    className="absolute top-2.5 right-2.5 p-1.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 transition-transform cursor-pointer"
                   >
                     <Heart
-                      className={`w-4 h-4 transition-colors ${
+                      className={`w-3.5 h-3.5 transition-colors ${
                         wishlist.has(item._id)
                           ? "fill-red-500 text-red-500"
                           : "text-gray-400"
@@ -125,43 +125,46 @@ function Home() {
                 </div>
 
                 {/* Details */}
-                <div className="p-4">
-                  <h3 className="font-bold text-gray-800 mb-1 line-clamp-1 text-base">
+                <div className="p-3 sm:p-3.5 flex flex-col flex-1">
+                  <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1 text-xs sm:text-sm group-hover:text-emerald-600 transition-colors">
                     {item.name}
                   </h3>
-                  <p className="text-gray-500 text-xs mb-3 line-clamp-2 leading-relaxed">
+                  <p className="text-gray-500 text-[11px] sm:text-xs mb-2 line-clamp-2 leading-relaxed font-normal">
                     {item.description}
                   </p>
 
                   {/* Rating */}
-                  <div className="flex items-center gap-1 mb-3">
-                    <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                    <span className="text-xs font-semibold text-gray-700">
+                  <div className="flex items-center gap-1 mb-2 text-xs">
+                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                    <span className="text-[11px] sm:text-xs font-semibold text-gray-700">
                       {item.rating || "4.5"}
                     </span>
-                    <span className="text-xs text-gray-400">(120)</span>
+                    <span className="text-gray-400 text-[10px] sm:text-[11px]">(120)</span>
                   </div>
 
                   {/* Price */}
-                  <p className="text-xl font-bold text-emerald-600 mb-3">
-                    Rs {item.price}
-                  </p>
+                  <div className="mt-auto pt-1 mb-2.5 flex items-baseline gap-1">
+                    <span className="text-xs font-semibold text-emerald-700">Rs</span>
+                    <span className="text-sm sm:text-base font-bold text-emerald-600 tracking-tight">
+                      {item.price}
+                    </span>
+                  </div>
 
                   {/* Add to Cart */}
                   <button
                     onClick={() => handleAddToCart(item)}
-                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow hover:shadow-lg active:scale-95"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white py-2 px-3 rounded-lg font-medium text-xs sm:text-sm transition-all duration-150 flex items-center justify-center gap-1.5 shadow-sm hover:shadow active:scale-[0.98] cursor-pointer"
                   >
-                    <ShoppingCart className="w-4 h-4" />
+                    <ShoppingCart className="w-3.5 h-3.5" />
                     Add to Cart
                   </button>
                 </div>
               </div>
             ))
           ) : (
-            <div className="col-span-full flex flex-col items-center justify-center py-20 text-gray-400">
-              <ShoppingCart className="w-16 h-16 mb-4 opacity-30" />
-              <p className="text-lg font-medium">No products found.</p>
+            <div className="col-span-full flex flex-col items-center justify-center py-16 text-gray-400">
+              <ShoppingCart className="w-12 h-12 mb-3 opacity-30" />
+              <p className="text-sm font-medium">No products found.</p>
             </div>
           )}
         </div>

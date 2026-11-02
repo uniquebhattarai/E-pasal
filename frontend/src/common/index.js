@@ -9,3 +9,5 @@ export { default as Dropdown } from "../component/common/Select.jsx";
 export { default as Checkbox } from "../component/common/Checkbox.jsx";
 export { default as Button } from "../component/common/Button.jsx";
 export { default as ErrorMessage } from "../component/common/ErrorMessage.jsx";
+export { default as Modal } from "../component/common/Modal.jsx";
+export { default as BrandIcon } from "../component/common/BrandIcon.jsx";

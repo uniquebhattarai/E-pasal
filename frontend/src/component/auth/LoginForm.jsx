@@ -1,0 +1,126 @@
+import React from "react";
+import { useDispatch } from "react-redux";
+import { Link } from "react-router-dom";
+import { Formik, Form } from "formik";
+import { Mail } from "lucide-react";
+import toast from "react-hot-toast";
+
+import { ApiConnector } from "../../services/ApiConnector";
+import { login } from "../../services/Api";
+import { setToken } from "../../slices/AuthSlice";
+import { setUser } from "../../slices/ProfileSlice";
+import {
+  loginSchema,
+  loginInitialValues,
+} from "../../validations/authValidation";
+import { Input, Password, Checkbox, Button } from "../common";
+
+export default function LoginForm({ onSuccess, onSwitch, onError, onClose }) {
+  const dispatch = useDispatch();
+
+  const handleSubmit = async (values, { setSubmitting }) => {
+    onError("");
+    try {
+      const response = await ApiConnector("POST", login.LOGIN_API, {
+        email: values.email,
+        password: values.password,
+      });
+
+      dispatch(setToken("cookie"));
+      dispatch(setUser(response.data.user));
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+
+      toast.success("Logged in successfully!");
+      onSuccess();
+    } catch (error) {
+      console.error("Login error:", error);
+      onError(error.response?.data?.message || "Invalid email or password.");
+      toast.error("Login failed. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Formik
+      initialValues={loginInitialValues}
+      validationSchema={loginSchema}
+      onSubmit={handleSubmit}
+    >
+      {({ isSubmitting }) => (
+        <Form className="flex-1 flex flex-col gap-1">
+          <Input
+            id="login-email"
+            name="email"
+            type="email"
+            label="Email Address"
+            placeholder="Enter your email"
+            icon={Mail}
+            autoComplete="email"
+            required
+            reserveErrorSpace
+          />
+
+          <Password
+            id="login-password"
+            name="password"
+            label="Password"
+            placeholder="Enter your password"
+            autoComplete="current-password"
+            required
+            reserveErrorSpace
+          />
+
+          <div className="flex items-center justify-between text-xs pt-0.5">
+            <Checkbox id="login-rememberMe" name="rememberMe" label="Remember Me" />
+            <Link
+              to="/forgot-password"
+              onClick={onClose}
+              className="text-primary hover:text-primary-hover font-semibold transition"
+            >
+              Forgot Password?
+            </Link>
+          </div>
+
+          <div className="mt-auto">
+            <Button
+              type="submit"
+              variant="primary"
+              fullWidth
+              loading={isSubmitting}
+              loadingText="Signing in..."
+            >
+              Login
+            </Button>
+
+            <Divider />
+
+            <div className="text-center pt-1 text-sm text-text-muted">
+              Don't have an account?{" "}
+              <button
+                type="button"
+                onClick={() => onSwitch("signup")}
+                className="text-primary font-bold hover:underline cursor-pointer transition"
+              >
+                Sign up
+              </button>
+            </div>
+          </div>
+        </Form>
+      )}
+    </Formik>
+  );
+}
+
+function Divider() {
+  return (
+    <div className="relative my-4">
+      <div className="absolute inset-0 flex items-center">
+        <span className="w-full border-t border-border-main"></span>
+      </div>
+      <div className="relative flex justify-center text-xs">
+        <span className="px-3 bg-bg-card text-text-muted font-medium">Or</span>
+      </div>
+    </div>
+  );
+}

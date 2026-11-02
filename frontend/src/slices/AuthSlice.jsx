@@ -6,7 +6,11 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   signupData: null,
   loading: false,
-  token: null,  // no longer read from localStorage
+  token: null, // no longer read from localStorage
+  authModal: {
+    isOpen: false,
+    mode: "login", // "login" | "signup"
+  },
 };
 
 const AuthSlice = createSlice({
@@ -22,8 +26,27 @@ const AuthSlice = createSlice({
     setLoading(state, value) {
       state.loading = value.payload;
     },
+    openAuthModal(state, action) {
+      state.authModal = {
+        isOpen: true,
+        mode: action.payload || "login",
+      };
+    },
+    closeAuthModal(state) {
+      state.authModal.isOpen = false;
+    },
+    setAuthModalMode(state, action) {
+      state.authModal.mode = action.payload;
+    },
   },
 });
 
-export const { setToken, setSignupData, setLoading } = AuthSlice.actions;
+export const {
+  setToken,
+  setSignupData,
+  setLoading,
+  openAuthModal,
+  closeAuthModal,
+  setAuthModalMode,
+} = AuthSlice.actions;
 export default AuthSlice.reducer;

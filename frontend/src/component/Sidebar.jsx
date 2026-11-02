@@ -22,7 +22,7 @@ import { toast } from "react-hot-toast";
 
 
 // Account types
-export const ACCOUNT_TYPE = {
+const ACCOUNT_TYPE = {
   ADMIN: "Admin",
   CUSTOMER: "Customer",
 };
@@ -105,7 +105,7 @@ export default function Sidebar() {
 
   return (
     <>
-      <div className="flex h-[calc(100vh-4rem)] min-w-[280px] flex-col bg-gradient-to-br from-green-600 via-green-700 to-emerald-700 shadow-2xl">
+      <div className="flex h-[calc(100vh-3.5rem)] min-w-[260px] flex-col bg-gradient-to-br from-green-600 via-green-700 to-emerald-700 shadow-xl">
         
         {/* Header */}
         <div className="px-6 py-6 border-b border-green-500/30">

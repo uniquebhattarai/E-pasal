@@ -182,19 +182,19 @@ export default function Settings() {
   }
 
   return (
-    <div className="space-y-10">
-      <h1 className="text-3xl font-bold text-primary">Settings</h1>
+    <div className="space-y-6">
+      <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">Settings</h1>
 
       {/* Profile Picture */}
-      <div className="flex items-center gap-x-6 rounded-2xl border border-primary-border bg-white/80 backdrop-blur-sm p-8 shadow-md hover:shadow-lg transition">
+      <div className="flex items-center gap-x-5 rounded-xl border border-gray-100 bg-white p-5 sm:p-6 shadow-sm hover:shadow-md transition">
         <img
           src={previewSource || user?.image}
           alt={`profile-${user?.firstName}`}
-          className="aspect-square w-20 rounded-full object-cover ring-2 ring-primary"
+          className="aspect-square w-14 h-14 rounded-full object-cover ring-2 ring-emerald-500"
         />
-        <div className="space-y-3">
-          <p className="font-semibold text-text-main">Change Profile Picture</p>
-          <div className="flex gap-3">
+        <div className="space-y-2">
+          <p className="text-xs sm:text-sm font-semibold text-gray-900">Change Profile Picture</p>
+          <div className="flex gap-2.5">
             <input
               type="file"
               ref={fileInputRef}
@@ -207,6 +207,7 @@ export default function Settings() {
               onClick={handleClick}
               disabled={loading}
               size="sm"
+              variant="outline"
             >
               Select
             </Button>
@@ -227,50 +228,53 @@ export default function Settings() {
       {/* Edit Profile Form */}
       <form
         onSubmit={handleSubmit(submitProfileForm)}
-        className="space-y-4 rounded-2xl border border-border-main bg-bg-card p-6 shadow-md hover:shadow-lg transition"
+        className="space-y-3.5 rounded-xl border border-gray-100 bg-white p-5 sm:p-6 shadow-sm hover:shadow-md transition"
       >
-        <h2 className="text-lg font-semibold text-text-main">Edit Profile</h2>
-        <div className="flex gap-4">
+        <h2 className="text-sm sm:text-base font-semibold text-gray-900">Edit Profile</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input
             type="text"
             placeholder="First Name"
             {...register("firstName")}
-            className="w-1/2 rounded-md border border-gray-300 bg-white/70 p-2 text-green-900 focus:border-green-500 focus:ring-1 focus:ring-green-500"
+            className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs sm:text-sm text-gray-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
           />
           <input
             type="text"
             placeholder="Last Name"
             {...register("lastName")}
-            className="w-1/2 rounded-md border border-gray-300 bg-white/70 p-2 text-green-900 focus:border-green-500 focus:ring-1 focus:ring-green-500"
+            className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs sm:text-sm text-gray-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
           />
         </div>
-        <input
-          type="date"
-          {...register("dateOfBirth")}
-          className="w-full rounded-md border border-gray-300 bg-white/70 p-2 text-green-900 focus:border-green-500 focus:ring-1 focus:ring-green-500"
-        />
-        <select
-          {...register("gender")}
-          className="w-full rounded-md border border-gray-300 bg-white/70 p-2 text-green-900 focus:border-green-500 focus:ring-1 focus:ring-green-500"
-        >
-          {genders.map((g) => (
-            <option key={g} value={g}>
-              {g}
-            </option>
-          ))}
-        </select>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <input
+            type="date"
+            {...register("dateOfBirth")}
+            className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs sm:text-sm text-gray-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
+          />
+          <select
+            {...register("gender")}
+            className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs sm:text-sm text-gray-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
+          >
+            {genders.map((g) => (
+              <option key={g} value={g}>
+                {g}
+              </option>
+            ))}
+          </select>
+        </div>
         <input
           type="text"
           placeholder="Contact Number"
           {...register("contactNumber")}
-          className="w-full rounded-md border border-gray-300 bg-white/70 p-2 text-green-900 focus:border-green-500 focus:ring-1 focus:ring-green-500"
+          className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs sm:text-sm text-gray-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
         />
         <textarea
+          rows={3}
           placeholder="About"
           {...register("about")}
-          className="w-full rounded-md border border-gray-300 bg-white/70 p-2 text-green-900 focus:border-green-500 focus:ring-1 focus:ring-green-500"
+          className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs sm:text-sm text-gray-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
         />
-        <Button type="submit" variant="primary" size="md">
+        <Button type="submit" variant="primary" size="sm">
           Update Profile
         </Button>
       </form>
@@ -278,21 +282,21 @@ export default function Settings() {
       {/* Update Password Form */}
       <form
         onSubmit={handleSubmitPwd(submitPasswordForm)}
-        className="space-y-4 rounded-2xl border border-border-main bg-bg-card p-6 shadow-md hover:shadow-lg transition"
+        className="space-y-3.5 rounded-xl border border-gray-100 bg-white p-5 sm:p-6 shadow-sm hover:shadow-md transition"
       >
-        <h2 className="text-lg font-semibold text-text-main">Change Password</h2>
+        <h2 className="text-sm sm:text-base font-semibold text-gray-900">Change Password</h2>
         <div className="relative">
           <input
             type={showOldPassword ? "text" : "password"}
             placeholder="Old Password"
             {...registerPwd("oldPassword")}
-            className="w-full rounded-md border border-gray-300 bg-white/70 p-2 text-green-900 focus:border-green-500 focus:ring-1 focus:ring-green-500"
+            className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 pr-9 text-xs sm:text-sm text-gray-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
           />
           <span
-            className="absolute right-3 top-2.5 cursor-pointer text-gray-500"
+            className="absolute right-3 top-2.5 cursor-pointer text-gray-400 hover:text-gray-600"
             onClick={() => setShowOldPassword(!showOldPassword)}
           >
-            {showOldPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+            {showOldPassword ? <AiOutlineEyeInvisible size={18} /> : <AiOutlineEye size={18} />}
           </span>
         </div>
         <div className="relative">
@@ -300,34 +304,34 @@ export default function Settings() {
             type={showNewPassword ? "text" : "password"}
             placeholder="New Password"
             {...registerPwd("newPassword")}
-            className="w-full rounded-md border border-gray-300 bg-white/70 p-2 text-green-900 focus:border-green-500 focus:ring-1 focus:ring-green-500"
+            className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 pr-9 text-xs sm:text-sm text-gray-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none"
           />
           <span
-            className="absolute right-3 top-2.5 cursor-pointer text-gray-500"
+            className="absolute right-3 top-2.5 cursor-pointer text-gray-400 hover:text-gray-600"
             onClick={() => setShowNewPassword(!showNewPassword)}
           >
-            {showNewPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+            {showNewPassword ? <AiOutlineEyeInvisible size={18} /> : <AiOutlineEye size={18} />}
           </span>
         </div>
-        <Button type="submit" variant="primary" size="md">
+        <Button type="submit" variant="primary" size="sm">
           Change Password
         </Button>
       </form>
 
       {/* Delete Account */}
-      <div className="flex gap-x-5 rounded-2xl border border-danger-border bg-danger-light/90 backdrop-blur-sm p-8 shadow-md hover:shadow-lg transition">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-danger-light">
-          <FiTrash2 className="text-2xl text-danger" />
+      <div className="flex gap-x-4 rounded-xl border border-red-200 bg-red-50/70 p-5 sm:p-6 shadow-sm hover:shadow-md transition">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100">
+          <FiTrash2 className="text-lg text-red-600" />
         </div>
-        <div className="flex flex-col space-y-2">
-          <h2 className="text-lg font-semibold text-danger">Delete Account</h2>
-          <p className="text-sm text-danger/80">
+        <div className="flex flex-col space-y-1.5">
+          <h2 className="text-xs sm:text-sm font-semibold text-red-700">Delete Account</h2>
+          <p className="text-xs text-red-600/80">
             This action is permanent and will remove all your data. Please
             proceed carefully.
           </p>
           <button
             type="button"
-            className="w-fit cursor-pointer font-medium text-danger hover:underline"
+            className="w-fit cursor-pointer text-xs font-semibold text-red-600 hover:underline pt-1"
             onClick={handleDeleteAccount}
           >
             I want to delete my account
