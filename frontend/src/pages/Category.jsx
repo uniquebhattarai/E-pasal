@@ -40,7 +40,7 @@ function Category() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 px-4 pt-6 pb-24 md:py-8">
+    <div className="min-h-screen bg-white px-4 pt-6 pb-24 md:py-8">
       <div className="max-w-7xl mx-auto">
         {/* Grid: 1 in a row on mobile, 2 in a row on tab view, 4 on desktop */}
         <div className="grid grid-cols-1 min-[500px]:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
@@ -54,12 +54,12 @@ function Category() {
                 className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group border border-gray-100 cursor-pointer"
               >
                 {/* Image */}
-                <div className="h-32 sm:h-36 w-full bg-gray-50 overflow-hidden relative">
+                <div className="h-32 sm:h-36 w-full bg-gray-50 overflow-hidden relative flex items-center justify-center">
                   {item.image ? (
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="h-full w-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-green-100 to-emerald-100">

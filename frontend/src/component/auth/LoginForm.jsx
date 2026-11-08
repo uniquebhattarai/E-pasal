@@ -26,16 +26,26 @@ export default function LoginForm({ onSuccess, onSwitch, onError, onClose }) {
         password: values.password,
       });
 
-      dispatch(setToken("cookie"));
-      dispatch(setUser(response.data.user));
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      if (response?.data?.success) {
+        const userData = response.data.user;
+        dispatch(setToken("cookie"));
+        dispatch(setUser(userData));
+        localStorage.setItem("user", JSON.stringify(userData));
 
-      toast.success("Logged in successfully!");
-      onSuccess();
+        toast.success("Logged in successfully!");
+        onSuccess();
+      } else {
+        const errorMsg =
+          response?.data?.message || "Invalid email or password.";
+        onError(errorMsg);
+        toast.error(errorMsg);
+      }
     } catch (error) {
       console.error("Login error:", error);
-      onError(error.response?.data?.message || "Invalid email or password.");
-      toast.error("Login failed. Please try again.");
+      const errorMsg =
+        error.response?.data?.message || "Invalid email or password.";
+      onError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setSubmitting(false);
     }

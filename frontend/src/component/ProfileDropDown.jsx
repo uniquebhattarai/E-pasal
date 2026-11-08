@@ -68,8 +68,6 @@ export default function ProfileDropdown() {
     return () => document.removeEventListener("mousedown", handler)
   }, [])
 
-  if (!user) return null
-
   const close = () => setOpen(false)
 
   const handleLogout = () => {
@@ -95,11 +93,11 @@ export default function ProfileDropdown() {
         className="flex items-center gap-2 p-1 pr-2.5 rounded-full
                    bg-white hover:bg-primary-light
                    border border-border-main hover:border-primary-border
-                   transition-all duration-200"
+                   transition-all duration-200 cursor-pointer"
       >
-        <Avatar src={user?.image} firstName={user?.firstName} lastName={user?.lastName} size="sm" />
+        <Avatar src={user?.image} firstName={user?.firstName || "U"} lastName={user?.lastName || ""} size="sm" />
         <span className="hidden sm:block text-sm font-semibold text-text-main">
-          {user?.firstName}
+          {user?.firstName || "Account"}
         </span>
         <ChevronDown
           size={14}
@@ -127,8 +125,8 @@ export default function ProfileDropdown() {
                 <div className="relative">
                   <Avatar
                     src={user?.image}
-                    firstName={user?.firstName}
-                    lastName={user?.lastName}
+                    firstName={user?.firstName || "U"}
+                    lastName={user?.lastName || ""}
                     size="lg"
                   />
                   {/* online dot */}
@@ -137,9 +135,11 @@ export default function ProfileDropdown() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-bold text-black truncate leading-tight">
-                    {user?.firstName} {user?.lastName}
+                    {user?.firstName ? `${user.firstName} ${user.lastName || ""}` : "My Account"}
                   </p>
-                  <p className="text-[11px] text-gray-400 truncate mt-0.5">{user?.email}</p>
+                  <p className="text-[11px] text-gray-400 truncate mt-0.5">
+                    {user?.email || "Signed in"}
+                  </p>
                   {isAdmin && (
                     <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-semibold
                                      bg-violet-500/20 text-violet-300 px-2 py-0.5 rounded-full">

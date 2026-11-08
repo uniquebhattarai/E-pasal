@@ -71,7 +71,7 @@ function Navbar() {
             {/* Desktop Right Section */}
             <div className="hidden md:flex items-center gap-4 text-text-main">
               {/* Cart */}
-              {user && user.accountType !== "Admin" && (
+              {(!user || user.accountType !== "Admin") && (
                 <Link to="/cart" className="relative p-1">
                   <FaCartShopping className="text-xl" />
                   {totalItems > 0 && (
@@ -98,7 +98,7 @@ function Navbar() {
             {/* Mobile Top Right Section (replaces hamburger button) */}
             <div className="flex md:hidden items-center gap-3">
               {/* Cart in mobile header */}
-              {user && user.accountType !== "Admin" && (
+              {(!user || user.accountType !== "Admin") && (
                 <Link to="/cart" className="relative p-1 text-text-main" aria-label="Cart">
                   <FaCartShopping className="text-xl text-primary" />
                   {totalItems > 0 && (

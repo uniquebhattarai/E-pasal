@@ -13,7 +13,7 @@ function CartItem({ item }) {
           <img
             src={item.image}
             alt={item.name}
-            className="h-12 w-12 sm:h-14 sm:w-14 object-cover rounded-lg bg-gray-50 border border-gray-100"
+            className="h-12 w-12 sm:h-14 sm:w-14 object-contain p-1 rounded-lg bg-gray-50 border border-gray-100"
           />
         ) : (
           <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-base">

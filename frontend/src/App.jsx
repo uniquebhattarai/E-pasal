@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { setToken } from "./slices/AuthSlice";
 import { setUser } from "./slices/ProfileSlice";
+import { ApiConnector } from "./services/ApiConnector";
+import { userdetails } from "./services/Api";
 
 import Navbar from './component/Navbar';
 import AuthModal from './component/AuthModal';
@@ -27,18 +29,50 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // Token now lives in httpOnly cookie — JS cannot access it.
-    // We restore only the non-sensitive user profile from localStorage.
-    const user = localStorage.getItem("user");
+    // 1. Restore local cache if valid
+    const userStr = localStorage.getItem("user");
+    let hasLocalUser = false;
 
-    if (user) {
-      // We know the user was logged in; token cookie is sent automatically.
-      dispatch(setToken("cookie")); // truthy sentinel so PrivateRoute works
-      dispatch(setUser(JSON.parse(user)));
-    } else {
+    if (userStr && userStr !== "undefined" && userStr !== "null") {
+      try {
+        const parsed = JSON.parse(userStr);
+        if (parsed && typeof parsed === "object") {
+          dispatch(setToken("cookie"));
+          dispatch(setUser(parsed));
+          hasLocalUser = true;
+        }
+      } catch (err) {
+        console.error("Invalid user JSON in localStorage:", err);
+        localStorage.removeItem("user");
+      }
+    }
+
+    if (!hasLocalUser) {
       dispatch(setToken(null));
       dispatch(setUser(null));
     }
+
+    // 2. Fetch fresh user details using the httpOnly cookie to ensure session is live
+    const verifySession = async () => {
+      try {
+        const response = await ApiConnector("GET", userdetails.USER_DETAILS_API);
+        if (response?.data?.success && response.data.data) {
+          const freshUser = response.data.data;
+          dispatch(setToken("cookie"));
+          dispatch(setUser(freshUser));
+          localStorage.setItem("user", JSON.stringify(freshUser));
+        }
+      } catch (err) {
+        if (err.response?.status === 401) {
+          // Cookie expired or not logged in
+          dispatch(setToken(null));
+          dispatch(setUser(null));
+          localStorage.removeItem("user");
+        }
+      }
+    };
+
+    verifySession();
   }, [dispatch]);
 
   return (

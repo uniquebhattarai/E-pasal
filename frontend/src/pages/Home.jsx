@@ -94,12 +94,12 @@ function Home() {
                 className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group border border-gray-100 flex flex-col justify-between"
               >
                 {/* Image */}
-                <div className="relative h-40 sm:h-44 w-full bg-gray-50 overflow-hidden">
+                <div className="relative h-40 sm:h-44 w-full bg-gray-50 overflow-hidden flex items-center justify-center">
                   {item.image ? (
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="h-full w-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-green-100 to-emerald-100">
