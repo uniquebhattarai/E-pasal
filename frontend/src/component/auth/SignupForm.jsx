@@ -37,8 +37,11 @@ export default function SignupForm({ onSuccess, onSwitch, onError }) {
 
       if (response.data.success) {
         toast.success("OTP sent to your email.");
-        onSuccess();
-        navigate("/verify-email");
+        if (onSwitch) {
+          onSwitch("verify-email");
+        } else {
+          navigate("/verify-email");
+        }
       } else {
         const errorMsg = response.data.message || "Failed to send OTP";
         onError(errorMsg);

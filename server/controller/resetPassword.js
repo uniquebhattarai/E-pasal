@@ -2,6 +2,9 @@ const User = require("../models/user");
 const mailSender = require("../utils/mailSender");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
+const path = require("path");
+const fs = require("fs");
+const { passwordResetTemplate } = require("../mail/templates/emailTemplates");
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
@@ -34,10 +37,11 @@ exports.resetPasswordToken = async (req, res) => {
 
     const url = `${process.env.FRONTEND_URL}/update-password/${token}`;
 
-    await mailSender(email, "Password Reset Link", `
-      <p>Click the link below to reset your password:</p>
-      <a href="${url}">${url}</a>
-    `);
+    await mailSender(
+      email,
+      "Password Reset Link - e-pasal",
+      passwordResetTemplate(url, email)
+    );
 
     return res.json({
       success: true,

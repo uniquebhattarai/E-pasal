@@ -105,7 +105,7 @@ export default function Account() {
                   className="w-10 h-10 rounded-full border border-gray-100 shadow-xs object-cover bg-white"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center text-white text-xs font-bold shadow-xs">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#5891f8] to-[#0c61f6] flex items-center justify-center text-white text-xs font-bold shadow-xs">
                   {`${currentUser?.firstName?.[0] || ""}${currentUser?.lastName?.[0] || ""}`.toUpperCase() || "U"}
                 </div>
               )}

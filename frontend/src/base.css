@@ -88,3 +88,11 @@
   background: linear-gradient(90deg, #3771df 0%, #0746b8 100%);
 }
 
+.text-gradient-primary {
+  background: linear-gradient(90deg, #5891f8 0%, #0c61f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+

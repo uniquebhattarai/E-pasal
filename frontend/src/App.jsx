@@ -6,8 +6,7 @@ import { ApiConnector } from "./services/ApiConnector";
 import { userdetails } from "./services/Api";
 
 import Navbar from './component/Navbar';
-import LoginModal from './component/LoginModal';
-import SignupModal from './component/SignupModal';
+import AuthModal from './component/AuthModal';
 import ScrollToTop from './component/ScrollToTop';
 import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
@@ -96,8 +95,7 @@ function App() {
   return (
     <>
       <ScrollToTop />
-      <LoginModal />
-      <SignupModal />
+      <AuthModal />
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />

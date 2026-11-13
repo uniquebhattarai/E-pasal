@@ -13,7 +13,7 @@ function Avatar({ src, firstName = "", lastName = "", size = "sm" }) {
 
   return !src || err || src.includes("dicebear.com") ? (
     <span
-      className={`${dim} rounded-full bg-gradient-to-br from-violet-500 to-purple-700 
+      className={`${dim} rounded-full bg-gradient-to-br from-[#5891f8] to-[#0c61f6] 
                   flex items-center justify-center font-bold text-white flex-shrink-0 select-none shadow-xs`}
     >
       {initials}

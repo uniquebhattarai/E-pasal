@@ -228,7 +228,7 @@ function Navbar() {
               className="w-5 h-5 rounded-full object-cover shrink-0"
             />
           ) : token ? (
-            <span className="w-5 h-5 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center text-[9px] font-bold text-white shrink-0 select-none">
+            <span className="w-5 h-5 rounded-full bg-gradient-to-br from-[#5891f8] to-[#0c61f6] flex items-center justify-center text-[9px] font-bold text-white shrink-0 select-none">
               {`${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.toUpperCase() || "U"}
             </span>
           ) : (

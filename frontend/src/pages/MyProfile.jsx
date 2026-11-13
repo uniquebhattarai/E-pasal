@@ -93,7 +93,7 @@ export default function MyProfile() {
               className="aspect-square w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-[#0c61f6]"
             />
           ) : (
-            <div className="aspect-square w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-2xs ring-2 ring-[#0c61f6]">
+            <div className="aspect-square w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-[#5891f8] to-[#0c61f6] flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-2xs ring-2 ring-[#0c61f6]">
               {`${currentUser?.firstName?.[0] || ""}${currentUser?.lastName?.[0] || ""}`.toUpperCase() || "U"}
             </div>
           )}

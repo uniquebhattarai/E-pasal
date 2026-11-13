@@ -7,12 +7,14 @@ const {
   sendOtp,
   changePassword,
   logout,
+  refreshToken,
 } = require("../controller/auth");
 const { resetPasswordToken, resetPassword } = require("../controller/resetPassword");
 const { auth } = require("../middleware/auth");
 
 // Authentication routes
 router.post("/login", login);
+router.post("/refresh-token", refreshToken);
 router.post("/logout", logout);
 router.get("/logout", logout);
 router.post("/signup", signUp);

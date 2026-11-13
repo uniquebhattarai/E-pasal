@@ -85,7 +85,7 @@ export default function Sidebar() {
                   className="w-9 h-9 rounded-full border border-gray-100 object-cover shadow-2xs"
                 />
               ) : (
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center text-white text-[11px] font-bold shadow-2xs">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#5891f8] to-[#0c61f6] flex items-center justify-center text-white text-[11px] font-bold shadow-2xs">
                   {`${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`.toUpperCase() || "U"}
                 </div>
               )}

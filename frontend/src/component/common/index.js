@@ -11,3 +11,4 @@ export { default as Button } from "./Button.jsx";
 export { default as ErrorMessage } from "./ErrorMessage.jsx";
 export { default as Modal } from "./Modal.jsx";
 export { default as BrandIcon } from "./BrandIcon.jsx";
+export { default as OtpInput } from "./OtpInput.jsx";

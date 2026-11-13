@@ -24,6 +24,10 @@ export const login ={
     LOGIN_API:BASE_URL+"/auth/login"
 }
 
+export const refreshToken = {
+    REFRESH_TOKEN_API: BASE_URL + "/auth/refresh-token"
+}
+
 export const logout = {
     LOGOUT_API: BASE_URL + "/auth/logout"
 }
