@@ -1,10 +1,19 @@
 import { useSelector } from "react-redux";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import Sidebar from "../component/Sidebar";
 
 function Dashboard() {
   const { loading: profileLoading } = useSelector((state) => state.profile);
   const authLoading = useSelector((state) => state.auth.loading);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.pathname === "/dashboard" || location.pathname === "/dashboard/") {
+      navigate("/dashboard/account", { replace: true });
+    }
+  }, [location.pathname, navigate]);
 
   if (profileLoading || authLoading) {
     return (
@@ -15,13 +24,14 @@ function Dashboard() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)]">
+    <div className="min-h-screen md:min-h-[calc(100vh-3.5rem)] bg-[#F8F9FA] pb-24 md:pb-12">
+      <div className="max-w-7xl mx-auto md:px-6 lg:px-8 md:py-6 lg:py-8">
+        <div className="flex flex-col md:flex-row gap-6 lg:gap-8 items-start">
+          <Sidebar />
 
-      <Sidebar />
-
-      <div className="flex-1 h-[calc(100vh-3.5rem)] overflow-auto">
-        <div className="mx-auto w-11/12 max-w-[1000px] py-10">
-          <Outlet /> 
+          <main className="flex-1 min-w-0 w-full">
+            <Outlet />
+          </main>
         </div>
       </div>
     </div>

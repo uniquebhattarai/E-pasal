@@ -22,7 +22,13 @@ const userSchema = new mongoose.Schema({
         required:true,
         ref:"profile",
     },
-  image: { type: String },
+  wishlist: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+    },
+  ],
+  image: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
    token:{
         type:String,

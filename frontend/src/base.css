@@ -4,14 +4,19 @@
    ========================================================================== */
 
 :root {
-  /* Brand / Primary Palette */
-  --color-primary: #059669;
-  --color-primary-hover: #047857;
-  --color-primary-active: #065f46;
-  --color-primary-light: #ecfdf5;
-  --color-primary-subtle: #d1fae5;
-  --color-primary-border: #a7f3d0;
-  --color-primary-ring: rgba(5, 150, 105, 0.25);
+  /* Brand / Primary Palette (Vibrant Blue Gradient Theme) */
+  --color-primary: #0c61f6;
+  --color-primary-hover: #0952d6;
+  --color-primary-active: #0746b8;
+  --color-primary-light: #eff6ff;
+  --color-primary-subtle: #dbeafe;
+  --color-primary-border: #bfdbfe;
+  --color-primary-ring: rgba(12, 97, 246, 0.25);
+
+  /* Blue Gradient sampled from design (#5891f8 -> #0c61f6) */
+  --gradient-primary: linear-gradient(90deg, #5891f8 0%, #0c61f6 100%);
+  --gradient-primary-hover: linear-gradient(90deg, #4882f0 0%, #0952d6 100%);
+  --gradient-primary-active: linear-gradient(90deg, #3771df 0%, #0746b8 100%);
 
   /* Danger / Error Palette */
   --color-danger: #ef4444;
@@ -28,7 +33,7 @@
   --color-text-placeholder: #9ca3af;
 
   /* Surfaces & Backgrounds */
-  --color-bg-page: #f9fafb;
+  --color-bg-page: #ffffff;
   --color-bg-card: #ffffff;
   --color-bg-input: #f9fafb;
   --color-bg-input-focus: #ffffff;
@@ -37,7 +42,7 @@
   /* Borders */
   --color-border-main: #e5e7eb;
   --color-border-input: #d1d5db;
-  --color-border-focus: #059669;
+  --color-border-focus: #0c61f6;
 }
 
 @theme {
@@ -68,5 +73,18 @@
 
   --color-border-main: var(--color-border-main);
   --color-border-input: var(--color-border-input);
+}
+
+/* Primary Blue Gradient Utilities */
+.bg-gradient-primary {
+  background: linear-gradient(90deg, #5891f8 0%, #0c61f6 100%);
+}
+
+.bg-gradient-primary:hover {
+  background: linear-gradient(90deg, #4882f0 0%, #0952d6 100%);
+}
+
+.bg-gradient-primary:active {
+  background: linear-gradient(90deg, #3771df 0%, #0746b8 100%);
 }
 

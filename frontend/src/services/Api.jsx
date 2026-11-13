@@ -76,3 +76,8 @@ export const products ={
 export const categoryproducts ={
     PRODUCTS_API:BASE_URL+"/categories/categoryPageDetails"
 }
+
+export const wishlistEndpoints = {
+    GET_WISHLIST_API: BASE_URL + "/profile/getWishlist",
+    TOGGLE_WISHLIST_API: BASE_URL + "/profile/toggleWishlist",
+};

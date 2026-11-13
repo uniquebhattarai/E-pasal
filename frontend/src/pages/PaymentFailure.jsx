@@ -24,7 +24,7 @@ const PaymentFailure = () => {
         </p>
         <button
           onClick={() => navigate("/")}
-          className="mt-5 bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold shadow hover:bg-emerald-700 transition cursor-pointer"
+          className="mt-5 bg-gradient-primary text-white px-5 py-2 rounded-lg text-xs sm:text-sm font-semibold shadow hover:opacity-95 active:scale-95 transition cursor-pointer"
         >
           Try Again
         </button>

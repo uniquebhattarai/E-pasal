@@ -3,6 +3,8 @@ import { products } from "../services/Api";
 import { ApiConnector } from "../services/ApiConnector";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../slices/CartSlice";
+import { getWishlist, toggleWishlistItem } from "../services/wishlistService";
+import { resetWishlist } from "../slices/WishlistSlice";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { ShoppingCart, Heart, Star } from "lucide-react";
@@ -37,10 +39,10 @@ function ProductSkeleton() {
 function Home() {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [wishlist, setWishlist] = useState(new Set());
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const token = useSelector((state) => state.auth.token);
+  const { wishlistIds } = useSelector((state) => state.wishlist);
 
   const fetchProduct = async () => {
     try {
@@ -57,13 +59,16 @@ function Home() {
 
   useEffect(() => {
     fetchProduct();
-  }, []);
+    if (token) {
+      getWishlist(dispatch);
+    } else {
+      dispatch(resetWishlist());
+    }
+  }, [token, dispatch]);
 
-  const toggleWishlist = (id) => {
-    setWishlist((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
+  const handleToggleWishlist = (item) => {
+    toggleWishlistItem(item, dispatch, token, () => {
+      navigate("/login");
     });
   };
 
@@ -102,8 +107,8 @@ function Home() {
                       className="h-full w-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-green-100 to-emerald-100">
-                      <span className="text-3xl font-bold text-green-600">
+                    <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-100">
+                      <span className="text-3xl font-bold text-primary">
                         {item.name.charAt(0)}
                       </span>
                     </div>
@@ -111,14 +116,16 @@ function Home() {
 
                   {/* Wishlist */}
                   <button
-                    onClick={() => toggleWishlist(item._id)}
-                    className="absolute top-2.5 right-2.5 p-1.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 transition-transform cursor-pointer"
+                    onClick={() => handleToggleWishlist(item)}
+                    className="absolute top-2.5 right-2.5 p-1.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                    title={Boolean(token) && wishlistIds.includes(item._id) ? "Remove from wishlist" : "Add to wishlist"}
+                    aria-label="Wishlist"
                   >
                     <Heart
                       className={`w-3.5 h-3.5 transition-colors ${
-                        wishlist.has(item._id)
+                        Boolean(token) && wishlistIds.includes(item._id)
                           ? "fill-red-500 text-red-500"
-                          : "text-gray-400"
+                          : "text-gray-400 hover:text-red-400"
                       }`}
                     />
                   </button>
@@ -126,7 +133,7 @@ function Home() {
 
                 {/* Details */}
                 <div className="p-3 sm:p-3.5 flex flex-col flex-1">
-                  <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1 text-xs sm:text-sm group-hover:text-emerald-600 transition-colors">
+                  <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1 text-xs sm:text-sm group-hover:text-primary transition-colors">
                     {item.name}
                   </h3>
                   <p className="text-gray-500 text-[11px] sm:text-xs mb-2 line-clamp-2 leading-relaxed font-normal">
@@ -144,8 +151,8 @@ function Home() {
 
                   {/* Price */}
                   <div className="mt-auto pt-1 mb-2.5 flex items-baseline gap-1">
-                    <span className="text-xs font-semibold text-emerald-700">Rs</span>
-                    <span className="text-sm sm:text-base font-bold text-emerald-600 tracking-tight">
+                    <span className="text-xs font-semibold text-primary">Rs</span>
+                    <span className="text-sm sm:text-base font-bold text-primary tracking-tight">
                       {item.price}
                     </span>
                   </div>
@@ -153,7 +160,7 @@ function Home() {
                   {/* Add to Cart */}
                   <button
                     onClick={() => handleAddToCart(item)}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white py-2 px-3 rounded-lg font-medium text-xs sm:text-sm transition-all duration-150 flex items-center justify-center gap-1.5 shadow-sm hover:shadow active:scale-[0.98] cursor-pointer"
+                    className="w-full bg-gradient-primary hover:opacity-95 active:scale-[0.98] text-white py-2 px-3 rounded-lg font-medium text-xs sm:text-sm transition-all duration-150 flex items-center justify-center gap-1.5 shadow-sm hover:shadow cursor-pointer"
                   >
                     <ShoppingCart className="w-3.5 h-3.5" />
                     Add to Cart

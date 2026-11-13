@@ -42,8 +42,14 @@ exports.updateProfile = async (req, res) => {
     await profile.save();
 
     const updatedUserDetails = await User.findById(req.user.id)
+      .select("-password")
       .populate("additionalDetails")
       .exec();
+
+    if (updatedUserDetails && updatedUserDetails.image && updatedUserDetails.image.includes("dicebear.com")) {
+      updatedUserDetails.image = null;
+      await User.findByIdAndUpdate(req.user.id, { image: null });
+    }
 
     return res.json({
       success: true,
@@ -101,8 +107,15 @@ exports.getUserDetails = async (req, res) => {
   try {
     const userId = req.user.id;
     const userDetails = await User.findById(userId)
+      .select("-password")
       .populate("additionalDetails")
+      .populate("wishlist")
       .exec();
+
+    if (userDetails && userDetails.image && userDetails.image.includes("dicebear.com")) {
+      userDetails.image = null;
+      await User.findByIdAndUpdate(userId, { image: null });
+    }
 
     res.status(200).json({
       success: true,
@@ -134,7 +147,7 @@ exports.updateDisplayPicture = async (req, res) => {
       userId,
       { image: image.secure_url },
       { new: true }
-    );
+    ).select("-password");
 
     res.status(200).json({
       success: true,
@@ -193,5 +206,90 @@ exports.shopDashboard = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// ---------- Wishlist Handlers ----------
+exports.toggleWishlist = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { productId } = req.body;
+
+    if (!productId) {
+      return res.status(400).json({
+        success: false,
+        message: "Product ID is required",
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const wishlist = user.wishlist || [];
+    const isWishlisted = wishlist.some(
+      (id) => id.toString() === productId.toString()
+    );
+
+    let updatedUser;
+    if (isWishlisted) {
+      updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { $pull: { wishlist: productId } },
+        { new: true }
+      ).populate("wishlist");
+    } else {
+      updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { $addToSet: { wishlist: productId } },
+        { new: true }
+      ).populate("wishlist");
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: isWishlisted ? "Removed from wishlist" : "Added to wishlist",
+      inWishlist: !isWishlisted,
+      wishlist: updatedUser.wishlist,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to toggle wishlist",
+    });
+  }
+};
+
+exports.getWishlist = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId).populate({
+      path: "wishlist",
+      populate: {
+        path: "category",
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Wishlist fetched successfully",
+      data: user.wishlist || [],
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch wishlist",
+    });
   }
 };

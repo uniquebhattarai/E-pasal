@@ -1,8 +1,8 @@
 import React from "react";
-import GreenIcon from "../../../public/greenicon.png";
+import ColoredIcon from "../../../public/colored icon.png";
 
 /**
- * E-Pasal Brand Icon component using greenicon.png
+ * E-Pasal Brand Icon component using colored icon.png
  */
 export default function BrandIcon({
   size = "md",
@@ -30,7 +30,7 @@ export default function BrandIcon({
   return (
     <div className={`inline-flex items-center justify-center gap-3 select-none ${className}`}>
       <img
-        src={GreenIcon || "/greenicon.png"}
+        src={ColoredIcon || "/colored icon.png"}
         alt={name}
         className={`${heightClass} w-auto object-contain ${imageClassName}`}
       />

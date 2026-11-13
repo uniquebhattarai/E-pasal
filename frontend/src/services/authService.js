@@ -1,6 +1,7 @@
 import { setToken } from "../slices/AuthSlice";
 import { setUser } from "../slices/ProfileSlice";
 import { resetCart } from "../slices/CartSlice";
+import { resetWishlist } from "../slices/WishlistSlice";
 import { ApiConnector } from "./ApiConnector";
 import { logout as logoutEndpoint } from "./Api";
 import { toast } from "react-hot-toast";
@@ -20,6 +21,7 @@ export const logoutUser = async (dispatch, navigate) => {
     dispatch(setToken(null));
     dispatch(setUser(null));
     dispatch(resetCart());
+    dispatch(resetWishlist());
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     toast.success("Logged out successfully!");

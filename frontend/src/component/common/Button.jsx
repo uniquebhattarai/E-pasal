@@ -2,7 +2,7 @@ import React, { forwardRef } from "react";
 
 const variants = {
   primary:
-    "bg-primary hover:bg-primary-hover active:bg-primary-active text-white shadow-md hover:shadow-lg focus:ring-primary-ring",
+    "bg-gradient-primary text-white shadow-md hover:shadow-lg focus:ring-primary-ring active:scale-[0.99] transition-all",
   secondary:
     "border-2 border-primary text-primary hover:bg-primary-light active:bg-primary-subtle focus:ring-primary-ring",
   outline:

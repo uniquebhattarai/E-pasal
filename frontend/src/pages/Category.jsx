@@ -62,8 +62,8 @@ function Category() {
                       className="h-full w-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-green-100 to-emerald-100">
-                      <Tag className="w-8 h-8 text-green-500 opacity-60" />
+                    <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-100">
+                      <Tag className="w-8 h-8 text-primary opacity-60" />
                     </div>
                   )}
                   {/* Hover overlay */}
@@ -73,10 +73,10 @@ function Category() {
                 {/* Info */}
                 <div className="p-3 sm:p-3.5">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-gray-900 text-xs sm:text-sm group-hover:text-emerald-600 transition-colors">
+                    <h3 className="font-semibold text-gray-900 text-xs sm:text-sm group-hover:text-primary transition-colors">
                       {item.name}
                     </h3>
-                    <ChevronRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-emerald-500 group-hover:translate-x-0.5 transition-all" />
+                    <ChevronRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
                   </div>
                   <p className="text-gray-500 text-[11px] sm:text-xs mt-1 line-clamp-2 leading-relaxed">
                     {item.description}

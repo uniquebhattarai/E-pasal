@@ -16,7 +16,7 @@ function CartItem({ item }) {
             className="h-12 w-12 sm:h-14 sm:w-14 object-contain p-1 rounded-lg bg-gray-50 border border-gray-100"
           />
         ) : (
-          <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-base">
+          <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-lg bg-blue-50 text-primary flex items-center justify-center font-bold text-base">
             {item.name?.charAt(0) || "P"}
           </div>
         )}
@@ -24,7 +24,7 @@ function CartItem({ item }) {
           <h3 className="font-semibold text-xs sm:text-sm text-gray-900 line-clamp-1">
             {item.name}
           </h3>
-          <p className="text-xs font-bold text-emerald-600 mt-0.5">
+          <p className="text-xs font-bold text-primary mt-0.5">
             Rs {item.price}
           </p>
         </div>

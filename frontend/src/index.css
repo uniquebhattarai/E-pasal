@@ -19,9 +19,11 @@
   border-radius: 0.5rem;
 }
 
-/* ── Smooth scroll ── */
+/* ── Smooth scroll & disable mobile gesture zoom ── */
 html {
   scroll-behavior: smooth;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
 }
 
 /* ── Base font & scale ── */
@@ -34,6 +36,16 @@ body {
   line-height: 1.5;
   color: var(--color-text-main);
   background-color: var(--color-bg-page);
+  touch-action: manipulation;
+}
+
+/* Prevent iOS Safari from auto-zooming when focusing on inputs */
+@media screen and (max-width: 768px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* ── Hide the page scrollbar (page still scrolls with wheel/trackpad/touch) ── */
@@ -66,4 +78,60 @@ textarea::placeholder {
   font-size: 0.75rem !important; /* 12px (text-xs) */
   font-weight: 400;
   color: var(--color-text-placeholder);
+}
+
+/* ── Modal & Bottom Sheet animations ── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.2s ease-out forwards;
+}
+
+/* ── Modal & Bottom Sheet animations ── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.2s ease-out forwards;
 }

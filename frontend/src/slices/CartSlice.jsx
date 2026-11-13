@@ -1,16 +1,27 @@
 import { createSlice } from "@reduxjs/toolkit"
 import { toast } from "react-hot-toast"
 
+const hasUser = !!localStorage.getItem("user") || !!localStorage.getItem("token")
+
+const getStored = (key, fallback) => {
+  if (!hasUser) {
+    try {
+      localStorage.removeItem(key)
+    } catch (e) {}
+    return fallback
+  }
+  try {
+    const val = localStorage.getItem(key)
+    return val ? JSON.parse(val) : fallback
+  } catch (e) {
+    return fallback
+  }
+}
+
 const initialState = {
-  cart: localStorage.getItem("cart")
-    ? JSON.parse(localStorage.getItem("cart"))
-    : [],
-  total: localStorage.getItem("total")
-    ? JSON.parse(localStorage.getItem("total"))
-    : 0,
-  totalItems: localStorage.getItem("totalItems")
-    ? JSON.parse(localStorage.getItem("totalItems"))
-    : 0,
+  cart: getStored("cart", []),
+  total: getStored("total", 0),
+  totalItems: getStored("totalItems", 0),
 }
 
 const CartSlice = createSlice({

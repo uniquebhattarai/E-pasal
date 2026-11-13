@@ -134,8 +134,10 @@ exports.signUp = async (req, res) => {
       accountType,
       contactNumber,
       additionalDetails: profileDetails._id,
-      image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName}${lastName}`,
+      image: null,
     });
+
+    newUser.password = undefined;
 
     return res.status(200).json({
       success: true,
@@ -187,6 +189,11 @@ exports.login = async (req, res) => {
 
       userDetails.token = token;
       userDetails.password = undefined;
+
+      if (userDetails.image && userDetails.image.includes("dicebear.com")) {
+        userDetails.image = null;
+        await User.findByIdAndUpdate(userDetails._id, { image: null });
+      }
 
       const options = {
         expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),

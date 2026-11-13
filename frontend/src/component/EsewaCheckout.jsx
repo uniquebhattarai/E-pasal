@@ -3,7 +3,7 @@ import axios from "axios";
 import { Button } from "./common";
 
 
-const EsewaCheckout = ({ totalAmount }) => {
+const EsewaCheckout = ({ totalAmount, className = "", size = "sm" }) => {
   const [loading, setLoading] = useState(false);
 
   const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -95,8 +95,9 @@ const EsewaCheckout = ({ totalAmount }) => {
       loading={loading}
       loadingText="Processing..."
       variant="primary"
-      size="sm"
+      size={size}
       fullWidth
+      className={className}
     >
       Pay with eSewa
     </Button>

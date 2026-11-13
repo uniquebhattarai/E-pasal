@@ -1,16 +1,17 @@
 import { useRef, useState, useEffect } from "react"
-import { User, LogOut, Settings, Package, Heart, ChevronDown, ShieldCheck } from "lucide-react"
+import { CircleUserRound, LogOut, Settings, Package, Heart, ChevronDown, ChevronRight, ShieldCheck } from "lucide-react"
 import { useDispatch, useSelector } from "react-redux"
 import { Link, useNavigate } from "react-router-dom"
 import { logoutUser } from "../services/authService"
+import LogoutConfirmationModal from "./LogoutConfirmationModal"
 
 /* ── Avatar with initials fallback ───────────────────────────────────────── */
 function Avatar({ src, firstName = "", lastName = "", size = "sm" }) {
   const [err, setErr] = useState(false)
   const initials = `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase() || "U"
-  const dim = size === "lg" ? "w-11 h-11 text-sm" : "w-7 h-7 text-[11px]"
+  const dim = size === "lg" ? "w-9 h-9 text-xs" : "w-7 h-7 text-[11px]"
 
-  return !src || err ? (
+  return !src || err || src.includes("dicebear.com") ? (
     <span
       className={`${dim} rounded-full bg-gradient-to-br from-violet-500 to-purple-700 
                   flex items-center justify-center font-bold text-white flex-shrink-0 select-none shadow-xs`}
@@ -28,24 +29,28 @@ function Avatar({ src, firstName = "", lastName = "", size = "sm" }) {
 }
 
 /* ── Single menu row ─────────────────────────────────────────────────────── */
-function Row({ to, icon: Icon, color, label, sub, onClick }) {
+function Row({ to, icon: Icon, bgColor, label, onClick }) {
   return (
     <Link
       to={to}
       onClick={onClick}
-      className="flex items-center gap-3 px-3 py-2.5 rounded-xl
-                 hover:bg-gray-50 transition-colors duration-150 group"
+      className="flex items-center gap-3 px-3.5 py-2.5
+                 hover:bg-gray-50/80 transition-colors duration-150 group"
     >
       <span
-        className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
-                    ${color} group-hover:scale-110 transition-transform duration-150`}
+        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
+                    ${bgColor} shadow-xs group-hover:scale-105 transition-transform duration-150`}
       >
-        <Icon size={15} />
+        <Icon size={15} className="text-white" strokeWidth={2} />
       </span>
-      <span className="min-w-0">
-        <p className="text-[13px] font-semibold text-gray-800 leading-tight">{label}</p>
-        <p className="text-[11px] text-gray-400 leading-tight">{sub}</p>
+      <span className="text-[13px] font-semibold text-gray-800 flex-1 leading-none group-hover:text-gray-900 transition-colors">
+        {label}
       </span>
+      <ChevronRight
+        size={14}
+        className="text-gray-400 group-hover:text-gray-600 group-hover:translate-x-0.5 transition-all ml-auto shrink-0"
+        strokeWidth={1.8}
+      />
     </Link>
   )
 }
@@ -56,6 +61,7 @@ export default function ProfileDropdown() {
   const dispatch  = useDispatch()
   const navigate  = useNavigate()
   const [open, setOpen] = useState(false)
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
   const ref = useRef(null)
 
   useEffect(() => {
@@ -67,7 +73,7 @@ export default function ProfileDropdown() {
   const close = () => setOpen(false)
 
   const handleLogout = async () => {
-    close()
+    setShowLogoutModal(false)
     await logoutUser(dispatch, navigate)
   }
 
@@ -102,14 +108,14 @@ export default function ProfileDropdown() {
             id="profile-dropdown-menu"
             className="absolute right-0 mt-3 w-64 z-50
                        bg-white rounded-2xl overflow-hidden
-                       shadow-[0_8px_40px_rgba(0,0,0,0.18)]
+                       shadow-[0_12px_45px_rgba(0,0,0,0.12)]
                        border border-gray-100"
             style={{ animation: "slideDown .2s cubic-bezier(.22,1,.36,1) both" }}
           >
 
             {/* header */}
-            <div className="px-4 py-4">
-              <div className="flex items-center gap-3">
+            <div className="px-3.5 py-3">
+              <div className="flex items-center gap-2.5">
                 <div className="relative">
                   <Avatar
                     src={user?.image}
@@ -118,19 +124,19 @@ export default function ProfileDropdown() {
                     size="lg"
                   />
                   {/* online dot */}
-                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 
-                                   rounded-full border-2 border-gray-950" />
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 
+                                   rounded-full border-2 border-white shadow-xs" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-black truncate leading-tight">
+                  <p className="text-[13px] font-bold text-gray-900 truncate leading-tight">
                     {user?.firstName ? `${user.firstName} ${user.lastName || ""}` : "My Account"}
                   </p>
                   <p className="text-[11px] text-gray-400 truncate mt-0.5">
                     {user?.email || "Signed in"}
                   </p>
                   {isAdmin && (
-                    <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-semibold
-                                     bg-violet-500/20 text-violet-300 px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-semibold
+                                     bg-violet-50 text-violet-600 px-2 py-0.5 rounded-full border border-violet-100">
                       <ShieldCheck size={9} /> Admin
                     </span>
                   )}
@@ -138,63 +144,70 @@ export default function ProfileDropdown() {
               </div>
             </div>
 
-            {/* menu */}
-            <div className="p-2 space-y-0.5">
+            {/* horizontal line under header */}
+            <div className="h-px bg-gray-100" />
+
+            {/* menu items with horizontal line between each */}
+            <div className="divide-y divide-gray-100">
               <Row
                 to="/dashboard/my-profile"
-                icon={User}
-                color="bg-emerald-100 text-emerald-700"
+                icon={CircleUserRound}
+                bgColor="bg-[#1877F2]"
                 label="My Profile"
-                sub="View and edit profile"
                 onClick={close}
               />
               <Row
                 to="/dashboard/orders"
                 icon={Package}
-                color="bg-blue-100 text-blue-700"
+                bgColor="bg-[#9333EA]"
                 label="My Orders"
-                sub="Track your orders"
                 onClick={close}
               />
               <Row
                 to="/dashboard/wishlist"
                 icon={Heart}
-                color="bg-rose-100 text-rose-600"
+                bgColor="bg-[#F43F5E]"
                 label="Wishlist"
-                sub="Your saved items"
                 onClick={close}
               />
               <Row
                 to="/dashboard/settings"
                 icon={Settings}
-                color="bg-violet-100 text-violet-700"
+                bgColor="bg-[#6366F1]"
                 label="Settings"
-                sub="Account preferences"
                 onClick={close}
               />
-            </div>
-
-            {/* divider + logout */}
-            <div className="px-2 pb-2">
-              <div className="h-px bg-gray-100 mb-2" />
               <button
-                onClick={handleLogout}
-                className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl
-                           hover:bg-red-50 transition-colors duration-150 group"
+                onClick={() => {
+                  close()
+                  setShowLogoutModal(true)
+                }}
+                className="flex items-center gap-3 w-full px-3.5 py-2.5
+                           hover:bg-red-50/70 transition-colors duration-150 group cursor-pointer text-left"
               >
-                <span className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center
-                                  flex-shrink-0 group-hover:scale-110 transition-transform duration-150">
-                  <LogOut size={15} />
+                <span className="w-8 h-8 rounded-full bg-[#EF4444] text-white flex items-center justify-center
+                                  flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform duration-150">
+                  <LogOut size={15} className="text-white" strokeWidth={2} />
                 </span>
-                <span className="text-left">
-                  <p className="text-[13px] font-semibold text-red-600 leading-tight">Logout</p>
-                  <p className="text-[11px] text-red-400 leading-tight">Sign out of your account</p>
+                <span className="text-[13px] font-semibold text-red-600 flex-1 leading-none group-hover:text-red-700 transition-colors">
+                  Logout
                 </span>
+                <ChevronRight
+                  size={14}
+                  className="text-red-300 group-hover:text-red-500 group-hover:translate-x-0.5 transition-all ml-auto shrink-0"
+                  strokeWidth={1.8}
+                />
               </button>
             </div>
           </div>
         </>
       )}
+
+      <LogoutConfirmationModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleLogout}
+      />
 
       <style>{`
         @keyframes slideDown {

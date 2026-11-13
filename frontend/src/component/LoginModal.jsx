@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GreenIcon from "../../public/greenicon.png";
+import ColoredIcon from "../../public/colored icon.png";
 import { useDispatch, useSelector } from "react-redux";
 import { ChevronLeft } from "lucide-react";
 
@@ -50,7 +50,7 @@ export default function LoginModal() {
         {/* Brand Header */}
         <div className="text-left mb-2 sm:mb-5 shrink-0">
           <img
-            src={GreenIcon || "/greenicon.png"}
+            src={ColoredIcon || "/colored icon.png"}
             alt="E-Pasal"
             className="h-6 sm:h-7 w-auto object-contain mx-auto mb-1.5"
           />

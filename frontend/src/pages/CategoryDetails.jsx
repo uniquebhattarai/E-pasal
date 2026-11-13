@@ -4,8 +4,10 @@ import { ApiConnector } from "../services/ApiConnector";
 import { categoryproducts } from "../services/Api";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../slices/CartSlice";
+import { getWishlist, toggleWishlistItem } from "../services/wishlistService";
+import { resetWishlist } from "../slices/WishlistSlice";
 import { toast } from "react-hot-toast";
-import { ShoppingCart, ArrowLeft } from "lucide-react";
+import { ShoppingCart, Heart, ChevronLeft } from "lucide-react";
 
 // ── Skeleton card ──────────────────────────────────────────────
 function ProductSkeleton() {
@@ -26,9 +28,9 @@ function ProductSkeleton() {
 // ── Header skeleton ─────────────────────────────────────────────
 function HeaderSkeleton() {
   return (
-    <div className="text-center mb-8 space-y-2">
-      <div className="skeleton h-7 w-48 rounded-lg mx-auto" />
-      <div className="skeleton h-3.5 w-72 rounded-md mx-auto" />
+    <div className="mb-4 sm:mb-5 space-y-1.5 text-left">
+      <div className="skeleton h-6 w-36 rounded-md" />
+      <div className="skeleton h-3.5 w-64 rounded-md" />
     </div>
   );
 }
@@ -42,6 +44,7 @@ function CategoryDetails() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const token = useSelector((state) => state.auth.token);
+  const { wishlistIds } = useSelector((state) => state.wishlist);
 
   const fetchCategoryDetails = async () => {
     try {
@@ -59,7 +62,18 @@ function CategoryDetails() {
 
   useEffect(() => {
     fetchCategoryDetails();
-  }, [id]);
+    if (token) {
+      getWishlist(dispatch);
+    } else {
+      dispatch(resetWishlist());
+    }
+  }, [id, token, dispatch]);
+
+  const handleToggleWishlist = (product) => {
+    toggleWishlistItem(product, dispatch, token, () => {
+      navigate("/login");
+    });
+  };
 
   const handleAddToCart = (product) => {
     if (!token) {
@@ -71,29 +85,43 @@ function CategoryDetails() {
   };
 
   return (
-    <div className="min-h-screen bg-white px-4 pt-6 pb-24 md:py-10">
-      <div className="max-w-7xl mx-auto">
-
-        {/* Back button */}
+    <div className="bg-white min-h-[calc(100dvh-4rem)] md:min-h-0 pb-24 md:pt-4 md:pb-6">
+      {/* Mobile Fixed/Sticky Top Bar */}
+      <header className="sticky top-0 z-30 bg-white border-b border-gray-200/90 h-14 flex items-center justify-between px-4 md:hidden">
         <button
+          type="button"
           onClick={() => navigate("/category")}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-emerald-600 mb-6 transition-colors group"
+          className="w-8 h-8 -ml-1 flex items-center justify-start text-gray-900 hover:text-gray-600 transition cursor-pointer"
+          aria-label="Back to Categories"
         >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          Back to Categories
+          <ChevronLeft size={22} strokeWidth={2.4} />
         </button>
+        <h1 className="text-base sm:text-lg font-bold text-gray-900 text-center flex-1 tracking-tight truncate px-2">
+          {category?.name || ""}
+        </h1>
+        <div className="w-8" aria-hidden="true" />
+      </header>
 
-        {/* Header */}
-        {loading ? (
-          <HeaderSkeleton />
-        ) : (
-          category && (
-            <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{category.name}</h1>
-              <p className="text-gray-500 mt-1.5 text-xs sm:text-sm max-w-lg mx-auto">{category.description}</p>
-            </div>
-          )
-        )}
+      <div className="max-w-7xl mx-auto px-4 pt-3.5 sm:pt-4 md:pt-0">
+        {/* Desktop Header */}
+        <div className="hidden md:block">
+          {loading ? (
+            <HeaderSkeleton />
+          ) : (
+            category && (
+              <div className="mb-4 sm:mb-5 text-left">
+                <h1 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">
+                  {category.name}
+                </h1>
+                {category.description && (
+                  <p className="text-gray-500 mt-0.5 text-xs sm:text-[13px] max-w-2xl">
+                    {category.description}
+                  </p>
+                )}
+              </div>
+            )
+          )}
+        </div>
 
         {/* Products grid: 1 in a row on mobile, 2 in a row on tab view, 4 on desktop */}
         <div className="grid grid-cols-1 min-[500px]:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
@@ -114,17 +142,33 @@ function CategoryDetails() {
                       className="h-full w-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-green-100 to-emerald-100">
-                      <span className="text-3xl font-bold text-green-500">
+                    <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-100">
+                      <span className="text-3xl font-bold text-primary">
                         {product.name.charAt(0)}
                       </span>
                     </div>
                   )}
+
+                  {/* Wishlist */}
+                  <button
+                    onClick={() => handleToggleWishlist(product)}
+                    className="absolute top-2.5 right-2.5 p-1.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                    title={Boolean(token) && wishlistIds.includes(product._id) ? "Remove from wishlist" : "Add to wishlist"}
+                    aria-label="Wishlist"
+                  >
+                    <Heart
+                      className={`w-3.5 h-3.5 transition-colors ${
+                        Boolean(token) && wishlistIds.includes(product._id)
+                          ? "fill-red-500 text-red-500"
+                          : "text-gray-400 hover:text-red-400"
+                      }`}
+                    />
+                  </button>
                 </div>
 
                 {/* Details */}
                 <div className="p-3 sm:p-3.5 flex flex-col flex-1">
-                  <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1 text-xs sm:text-sm group-hover:text-emerald-600 transition-colors">
+                  <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1 text-xs sm:text-sm group-hover:text-primary transition-colors">
                     {product.name}
                   </h3>
                   <p className="text-gray-500 text-[11px] sm:text-xs mb-2 line-clamp-2 leading-relaxed font-normal">
@@ -133,15 +177,15 @@ function CategoryDetails() {
                   
                   {/* Price */}
                   <div className="mt-auto pt-1 mb-2.5 flex items-baseline gap-1">
-                    <span className="text-xs font-semibold text-emerald-700">Rs</span>
-                    <span className="text-sm sm:text-base font-bold text-emerald-600 tracking-tight">
+                    <span className="text-xs font-semibold text-primary">Rs</span>
+                    <span className="text-sm sm:text-base font-bold text-primary tracking-tight">
                       {product.price}
                     </span>
                   </div>
 
                   <button
                     onClick={() => handleAddToCart(product)}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white py-2 px-3 rounded-lg font-medium text-xs sm:text-sm transition-all duration-150 flex items-center justify-center gap-1.5 shadow-sm hover:shadow active:scale-[0.98] cursor-pointer"
+                    className="w-full bg-gradient-primary hover:opacity-95 active:scale-[0.98] text-white py-2 px-3 rounded-lg font-medium text-xs sm:text-sm transition-all duration-150 flex items-center justify-center gap-1.5 shadow-sm hover:shadow cursor-pointer"
                   >
                     <ShoppingCart className="w-3.5 h-3.5" />
                     Add to Cart

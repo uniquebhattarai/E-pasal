@@ -19,12 +19,17 @@ import ForgotPassword from './pages/ForgotPassword';
 import UpdatePassword from './pages/UpdatePassword';
 import VerifyEmail from './pages/VerifyEmail';
 import MyProfile from "./pages/MyProfile";
+import Account from "./pages/Account";
 import Dashboard from "./pages/Dashboard";
+import Wishlist from "./pages/Wishlist";
 import PrivateRoute from "./component/PrivateRoute";
 import Settings from "./pages/Settings";
 import CategoryDetails from "./pages/CategoryDetails";
 import PaymentFailure from "./pages/PaymentFailure";
 import PaymentSuccess from "./pages/PaymentSucess";
+import { getWishlist } from "./services/wishlistService";
+import { resetWishlist, setWishlist } from "./slices/WishlistSlice";
+import { resetCart } from "./slices/CartSlice";
 
 
 function App() {
@@ -52,6 +57,8 @@ function App() {
     if (!hasLocalUser) {
       dispatch(setToken(null));
       dispatch(setUser(null));
+      dispatch(resetWishlist());
+      dispatch(resetCart());
       return;
     }
 
@@ -63,6 +70,9 @@ function App() {
           const freshUser = response.data.data;
           dispatch(setToken("cookie"));
           dispatch(setUser(freshUser));
+          if (freshUser.wishlist) {
+            dispatch(setWishlist(freshUser.wishlist));
+          }
           localStorage.setItem("user", JSON.stringify(freshUser));
         }
       } catch (err) {
@@ -70,6 +80,8 @@ function App() {
           // Cookie expired or not logged in
           dispatch(setToken(null));
           dispatch(setUser(null));
+          dispatch(resetWishlist());
+          dispatch(resetCart());
           localStorage.removeItem("user");
         }
       }
@@ -87,6 +99,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/category" element={<Category />} />
         <Route path="/category/:id" element={<CategoryDetails/>} />
         <Route path="/login" element={<Login />} />
@@ -97,10 +110,12 @@ function App() {
         <Route path="/payment-failure" element={<PaymentFailure />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
 
-         <Route path="/dashboard/*" element={<PrivateRoute><Dashboard /></PrivateRoute>}>
-         <Route path="my-profile" element={<MyProfile />} />
-         <Route path="settings" element={<Settings />} />
-          </Route>
+         <Route path="/dashboard/*" element={<Dashboard />}>
+           <Route path="account" element={<Account />} />
+           <Route path="my-profile" element={<PrivateRoute><MyProfile /></PrivateRoute>} />
+           <Route path="wishlist" element={<Wishlist />} />
+           <Route path="settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+         </Route>
 
       </Routes>
     </>
