@@ -6,7 +6,9 @@ import { ApiConnector } from "./services/ApiConnector";
 import { userdetails } from "./services/Api";
 
 import Navbar from './component/Navbar';
-import AuthModal from './component/AuthModal';
+import LoginModal from './component/LoginModal';
+import SignupModal from './component/SignupModal';
+import ScrollToTop from './component/ScrollToTop';
 import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Cart from './pages/Cart';
@@ -50,6 +52,7 @@ function App() {
     if (!hasLocalUser) {
       dispatch(setToken(null));
       dispatch(setUser(null));
+      return;
     }
 
     // 2. Fetch fresh user details using the httpOnly cookie to ensure session is live
@@ -77,7 +80,9 @@ function App() {
 
   return (
     <>
-      <AuthModal />
+      <ScrollToTop />
+      <LoginModal />
+      <SignupModal />
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />

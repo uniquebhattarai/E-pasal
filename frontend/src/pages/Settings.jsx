@@ -6,8 +6,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { toast } from "react-hot-toast"
 import { setUser } from "../slices/ProfileSlice"
-import { setToken } from "../slices/AuthSlice"
-import { resetCart } from "../slices/CartSlice"
+import { logoutUser } from "../services/authService"
 import { ApiConnector } from "../services/ApiConnector"
 import {
   updatedisplaypicture,
@@ -152,14 +151,8 @@ export default function Settings() {
   }
 
   // ---------- Delete Account ----------
-  const handleLogout = () => {
-    dispatch(setToken(null))
-    dispatch(setUser(null))
-    dispatch(resetCart())
-    localStorage.removeItem("token")
-    localStorage.removeItem("user")
-    toast.success("Logged Out")
-    navigate("/")
+  const handleLogout = async () => {
+    await logoutUser(dispatch, navigate)
   }
 
   const handleDeleteAccount = async () => {

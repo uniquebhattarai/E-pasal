@@ -79,7 +79,7 @@ function Cart() {
             </div>
           </>
         ) : (
-          <div className="min-h-[60vh] flex flex-col items-center justify-center text-center p-4 sm:p-10 bg-white border-0 shadow-none sm:border sm:border-gray-100 sm:shadow-sm sm:rounded-xl">
+          <div className="min-h-[60vh] flex flex-col items-center justify-center text-center p-4">
             <div className="w-52 h-52 sm:w-64 sm:h-64 flex items-center justify-center -my-2">
               <DotLottieReact
                 src="/no-data.lottie"

@@ -112,7 +112,9 @@ const Modal = ({
         onClick={(e) => e.stopPropagation()}
         className={`relative w-full ${maxWidthClass} bg-bg-card flex flex-col no-scrollbar ${
           fullScreenOnMobile
-            ? "h-[100dvh] sm:h-auto sm:max-h-[95vh] border-0 sm:border sm:border-border-main rounded-none sm:rounded-2xl shadow-none sm:shadow-2xl overflow-hidden"
+            ? `h-[100dvh] sm:max-h-[95vh] border-0 sm:border sm:border-border-main rounded-none sm:rounded-2xl shadow-none sm:shadow-2xl overflow-hidden ${
+                className.includes("sm:h-") ? "" : "sm:h-auto"
+              }`
             : "border border-border-main rounded-2xl shadow-2xl overflow-hidden max-h-[95vh]"
         } ${className}`}
       >

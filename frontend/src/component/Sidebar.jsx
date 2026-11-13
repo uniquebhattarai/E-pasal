@@ -14,11 +14,7 @@ import {
 
 import { NavLink, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-
-import { setToken } from "../slices/AuthSlice";
-import { setUser } from "../slices/ProfileSlice";
-import { resetCart } from "../slices/CartSlice";
-import { toast } from "react-hot-toast";
+import { logoutUser } from "../services/authService";
 
 
 // Account types
@@ -90,17 +86,9 @@ export default function Sidebar() {
 
   const [confirmationModal, setConfirmationModal] = useState(null);
 
-  const handleLogout = () => {
-    dispatch(setToken(null));
-    dispatch(setUser(null));
-    dispatch(resetCart());
-    // Token lives in httpOnly cookie — cleared server-side on logout.
-    // Only remove the non-sensitive user object from localStorage.
-    localStorage.removeItem("user");
-    localStorage.removeItem("token"); // remove any legacy key
-    toast.success("Logged Out");
-    navigate("/");
+  const handleLogout = async () => {
     setConfirmationModal(null);
+    await logoutUser(dispatch, navigate);
   };
 
   return (

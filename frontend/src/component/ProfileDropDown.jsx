@@ -2,22 +2,18 @@ import { useRef, useState, useEffect } from "react"
 import { User, LogOut, Settings, Package, Heart, ChevronDown, ShieldCheck } from "lucide-react"
 import { useDispatch, useSelector } from "react-redux"
 import { Link, useNavigate } from "react-router-dom"
-import { toast } from "react-hot-toast"
-
-import { setToken } from "../slices/AuthSlice"
-import { setUser } from "../slices/ProfileSlice"
-import { resetCart } from "../slices/CartSlice"
+import { logoutUser } from "../services/authService"
 
 /* ── Avatar with initials fallback ───────────────────────────────────────── */
 function Avatar({ src, firstName = "", lastName = "", size = "sm" }) {
   const [err, setErr] = useState(false)
   const initials = `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase() || "U"
-  const dim = size === "lg" ? "w-11 h-11 text-sm" : "w-8 h-8 text-xs"
+  const dim = size === "lg" ? "w-11 h-11 text-sm" : "w-7 h-7 text-[11px]"
 
   return !src || err ? (
     <span
       className={`${dim} rounded-full bg-gradient-to-br from-violet-500 to-purple-700 
-                  flex items-center justify-center font-bold text-white flex-shrink-0 select-none`}
+                  flex items-center justify-center font-bold text-white flex-shrink-0 select-none shadow-xs`}
     >
       {initials}
     </span>
@@ -26,7 +22,7 @@ function Avatar({ src, firstName = "", lastName = "", size = "sm" }) {
       src={src}
       alt={firstName}
       onError={() => setErr(true)}
-      className={`${dim} rounded-full object-cover flex-shrink-0`}
+      className={`${dim} rounded-full object-cover flex-shrink-0 shadow-xs`}
     />
   )
 }
@@ -70,15 +66,9 @@ export default function ProfileDropdown() {
 
   const close = () => setOpen(false)
 
-  const handleLogout = () => {
-    dispatch(setToken(null))
-    dispatch(setUser(null))
-    dispatch(resetCart())
-    localStorage.removeItem("token")
-    localStorage.removeItem("user")
-    toast.success("Logged out successfully!")
-    navigate("/")
+  const handleLogout = async () => {
     close()
+    await logoutUser(dispatch, navigate)
   }
 
   const isAdmin = user?.accountType === "Admin" || user?.role === "admin"
@@ -90,18 +80,16 @@ export default function ProfileDropdown() {
       <button
         id="profile-dropdown-trigger"
         onClick={() => setOpen((p) => !p)}
-        className="flex items-center gap-2 p-1 pr-2.5 rounded-full
-                   bg-white hover:bg-primary-light
-                   border border-border-main hover:border-primary-border
-                   transition-all duration-200 cursor-pointer"
+        className="flex items-center gap-2 py-1 px-1.5 rounded-lg
+                   hover:bg-gray-100/70 transition-colors duration-150 cursor-pointer"
       >
         <Avatar src={user?.image} firstName={user?.firstName || "U"} lastName={user?.lastName || ""} size="sm" />
-        <span className="hidden sm:block text-sm font-semibold text-text-main">
-          {user?.firstName || "Account"}
+        <span className="hidden sm:block text-sm font-medium text-gray-800 leading-none">
+          {user?.firstName ? `${user.firstName} ${user.lastName || ""}`.trim() : "Account"}
         </span>
         <ChevronDown
           size={14}
-          className={`text-text-muted transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+          className={`text-gray-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
         />
       </button>
 

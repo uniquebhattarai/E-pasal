@@ -2,7 +2,6 @@ import React from "react";
 import Logo from "../../public/greenicon.png";
 import { Link, NavLink } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { FaCartShopping } from "react-icons/fa6";
 import {
   Home,
   LayoutGrid,
@@ -66,22 +65,37 @@ function Navbar() {
                   </li>
                 );
               })}
+
+              {/* Cart link placed just right of Category */}
+              {(!user || user.accountType !== "Admin") && (
+                <li>
+                  <NavLink
+                    to="/cart"
+                    className={({ isActive }) =>
+                      `inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm transition ${
+                        isActive
+                          ? "bg-primary-light text-primary font-semibold"
+                          : "text-text-muted hover:bg-primary-light hover:text-primary"
+                      }`
+                    }
+                    aria-label="Cart"
+                  >
+                    <span className="relative flex items-center">
+                      <ShoppingCart className="w-4 h-4 shrink-0" />
+                      {totalItems > 0 && (
+                        <span className="absolute -top-2 -right-2 flex items-center justify-center min-w-[15px] h-3.5 px-0.5 bg-yellow-400 text-green-900 text-[9px] font-bold rounded-full shadow animate-bounce">
+                          {totalItems}
+                        </span>
+                      )}
+                    </span>
+                    <span>Cart</span>
+                  </NavLink>
+                </li>
+              )}
             </ul>
 
             {/* Desktop Right Section */}
             <div className="hidden md:flex items-center gap-4 text-text-main">
-              {/* Cart */}
-              {(!user || user.accountType !== "Admin") && (
-                <Link to="/cart" className="relative p-1">
-                  <FaCartShopping className="text-xl" />
-                  {totalItems > 0 && (
-                    <span className="absolute -top-1.5 -right-2 flex items-center justify-center w-4 h-4 bg-yellow-400 text-green-900 text-[10px] font-bold rounded-full shadow animate-bounce">
-                      {totalItems}
-                    </span>
-                  )}
-                </Link>
-              )}
-
               {/* Auth */}
               {token ? (
                 <ProfileDropDown />
@@ -97,22 +111,8 @@ function Navbar() {
 
             {/* Mobile Top Right Section (replaces hamburger button) */}
             <div className="flex md:hidden items-center gap-3">
-              {/* Cart in mobile header */}
-              {(!user || user.accountType !== "Admin") && (
-                <Link to="/cart" className="relative p-1 text-text-main" aria-label="Cart">
-                  <FaCartShopping className="text-xl text-primary" />
-                  {totalItems > 0 && (
-                    <span className="absolute -top-1.5 -right-2 flex items-center justify-center w-4 h-4 bg-yellow-400 text-green-900 text-[10px] font-bold rounded-full shadow">
-                      {totalItems}
-                    </span>
-                  )}
-                </Link>
-              )}
-
-              {/* Auth button or Profile in mobile header */}
-              {token ? (
-                <ProfileDropDown />
-              ) : (
+              {/* Only show Log in button when not logged in. Cart & Profile are in bottom nav */}
+              {!token && (
                 <Button
                   size="sm"
                   onClick={() => dispatch(openAuthModal("login"))}
@@ -199,7 +199,17 @@ function Navbar() {
               }`
             }
           >
-            <User className="w-5 h-5 shrink-0" />
+            {user?.image ? (
+              <img
+                src={user.image}
+                alt={user?.firstName || "Profile"}
+                className="w-5 h-5 rounded-full object-cover shrink-0"
+              />
+            ) : (
+              <span className="w-5 h-5 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center text-[9px] font-bold text-white shrink-0 select-none">
+                {`${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.toUpperCase() || "U"}
+              </span>
+            )}
             <span className="text-[11px] mt-0.5 tracking-tight">Profile</span>
           </NavLink>
         ) : (

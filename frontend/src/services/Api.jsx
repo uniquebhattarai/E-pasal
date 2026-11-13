@@ -1,9 +1,31 @@
-const BASE_URL = import.meta.env.VITE_BASE_URL
+// Resolve base URL dynamically so mobile devices on the same Wi-Fi connect seamlessly
+const getBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_BASE_URL;
+
+  if (typeof window !== "undefined") {
+    const hostname = window.location.hostname;
+    // When accessing from a phone/tablet on local Wi-Fi (not localhost / 127.0.0.1)
+    if (hostname !== "localhost" && hostname !== "127.0.0.1") {
+      if (envUrl && envUrl.includes("localhost")) {
+        return envUrl.replace("localhost", hostname);
+      }
+      return "/api/v1";
+    }
+  }
+
+  return envUrl || "/api/v1";
+};
+
+const BASE_URL = getBaseUrl();
 
 
 //user
 export const login ={
     LOGIN_API:BASE_URL+"/auth/login"
+}
+
+export const logout = {
+    LOGOUT_API: BASE_URL + "/auth/logout"
 }
 
 export const signUp ={
