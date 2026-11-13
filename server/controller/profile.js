@@ -107,9 +107,8 @@ exports.getUserDetails = async (req, res) => {
   try {
     const userId = req.user.id;
     const userDetails = await User.findById(userId)
-      .select("-password")
+      .select("-password -cart -wishlist")
       .populate("additionalDetails")
-      .populate("wishlist")
       .exec();
 
     if (userDetails && userDetails.image && userDetails.image.includes("dicebear.com")) {
@@ -167,13 +166,17 @@ exports.getUserOrders = async (req, res) => {
   try {
     const userId = req.user.id;
     const orders = await Order.find({ user: userId })
-      .populate("products.product")
+      .populate({
+        path: "products.product",
+        populate: { path: "category" },
+      })
       .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
       message: "Orders fetched successfully",
-      data: orders,
+      orders: orders || [],
+      data: orders || [],
     });
   } catch (error) {
     res.status(500).json({
@@ -290,6 +293,147 @@ exports.getWishlist = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to fetch wishlist",
+    });
+  }
+};
+
+// ---------- Cart Handlers ----------
+exports.addToCart = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { productId } = req.body;
+
+    if (!productId) {
+      return res.status(400).json({
+        success: false,
+        message: "Product ID is required",
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const cart = user.cart || [];
+    const isInCart = cart.some(
+      (id) => id.toString() === productId.toString()
+    );
+
+    if (isInCart) {
+      return res.status(200).json({
+        success: false,
+        message: "Item is already in cart",
+      });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $addToSet: { cart: productId } },
+      { new: true }
+    ).populate({
+      path: "cart",
+      populate: {
+        path: "category",
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Item added to cart",
+      cart: updatedUser.cart || [],
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to add item to cart",
+    });
+  }
+};
+
+exports.removeFromCart = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { productId } = req.body;
+
+    if (!productId) {
+      return res.status(400).json({
+        success: false,
+        message: "Product ID is required",
+      });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $pull: { cart: productId } },
+      { new: true }
+    ).populate({
+      path: "cart",
+      populate: {
+        path: "category",
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Item removed from cart",
+      cart: updatedUser ? updatedUser.cart : [],
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to remove item from cart",
+    });
+  }
+};
+
+exports.getCart = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId).populate({
+      path: "cart",
+      populate: {
+        path: "category",
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Cart fetched successfully",
+      cart: user.cart || [],
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch cart",
+    });
+  }
+};
+
+exports.clearCart = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    await User.findByIdAndUpdate(userId, { $set: { cart: [] } });
+
+    return res.status(200).json({
+      success: true,
+      message: "Cart cleared successfully",
+      cart: [],
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to clear cart",
     });
   }
 };

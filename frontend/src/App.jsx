@@ -19,6 +19,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import UpdatePassword from './pages/UpdatePassword';
 import VerifyEmail from './pages/VerifyEmail';
 import MyProfile from "./pages/MyProfile";
+import MyOrders from "./pages/MyOrders";
 import Account from "./pages/Account";
 import Dashboard from "./pages/Dashboard";
 import Wishlist from "./pages/Wishlist";
@@ -28,8 +29,9 @@ import CategoryDetails from "./pages/CategoryDetails";
 import PaymentFailure from "./pages/PaymentFailure";
 import PaymentSuccess from "./pages/PaymentSucess";
 import { getWishlist } from "./services/wishlistService";
+import { getCart } from "./services/cartService";
 import { resetWishlist, setWishlist } from "./slices/WishlistSlice";
-import { resetCart } from "./slices/CartSlice";
+import { resetCart, setCart } from "./slices/CartSlice";
 
 
 function App() {
@@ -47,6 +49,8 @@ function App() {
           dispatch(setToken("cookie"));
           dispatch(setUser(parsed));
           hasLocalUser = true;
+          getWishlist(dispatch);
+          getCart(dispatch);
         }
       } catch (err) {
         console.error("Invalid user JSON in localStorage:", err);
@@ -70,10 +74,9 @@ function App() {
           const freshUser = response.data.data;
           dispatch(setToken("cookie"));
           dispatch(setUser(freshUser));
-          if (freshUser.wishlist) {
-            dispatch(setWishlist(freshUser.wishlist));
-          }
           localStorage.setItem("user", JSON.stringify(freshUser));
+          getWishlist(dispatch);
+          getCart(dispatch);
         }
       } catch (err) {
         if (err.response?.status === 401) {
@@ -113,6 +116,8 @@ function App() {
          <Route path="/dashboard/*" element={<Dashboard />}>
            <Route path="account" element={<Account />} />
            <Route path="my-profile" element={<PrivateRoute><MyProfile /></PrivateRoute>} />
+           <Route path="my-orders" element={<PrivateRoute><MyOrders /></PrivateRoute>} />
+           <Route path="orders" element={<PrivateRoute><MyOrders /></PrivateRoute>} />
            <Route path="wishlist" element={<Wishlist />} />
            <Route path="settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
          </Route>

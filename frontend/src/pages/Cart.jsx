@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import CartItem from "../component/CartItem";
 import EsewaCheckout from "../component/EsewaCheckout";
@@ -7,6 +7,7 @@ import { ChevronLeft } from "lucide-react";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { Button } from "../component/common";
 import { openAuthModal } from "../slices/AuthSlice";
+import { getCart } from "../services/cartService";
 
 function Cart() {
   const navigate = useNavigate();
@@ -16,6 +17,12 @@ function Cart() {
   const isEmpty = cart.length === 0;
 
   const totalAmount = cart.reduce((acc, item) => acc + item.price, 0);
+
+  useEffect(() => {
+    if (token) {
+      getCart(dispatch);
+    }
+  }, [token, dispatch]);
 
   if (!token) {
     return (

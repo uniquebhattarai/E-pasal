@@ -168,7 +168,8 @@ exports.login = async (req, res) => {
       });
     }
 
-    const userDetails = await User.findOne({ email: email.toLowerCase() }).populate("additionalDetails");
+    const userDetails = await User.findOne({ email: email.toLowerCase() })
+      .populate("additionalDetails");
     if (!userDetails) {
       return res.status(401).json({
         success: false,
@@ -187,9 +188,6 @@ exports.login = async (req, res) => {
         expiresIn: "2h",
       });
 
-      userDetails.token = token;
-      userDetails.password = undefined;
-
       if (userDetails.image && userDetails.image.includes("dicebear.com")) {
         userDetails.image = null;
         await User.findByIdAndUpdate(userDetails._id, { image: null });
@@ -200,10 +198,16 @@ exports.login = async (req, res) => {
         httpOnly: true,
       };
 
+      const userResponse = userDetails.toObject();
+      delete userResponse.password;
+      delete userResponse.cart;
+      delete userResponse.wishlist;
+      delete userResponse.token;
+
       // Token is set in the httpOnly cookie — do NOT expose it in the response body
       return res.cookie("token", token, options).status(200).json({
         success: true,
-        user: userDetails,
+        user: userResponse,
         message: "Logged in successfully",
       });
 

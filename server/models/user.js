@@ -28,6 +28,12 @@ const userSchema = new mongoose.Schema({
       ref: "Product",
     },
   ],
+  cart: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+    },
+  ],
   image: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
    token:{

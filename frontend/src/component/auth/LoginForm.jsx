@@ -9,6 +9,8 @@ import { ApiConnector } from "../../services/ApiConnector";
 import { login } from "../../services/Api";
 import { setToken } from "../../slices/AuthSlice";
 import { setUser } from "../../slices/ProfileSlice";
+import { getWishlist } from "../../services/wishlistService";
+import { getCart } from "../../services/cartService";
 import {
   loginSchema,
   loginInitialValues,
@@ -31,6 +33,10 @@ export default function LoginForm({ onSuccess, onSwitch, onError, onClose }) {
         dispatch(setToken("cookie"));
         dispatch(setUser(userData));
         localStorage.setItem("user", JSON.stringify(userData));
+
+        // Fetch user's cart and wishlist independently via dedicated endpoints
+        getCart(dispatch);
+        getWishlist(dispatch);
 
         toast.success("Logged in successfully!");
         onSuccess();

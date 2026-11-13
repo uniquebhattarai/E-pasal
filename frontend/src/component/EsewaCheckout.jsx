@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Button } from "./common";
+import { placeOrder } from "../services/orderService";
 
 
 const EsewaCheckout = ({ totalAmount, className = "", size = "sm" }) => {
@@ -59,6 +60,13 @@ const EsewaCheckout = ({ totalAmount, className = "", size = "sm" }) => {
 
       if (data.success) {
         console.log("[eSewa] Submitting form to:", data.formUrl);
+
+        // Pre-create order in database for order history
+        try {
+          await placeOrder({ totalAmount });
+        } catch (orderErr) {
+          console.warn("Order creation warning:", orderErr);
+        }
 
         // Dynamically create a form and POST to eSewa
         const form = document.createElement("form");

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { products } from "../services/Api";
 import { ApiConnector } from "../services/ApiConnector";
 import { useDispatch, useSelector } from "react-redux";
-import { addToCart } from "../slices/CartSlice";
+import { addItemToCart } from "../services/cartService";
 import { getWishlist, toggleWishlistItem } from "../services/wishlistService";
 import { resetWishlist } from "../slices/WishlistSlice";
 import { toast } from "react-hot-toast";
@@ -73,12 +73,9 @@ function Home() {
   };
 
   const handleAddToCart = (item) => {
-    if (!token) {
-      toast.error("You need to login to add items to cart");
+    addItemToCart(item, dispatch, token, () => {
       navigate("/login");
-      return;
-    }
-    dispatch(addToCart(item));
+    });
   };
 
   return (

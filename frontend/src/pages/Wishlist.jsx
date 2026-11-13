@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ShoppingCart, Trash2 } from "lucide-react";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { getWishlist, removeWishlistItem } from "../services/wishlistService";
-import { addToCart } from "../slices/CartSlice";
+import { addItemToCart } from "../services/cartService";
 import { openAuthModal } from "../slices/AuthSlice";
 import { Button } from "../component/common";
 
@@ -21,7 +21,9 @@ export default function Wishlist() {
   }, [token, dispatch]);
 
   const handleAddToCart = (item) => {
-    dispatch(addToCart(item));
+    addItemToCart(item, dispatch, token, () => {
+      dispatch(openAuthModal("login"));
+    });
   };
 
   const handleRemove = (productId) => {

@@ -38,7 +38,7 @@ function Navbar() {
   return (
     <>
       {/* ── TOP NAVBAR ─────────────────────────────────────────── */}
-      <nav className={`bg-white border-b border-border-main shadow-xs sticky top-0 z-40 ${(isAccountPage || isCartPage || isCategoryDetailsPage) ? "hidden md:block" : ""}`}>
+      <nav className={`bg-white border-b-0 md:border-b border-border-main shadow-none md:shadow-xs relative md:sticky md:top-0 z-40 ${(isAccountPage || isCartPage || isCategoryDetailsPage) ? "hidden md:block" : ""}`}>
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between items-center h-14">
 

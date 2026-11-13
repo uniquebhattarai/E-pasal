@@ -1,10 +1,11 @@
 import React from "react";
-import { useDispatch } from "react-redux";
-import { removeFromCart } from "../slices/CartSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { removeItemFromCart } from "../services/cartService";
 import { Trash2 } from "lucide-react";
 
 function CartItem({ item }) {
   const dispatch = useDispatch();
+  const token = useSelector((state) => state.auth.token);
 
   return (
     <div className="flex items-center justify-between p-3 sm:p-3.5 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow transition-shadow">
@@ -31,7 +32,7 @@ function CartItem({ item }) {
       </div>
       <button
         type="button"
-        onClick={() => dispatch(removeFromCart(item._id))}
+        onClick={() => removeItemFromCart(item._id, dispatch, token)}
         className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition font-medium cursor-pointer"
         aria-label="Remove item"
       >

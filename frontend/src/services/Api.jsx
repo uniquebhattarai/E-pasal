@@ -81,3 +81,17 @@ export const wishlistEndpoints = {
     GET_WISHLIST_API: BASE_URL + "/profile/getWishlist",
     TOGGLE_WISHLIST_API: BASE_URL + "/profile/toggleWishlist",
 };
+
+export const cartEndpoints = {
+    GET_CART_API: BASE_URL + "/profile/getCart",
+    ADD_TO_CART_API: BASE_URL + "/profile/addToCart",
+    REMOVE_FROM_CART_API: BASE_URL + "/profile/removeFromCart",
+    CLEAR_CART_API: BASE_URL + "/profile/clearCart",
+};
+
+export const orderEndpoints = {
+    GET_USER_ORDERS_API: BASE_URL + "/orders/myOrders",
+    PLACE_ORDER_API: BASE_URL + "/orders/placeOrder",
+    GET_ALL_ORDERS_API: BASE_URL + "/orders/getAllOrders",
+    UPDATE_ORDER_STATUS_API: BASE_URL + "/orders/updateOrderStatus",
+};

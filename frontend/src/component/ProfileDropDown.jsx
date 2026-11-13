@@ -157,7 +157,7 @@ export default function ProfileDropdown() {
                 onClick={close}
               />
               <Row
-                to="/dashboard/orders"
+                to="/dashboard/my-orders"
                 icon={Package}
                 bgColor="bg-[#9333EA]"
                 label="My Orders"

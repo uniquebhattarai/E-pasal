@@ -1,82 +1,128 @@
-import { createSlice } from "@reduxjs/toolkit"
-import { toast } from "react-hot-toast"
+import { createSlice } from "@reduxjs/toolkit";
 
-const hasUser = !!localStorage.getItem("user") || !!localStorage.getItem("token")
+const hasUser = !!localStorage.getItem("user") || !!localStorage.getItem("token");
 
 const getStored = (key, fallback) => {
   if (!hasUser) {
     try {
-      localStorage.removeItem(key)
+      localStorage.removeItem(key);
     } catch (e) {}
-    return fallback
+    return fallback;
   }
   try {
-    const val = localStorage.getItem(key)
-    return val ? JSON.parse(val) : fallback
+    const val = localStorage.getItem(key);
+    return val ? JSON.parse(val) : fallback;
   } catch (e) {
-    return fallback
+    return fallback;
   }
-}
+};
 
+const calculateTotal = (cart) => {
+  if (!Array.isArray(cart)) return 0;
+  return cart.reduce((sum, item) => sum + (Number(item?.price) || 0), 0);
+};
+
+const syncStorage = (cart, total, totalItems) => {
+  try {
+    const hasActiveUser = !!localStorage.getItem("user") || !!localStorage.getItem("token");
+    if (!hasActiveUser) {
+      localStorage.removeItem("cart");
+      localStorage.removeItem("total");
+      localStorage.removeItem("totalItems");
+      return;
+    }
+    localStorage.setItem("cart", JSON.stringify(cart));
+    localStorage.setItem("total", JSON.stringify(total));
+    localStorage.setItem("totalItems", JSON.stringify(totalItems));
+  } catch (e) {}
+};
+
+const initialCart = getStored("cart", []);
 const initialState = {
-  cart: getStored("cart", []),
-  total: getStored("total", 0),
-  totalItems: getStored("totalItems", 0),
-}
+  cart: initialCart,
+  total: getStored("total", calculateTotal(initialCart)),
+  totalItems: getStored("totalItems", initialCart.length),
+  loading: false,
+};
 
 const CartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    addToCart: (state, action) => {
-      const product = action.payload
-      const index = state.cart.findIndex((item) => item._id === product._id)
+    setCart: (state, action) => {
+      const items = Array.isArray(action.payload) ? action.payload : [];
+      state.cart = items;
+      state.totalItems = items.length;
+      state.total = calculateTotal(items);
+      syncStorage(state.cart, state.total, state.totalItems);
+    },
+    addToCartLocal: (state, action) => {
+      const product = action.payload;
+      if (!product || !product._id) return;
 
+      const index = state.cart.findIndex((item) => item._id === product._id);
       if (index >= 0) {
-        toast.error("Item is already in cart")
-        return
+        return;
       }
-     
-      state.cart.push(product)
-      
-      state.totalItems++
-      state.total += product.price
-     
-      localStorage.setItem("cart", JSON.stringify(state.cart))
-      localStorage.setItem("total", JSON.stringify(state.total))
-      localStorage.setItem("totalItems", JSON.stringify(state.totalItems))
-     
-      toast.success(`${product.name} added to cart`)
+
+      state.cart.push(product);
+      state.totalItems = state.cart.length;
+      state.total = calculateTotal(state.cart);
+      syncStorage(state.cart, state.total, state.totalItems);
+    },
+    removeFromCartLocal: (state, action) => {
+      const productId = action.payload;
+      state.cart = state.cart.filter((item) => item._id !== productId);
+      state.totalItems = state.cart.length;
+      state.total = calculateTotal(state.cart);
+      syncStorage(state.cart, state.total, state.totalItems);
+    },
+    addToCart: (state, action) => {
+      const product = action.payload;
+      if (!product || !product._id) return;
+
+      const index = state.cart.findIndex((item) => item._id === product._id);
+      if (index >= 0) {
+        return;
+      }
+
+      state.cart.push(product);
+      state.totalItems = state.cart.length;
+      state.total = calculateTotal(state.cart);
+      syncStorage(state.cart, state.total, state.totalItems);
     },
     removeFromCart: (state, action) => {
-      const productId = action.payload
-      const index = state.cart.findIndex((item) => item._id === productId)
-
-      if (index >= 0) {
-      
-        state.totalItems--
-        state.total -= state.cart[index].price
-        state.cart.splice(index, 1)
-
-        localStorage.setItem("cart", JSON.stringify(state.cart))
-        localStorage.setItem("total", JSON.stringify(state.total))
-        localStorage.setItem("totalItems", JSON.stringify(state.totalItems))
-
-        toast.success("Item removed from cart")
-      }
+      const productId = action.payload;
+      state.cart = state.cart.filter((item) => item._id !== productId);
+      state.totalItems = state.cart.length;
+      state.total = calculateTotal(state.cart);
+      syncStorage(state.cart, state.total, state.totalItems);
+    },
+    setCartLoading: (state, action) => {
+      state.loading = action.payload;
     },
     resetCart: (state) => {
-      state.cart = []
-      state.total = 0
-      state.totalItems = 0
-      // Update to localstorage
-      localStorage.removeItem("cart")
-      localStorage.removeItem("total")
-      localStorage.removeItem("totalItems")
+      state.cart = [];
+      state.total = 0;
+      state.totalItems = 0;
+      state.loading = false;
+      try {
+        localStorage.removeItem("cart");
+        localStorage.removeItem("total");
+        localStorage.removeItem("totalItems");
+      } catch (e) {}
     },
   },
-})
+});
 
-export const { addToCart, removeFromCart, resetCart } = CartSlice.actions
+export const {
+  setCart,
+  addToCartLocal,
+  removeFromCartLocal,
+  addToCart,
+  removeFromCart,
+  setCartLoading,
+  resetCart,
+} = CartSlice.actions;
 
-export default CartSlice.reducer
+export default CartSlice.reducer;

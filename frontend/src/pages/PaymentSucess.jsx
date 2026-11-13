@@ -1,8 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { clearUserCart } from "../services/cartService";
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const token = useSelector((state) => state.auth.token);
+
+  useEffect(() => {
+    clearUserCart(dispatch, token);
+  }, [dispatch, token]);
 
   return (
     <div className="flex flex-col items-center justify-center h-[70vh] text-center px-6">
