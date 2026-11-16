@@ -98,16 +98,16 @@ export default function MyOrders() {
   return (
     <div className="w-full max-w-[1000px] mx-auto pb-12">
       {/* Mobile Fixed/Sticky Top Bar matching dashboard standard */}
-      <header className="sticky top-0 z-30 bg-white border-b border-gray-200/90 h-14 flex items-center justify-between px-4 md:hidden">
+      <header className="sticky top-0 z-30 bg-white dark:bg-[#171717] border-b border-gray-200/90 dark:border-[#2e2e2e] h-14 flex items-center justify-between px-4 md:hidden">
         <button
           type="button"
           onClick={() => navigate("/dashboard/account")}
-          className="w-8 h-8 -ml-1 flex items-center justify-start text-gray-900 hover:text-gray-600 transition cursor-pointer"
+          className="w-8 h-8 -ml-1 flex items-center justify-start text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition cursor-pointer"
           aria-label="Back to Account"
         >
           <ChevronLeft size={22} strokeWidth={2.4} />
         </button>
-        <h1 className="text-base sm:text-lg font-bold text-gray-900 text-center flex-1 tracking-tight">
+        <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100 text-center flex-1 tracking-tight">
           My Orders
         </h1>
         <div className="w-8" aria-hidden="true" />
@@ -118,15 +118,15 @@ export default function MyOrders() {
         {/* Desktop Header Title */}
         <div className="hidden md:flex items-center justify-between">
           <div>
-            <h1 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">
+            <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100 tracking-tight">
               My Orders
             </h1>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs text-gray-500 dark:text-[#94a3b8] mt-0.5">
               Review your purchase history and tracking details
             </p>
           </div>
           {orders.length > 0 && (
-            <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+            <span className="text-xs font-semibold text-gray-600 dark:text-[#cbd5e1] bg-gray-100 dark:bg-[#202020] border border-transparent dark:border-[#2e2e2e] px-3 py-1 rounded-full">
               {orders.length} {orders.length === 1 ? "Order" : "Orders"}
             </span>
           )}
@@ -138,29 +138,29 @@ export default function MyOrders() {
             {[1, 2, 3].map((n) => (
               <div
                 key={n}
-                className="bg-white rounded-2xl border border-gray-100 p-4 shadow-2xs space-y-3 animate-pulse"
+                className="bg-white dark:bg-[#202020] rounded-2xl border border-gray-100 dark:border-[#2e2e2e] p-4 shadow-2xs space-y-3 animate-pulse"
               >
-                <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                  <div className="h-4 bg-gray-200 rounded w-32" />
-                  <div className="h-5 bg-gray-200 rounded-full w-24" />
+                <div className="flex justify-between items-center pb-3 border-b border-gray-100 dark:border-[#2e2e2e]">
+                  <div className="h-4 bg-gray-200 dark:bg-[#282828] rounded w-32" />
+                  <div className="h-5 bg-gray-200 dark:bg-[#282828] rounded-full w-24" />
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 bg-gray-200 rounded-xl" />
+                  <div className="w-14 h-14 bg-gray-200 dark:bg-[#282828] rounded-xl" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-gray-200 rounded w-2/3" />
-                    <div className="h-3 bg-gray-200 rounded w-1/3" />
+                    <div className="h-4 bg-gray-200 dark:bg-[#282828] rounded w-2/3" />
+                    <div className="h-3 bg-gray-200 dark:bg-[#282828] rounded w-1/3" />
                   </div>
                 </div>
-                <div className="flex justify-between pt-2 border-t border-gray-100">
-                  <div className="h-4 bg-gray-200 rounded w-20" />
-                  <div className="h-4 bg-gray-200 rounded w-24" />
+                <div className="flex justify-between pt-2 border-t border-gray-100 dark:border-[#2e2e2e]">
+                  <div className="h-4 bg-gray-200 dark:bg-[#282828] rounded w-20" />
+                  <div className="h-4 bg-gray-200 dark:bg-[#282828] rounded w-24" />
                 </div>
               </div>
             ))}
           </div>
         ) : orders.length === 0 ? (
           /* Empty State */
-          <div className="flex flex-col items-center justify-center text-center px-4 py-12 sm:py-16 bg-white rounded-2xl border border-gray-100 shadow-2xs">
+          <div className="flex flex-col items-center justify-center text-center px-4 py-12 sm:py-16 bg-white dark:bg-[#202020] rounded-2xl border border-gray-100 dark:border-[#2e2e2e] shadow-2xs">
             <div className="w-44 h-44 sm:w-56 sm:h-56 flex items-center justify-center -my-2 shrink-0">
               <DotLottieReact
                 src="/no-data.lottie"
@@ -168,10 +168,10 @@ export default function MyOrders() {
                 autoplay
               />
             </div>
-            <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-1">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">
               No orders found
             </h2>
-            <p className="text-xs sm:text-sm text-gray-500 mb-5 max-w-sm">
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-[#94a3b8] mb-5 max-w-sm">
               You haven't placed any orders yet. Discover our quality products and enjoy seamless shopping!
             </p>
             <Link to="/">
@@ -191,20 +191,20 @@ export default function MyOrders() {
               return (
                 <div
                   key={order._id}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-2xs hover:shadow-xs transition p-4 sm:p-5"
+                  className="bg-white dark:bg-[#202020] rounded-2xl border border-gray-100 dark:border-[#2e2e2e] shadow-2xs hover:shadow-xs transition p-4 sm:p-5"
                 >
                   {/* Order Top Bar: Order ID, Date & Status */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 pb-3.5 border-b border-gray-100">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-3.5 border-b border-gray-100 dark:border-[#2e2e2e]">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary flex items-center justify-center font-bold">
+                      <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-[#282828] text-primary flex items-center justify-center font-bold">
                         <Package size={16} />
                       </div>
                       <div>
-                        <p className="text-xs sm:text-sm font-bold text-gray-900">
+                        <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-gray-100">
                           Order #{order._id?.slice(-8).toUpperCase()}
                         </p>
-                        <div className="flex items-center gap-1.5 text-[11px] text-gray-500 mt-0.5">
-                          <Calendar size={12} className="text-gray-400" />
+                        <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-[#94a3b8] mt-0.5">
+                          <Calendar size={12} className="text-gray-400 dark:text-[#64748b]" />
                           <span>{formatDate(order.createdAt)}</span>
                         </div>
                       </div>
@@ -219,7 +219,7 @@ export default function MyOrders() {
                   </div>
 
                   {/* Order Products List */}
-                  <div className="divide-y divide-gray-50 py-2">
+                  <div className="divide-y divide-gray-50 dark:divide-[#2e2e2e] py-2">
                     {orderProducts.map((item, idx) => {
                       const prod = item.product || {};
                       const categoryName = prod.category?.name || prod.category;
@@ -234,35 +234,35 @@ export default function MyOrders() {
                               <img
                                 src={prod.image}
                                 alt={prod.name || "Product"}
-                                className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-contain bg-gray-50 border border-gray-100 p-1 shrink-0"
+                                className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-contain bg-gray-50 dark:bg-[#141414] border border-gray-100 dark:border-[#2e2e2e] p-1 shrink-0"
                               />
                             ) : (
-                              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gray-100 text-gray-500 flex items-center justify-center font-bold text-sm shrink-0">
+                              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gray-100 dark:bg-[#282828] text-gray-500 flex items-center justify-center font-bold text-sm shrink-0">
                                 <ShoppingBag size={18} />
                               </div>
                             )}
 
                             <div className="min-w-0">
-                              <h4 className="text-xs sm:text-sm font-semibold text-gray-900 truncate">
+                              <h4 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                                 {prod.name || "Product Item"}
                               </h4>
                               {categoryName && (
-                                <span className="inline-block text-[10px] font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded mt-0.5">
+                                <span className="inline-block text-[10px] font-medium text-gray-500 dark:text-[#94a3b8] bg-gray-100 dark:bg-[#282828] px-1.5 py-0.5 rounded mt-0.5">
                                   {categoryName}
                                 </span>
                               )}
-                              <p className="text-[11px] text-gray-500 mt-0.5">
+                              <p className="text-[11px] text-gray-500 dark:text-[#94a3b8] mt-0.5">
                                 Qty: {item.quantity || 1}
                               </p>
                             </div>
                           </div>
 
                           <div className="text-right shrink-0">
-                            <span className="text-xs sm:text-sm font-bold text-gray-900">
+                            <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
                               Rs {(prod.price || 0) * (item.quantity || 1)}
                             </span>
                             {item.quantity > 1 && (
-                              <p className="text-[10px] text-gray-400">
+                              <p className="text-[10px] text-gray-400 dark:text-[#94a3b8]">
                                 Rs {prod.price} each
                               </p>
                             )}
@@ -273,20 +273,20 @@ export default function MyOrders() {
                   </div>
 
                   {/* Order Footer: Payment Method & Total */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-gray-100">
-                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                      <CreditCard size={14} className="text-gray-400" />
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-gray-100 dark:border-[#2e2e2e]">
+                    <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-[#94a3b8]">
+                      <CreditCard size={14} className="text-gray-400 dark:text-[#64748b]" />
                       <span>
                         Paid with{" "}
-                        <strong className="text-gray-700 font-semibold">
+                        <strong className="text-gray-700 dark:text-gray-200 font-semibold">
                           {order.paymentMethod || "eSewa"}
                         </strong>
                       </span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-500">Total:</span>
-                      <span className="text-sm sm:text-base font-bold text-primary">
+                      <span className="text-xs text-gray-500 dark:text-[#94a3b8]">Total:</span>
+                      <span className="text-sm sm:text-base font-bold text-primary dark:text-white">
                         Rs {order.totalAmount}
                       </span>
                     </div>

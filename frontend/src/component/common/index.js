@@ -12,3 +12,5 @@ export { default as ErrorMessage } from "./ErrorMessage.jsx";
 export { default as Modal } from "./Modal.jsx";
 export { default as BrandIcon } from "./BrandIcon.jsx";
 export { default as OtpInput } from "./OtpInput.jsx";
+export { default as ThemeToggle } from "./ThemeToggle.jsx";
+export { default as ThemeBottomSheet } from "./ThemeBottomSheet.jsx";

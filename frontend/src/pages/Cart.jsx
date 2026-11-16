@@ -26,18 +26,18 @@ function Cart() {
 
   if (!token) {
     return (
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen bg-white dark:bg-[#171717] flex flex-col transition-colors duration-200">
         {/* Mobile Fixed/Sticky Top Bar */}
-        <header className="sticky top-0 z-30 bg-white border-b border-gray-200/90 h-14 flex items-center justify-between px-4 md:hidden">
+        <header className="sticky top-0 z-30 bg-white dark:bg-[#171717] border-b border-gray-200/90 dark:border-[#2e2e2e] h-14 flex items-center justify-between px-4 md:hidden">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="w-8 h-8 -ml-1 flex items-center justify-start text-gray-900 hover:text-gray-600 transition cursor-pointer"
+            className="w-8 h-8 -ml-1 flex items-center justify-start text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-[#cbd5e1] transition cursor-pointer"
             aria-label="Back"
           >
             <ChevronLeft size={22} strokeWidth={2.4} />
           </button>
-          <h1 className="text-base sm:text-lg font-bold text-gray-900 text-center flex-1 tracking-tight">
+          <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100 text-center flex-1 tracking-tight">
             Cart
           </h1>
           <div className="w-8" aria-hidden="true" />
@@ -51,10 +51,10 @@ function Cart() {
               autoplay
             />
           </div>
-          <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-1">
+          <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">
             Login to view your cart
           </h2>
-          <p className="text-xs sm:text-sm text-gray-500 mb-5 max-w-sm">
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-[#94a3b8] mb-5 max-w-sm">
             Please log in to your account to view your saved items and checkout.
           </p>
           <Button
@@ -72,18 +72,18 @@ function Cart() {
 
   if (isEmpty) {
     return (
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen bg-white dark:bg-[#171717] flex flex-col transition-colors duration-200">
         {/* Mobile Fixed/Sticky Top Bar */}
-        <header className="sticky top-0 z-30 bg-white border-b border-gray-200/90 h-14 flex items-center justify-between px-4 md:hidden">
+        <header className="sticky top-0 z-30 bg-white dark:bg-[#171717] border-b border-gray-200/90 dark:border-[#2e2e2e] h-14 flex items-center justify-between px-4 md:hidden">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="w-8 h-8 -ml-1 flex items-center justify-start text-gray-900 hover:text-gray-600 transition cursor-pointer"
+            className="w-8 h-8 -ml-1 flex items-center justify-start text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-[#cbd5e1] transition cursor-pointer"
             aria-label="Back"
           >
             <ChevronLeft size={22} strokeWidth={2.4} />
           </button>
-          <h1 className="text-base sm:text-lg font-bold text-gray-900 text-center flex-1 tracking-tight">
+          <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100 text-center flex-1 tracking-tight">
             Cart
           </h1>
           <div className="w-8" aria-hidden="true" />
@@ -97,10 +97,10 @@ function Cart() {
               autoplay
             />
           </div>
-          <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-1">
+          <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">
             Your cart is empty
           </h2>
-          <p className="text-xs sm:text-sm text-gray-500 mb-5 max-w-sm">
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-[#94a3b8] mb-5 max-w-sm">
             Looks like you haven't added anything to your cart yet. Explore our
             products and discover great deals!
           </p>
@@ -115,18 +115,18 @@ function Cart() {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-28 md:pb-12">
+    <div className="min-h-screen bg-white dark:bg-[#171717] pb-28 md:pb-12 transition-colors duration-200">
       {/* Mobile Fixed/Sticky Top Bar */}
-      <header className="sticky top-0 z-30 bg-white border-b border-gray-200/90 h-14 flex items-center justify-between px-4 md:hidden">
+      <header className="sticky top-0 z-30 bg-white dark:bg-[#171717] border-b border-gray-200/90 dark:border-[#2e2e2e] h-14 flex items-center justify-between px-4 md:hidden">
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="w-8 h-8 -ml-1 flex items-center justify-start text-gray-900 hover:text-gray-600 transition cursor-pointer"
+          className="w-8 h-8 -ml-1 flex items-center justify-start text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-[#cbd5e1] transition cursor-pointer"
           aria-label="Back"
         >
           <ChevronLeft size={22} strokeWidth={2.4} />
         </button>
-        <h1 className="text-base sm:text-lg font-bold text-gray-900 text-center flex-1 tracking-tight">
+        <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100 text-center flex-1 tracking-tight">
           Cart
         </h1>
         <div className="w-8" aria-hidden="true" />
@@ -143,34 +143,34 @@ function Cart() {
 
           {/* Order summary */}
           <div className="lg:col-span-1 lg:sticky lg:top-20 self-start">
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 sticky top-20">
-              <div className="flex items-center justify-between pb-2.5 border-b border-gray-100">
-                <h2 className="text-xs sm:text-sm font-semibold text-gray-900">
+            <div className="bg-white dark:bg-[#202020] rounded-xl border border-gray-100 dark:border-[#2e2e2e] shadow-sm p-4 sticky top-20">
+              <div className="flex items-center justify-between pb-2.5 border-b border-gray-100 dark:border-[#2e2e2e]">
+                <h2 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100">
                   Order Summary
                 </h2>
-                <span className="text-xs text-gray-500 font-medium">
+                <span className="text-xs text-gray-500 dark:text-[#94a3b8] font-medium">
                   {cart.length} {cart.length === 1 ? "item" : "items"}
                 </span>
               </div>
 
-              <div className="py-3 space-y-2 text-xs text-gray-600">
+              <div className="py-3 space-y-2 text-xs text-gray-600 dark:text-[#cbd5e1]">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="font-semibold text-gray-900">
+                  <span className="font-semibold text-gray-900 dark:text-white">
                     Rs {totalAmount}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Delivery</span>
-                  <span className="text-emerald-600 font-medium">Free</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">Free</span>
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-gray-100 flex items-baseline justify-between mb-4">
-                <span className="text-xs sm:text-sm font-bold text-gray-900">
+              <div className="pt-3 border-t border-gray-100 dark:border-[#2e2e2e] flex items-baseline justify-between mb-4">
+                <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-gray-100">
                   Total
                 </span>
-                <span className="text-sm sm:text-base font-bold text-primary">
+                <span className="text-sm sm:text-base font-bold text-primary dark:text-white">
                   Rs {totalAmount}
                 </span>
               </div>
@@ -185,11 +185,11 @@ function Cart() {
       </div>
 
       {/* Mobile Fixed Bottom Checkout Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200/90 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-[#171717] border-t border-gray-200/90 dark:border-[#2e2e2e] px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(0,0,0,0.3)]">
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col">
-            <span className="text-[11px] text-gray-500 font-medium">Total</span>
-            <span className="text-base sm:text-lg font-bold text-primary tracking-tight">
+            <span className="text-[11px] text-gray-500 dark:text-[#94a3b8] font-medium">Total</span>
+            <span className="text-base sm:text-lg font-bold text-primary dark:text-white tracking-tight">
               Rs {totalAmount}
             </span>
           </div>

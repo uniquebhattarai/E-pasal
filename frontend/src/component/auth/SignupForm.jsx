@@ -159,7 +159,7 @@ export default function SignupForm({ onSuccess, onSwitch, onError }) {
           </div>
 
           {/* Sticky action footer at the bottom: ONLY the button is sticky on mobile */}
-          <div className="shrink-0 bg-white border-t border-border-main/50 sm:border-0 pt-2 pb-1 sm:pt-0 sm:pb-0 z-10">
+          <div className="shrink-0 bg-bg-card border-t border-border-main/50 sm:border-0 pt-2 pb-1 sm:pt-0 sm:pb-0 z-10">
             <Button
               type="submit"
               variant="primary"

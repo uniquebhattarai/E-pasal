@@ -24,7 +24,7 @@ function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen md:min-h-[calc(100vh-3.5rem)] bg-[#F8F9FA] pb-24 md:pb-12">
+    <div className="min-h-screen md:min-h-[calc(100vh-3.5rem)] bg-[#F8F9FA] dark:bg-[#171717] pb-24 md:pb-12 transition-colors duration-200">
       <div className="max-w-7xl mx-auto md:px-6 lg:px-8 md:py-6 lg:py-8">
         <div className="flex flex-col md:flex-row gap-6 lg:gap-8 items-start">
           <Sidebar />

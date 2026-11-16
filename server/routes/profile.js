@@ -4,6 +4,9 @@ const router = express.Router();
 const {
   deleteAccount,
   updateProfile,
+  updateProfileHeader,
+  updateAbout,
+  updatePersonalDetails,
   getUserDetails,
   updateDisplayPicture,
   getUserOrders,
@@ -20,6 +23,9 @@ const { auth, isCustomer, isAdmin } = require("../middleware/auth");
 
 router.delete("/deleteProfile", auth, deleteAccount);
 router.put("/updateProfile", auth, updateProfile);
+router.put("/updateProfileHeader", auth, updateProfileHeader);
+router.put("/updateAbout", auth, updateAbout);
+router.put("/updatePersonalDetails", auth, updatePersonalDetails);
 router.get("/getUserDetails", auth, getUserDetails);
 router.put("/updateDisplayPicture", auth, updateDisplayPicture);
 router.post("/toggleWishlist", auth, toggleWishlist);

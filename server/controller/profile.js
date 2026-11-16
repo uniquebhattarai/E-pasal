@@ -64,6 +64,172 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
+exports.updateProfileHeader = async (req, res) => {
+  try {
+    const { firstName, lastName } = req.body;
+    const userId = req.user.id;
+
+    const userDetails = await User.findById(userId);
+    if (!userDetails) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found. Invalid or expired token.",
+      });
+    }
+
+    if (firstName) userDetails.firstName = firstName;
+    if (lastName !== undefined) userDetails.lastName = lastName;
+
+    if (req.files && req.files.displayPicture) {
+      const displayPicture = req.files.displayPicture;
+      const image = await uploadImageToCloudinary(
+        displayPicture,
+        process.env.FOLDER_NAME,
+        1000,
+        1000
+      );
+      userDetails.image = image.secure_url;
+    }
+
+    await userDetails.save();
+
+    const updatedUserDetails = await User.findById(userId)
+      .select("-password")
+      .populate("additionalDetails")
+      .exec();
+
+    if (updatedUserDetails && updatedUserDetails.image && updatedUserDetails.image.includes("dicebear.com")) {
+      updatedUserDetails.image = null;
+      await User.findByIdAndUpdate(userId, { image: null });
+    }
+
+    return res.json({
+      success: true,
+      message: "Profile header updated successfully",
+      data: updatedUserDetails,
+      updatedUserDetails,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update profile header",
+      error: error.message,
+    });
+  }
+};
+
+exports.updateAbout = async (req, res) => {
+  try {
+    const { about } = req.body;
+    const userId = req.user.id;
+
+    const userDetails = await User.findById(userId);
+    if (!userDetails) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found. Invalid or expired token.",
+      });
+    }
+
+    let profile = await Profile.findById(userDetails.additionalDetails);
+    if (!profile) {
+      profile = await Profile.create({
+        gender: null,
+        dateOfBirth: null,
+        about: typeof about === "string" ? about : null,
+        contactNumber: null,
+      });
+      userDetails.additionalDetails = profile._id;
+      await userDetails.save();
+    } else {
+      profile.about = typeof about === "string" ? about : profile.about;
+      await profile.save();
+    }
+
+    const updatedUserDetails = await User.findById(userId)
+      .select("-password")
+      .populate("additionalDetails")
+      .exec();
+
+    if (updatedUserDetails && updatedUserDetails.image && updatedUserDetails.image.includes("dicebear.com")) {
+      updatedUserDetails.image = null;
+      await User.findByIdAndUpdate(userId, { image: null });
+    }
+
+    return res.json({
+      success: true,
+      message: "About section updated successfully",
+      data: updatedUserDetails,
+      updatedUserDetails,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update about section",
+      error: error.message,
+    });
+  }
+};
+
+exports.updatePersonalDetails = async (req, res) => {
+  try {
+    const { firstName, lastName, dateOfBirth, contactNumber, gender } = req.body;
+    const userId = req.user.id;
+
+    const userDetails = await User.findById(userId);
+    if (!userDetails) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found. Invalid or expired token.",
+      });
+    }
+
+    if (firstName) userDetails.firstName = firstName;
+    if (lastName !== undefined) userDetails.lastName = lastName;
+    await userDetails.save();
+
+    let profile = await Profile.findById(userDetails.additionalDetails);
+    if (!profile) {
+      profile = await Profile.create({
+        gender: gender || null,
+        dateOfBirth: dateOfBirth || null,
+        about: null,
+        contactNumber: contactNumber || null,
+      });
+      userDetails.additionalDetails = profile._id;
+      await userDetails.save();
+    } else {
+      if (dateOfBirth !== undefined) profile.dateOfBirth = dateOfBirth;
+      if (contactNumber !== undefined) profile.contactNumber = contactNumber;
+      if (gender !== undefined) profile.gender = gender;
+      await profile.save();
+    }
+
+    const updatedUserDetails = await User.findById(userId)
+      .select("-password")
+      .populate("additionalDetails")
+      .exec();
+
+    if (updatedUserDetails && updatedUserDetails.image && updatedUserDetails.image.includes("dicebear.com")) {
+      updatedUserDetails.image = null;
+      await User.findByIdAndUpdate(userId, { image: null });
+    }
+
+    return res.json({
+      success: true,
+      message: "Personal details updated successfully",
+      data: updatedUserDetails,
+      updatedUserDetails,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update personal details",
+      error: error.message,
+    });
+  }
+};
+
 
 exports.deleteAccount = async (req, res) => {
   try {

@@ -62,7 +62,10 @@ export const updatedisplaypicture={
     UPDATE_DISPLAY_PICTURE_API:BASE_URL+"/profile/updateDisplayPicture"
 }
 export const updateprofile={
-    UPDATE_PROFILE_API:BASE_URL+"/profile/updateProfile"
+    UPDATE_PROFILE_API:BASE_URL+"/profile/updateProfile",
+    UPDATE_PROFILE_HEADER_API:BASE_URL+"/profile/updateProfileHeader",
+    UPDATE_ABOUT_API:BASE_URL+"/profile/updateAbout",
+    UPDATE_PERSONAL_DETAILS_API:BASE_URL+"/profile/updatePersonalDetails",
 }
 
 export const deleteprofile={

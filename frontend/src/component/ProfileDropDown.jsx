@@ -1,9 +1,11 @@
 import { useRef, useState, useEffect } from "react"
-import { CircleUserRound, LogOut, Settings, Package, Heart, ChevronDown, ChevronRight, ShieldCheck } from "lucide-react"
+import { CircleUserRound, LogOut, Settings, Package, Heart, ChevronDown, ChevronRight, ShieldCheck, Sun, Moon } from "lucide-react"
 import { useDispatch, useSelector } from "react-redux"
 import { Link, useNavigate } from "react-router-dom"
 import { logoutUser } from "../services/authService"
 import LogoutConfirmationModal from "./LogoutConfirmationModal"
+import { useTheme } from "../context/ThemeContext"
+import ThemeToggle from "./common/ThemeToggle"
 
 /* ── Avatar with initials fallback ───────────────────────────────────────── */
 function Avatar({ src, firstName = "", lastName = "", size = "sm" }) {
@@ -35,7 +37,7 @@ function Row({ to, icon: Icon, bgColor, label, onClick }) {
       to={to}
       onClick={onClick}
       className="flex items-center gap-3 px-3.5 py-2.5
-                 hover:bg-gray-50/80 transition-colors duration-150 group"
+                 hover:bg-gray-50/80 dark:hover:bg-[#262626] transition-colors duration-150 group"
     >
       <span
         className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
@@ -43,12 +45,12 @@ function Row({ to, icon: Icon, bgColor, label, onClick }) {
       >
         <Icon size={15} className="text-white" strokeWidth={2} />
       </span>
-      <span className="text-[13px] font-semibold text-gray-800 flex-1 leading-none group-hover:text-gray-900 transition-colors">
+      <span className="text-[13px] font-semibold text-gray-800 dark:text-gray-200 flex-1 leading-none group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
         {label}
       </span>
       <ChevronRight
         size={14}
-        className="text-gray-400 group-hover:text-gray-600 group-hover:translate-x-0.5 transition-all ml-auto shrink-0"
+        className="text-gray-400 dark:text-[#64748b] group-hover:text-gray-600 dark:group-hover:text-[#94a3b8] group-hover:translate-x-0.5 transition-all ml-auto shrink-0"
         strokeWidth={1.8}
       />
     </Link>
@@ -60,6 +62,7 @@ export default function ProfileDropdown() {
   const { user }  = useSelector((s) => s.profile)
   const dispatch  = useDispatch()
   const navigate  = useNavigate()
+  const { resolvedTheme } = useTheme()
   const [open, setOpen] = useState(false)
   const [showLogoutModal, setShowLogoutModal] = useState(false)
   const ref = useRef(null)
@@ -87,15 +90,15 @@ export default function ProfileDropdown() {
         id="profile-dropdown-trigger"
         onClick={() => setOpen((p) => !p)}
         className="flex items-center gap-2 py-1 px-1.5 rounded-lg
-                   hover:bg-gray-100/70 transition-colors duration-150 cursor-pointer"
+                   hover:bg-gray-100/70 dark:hover:bg-[#202020] transition-colors duration-150 cursor-pointer"
       >
         <Avatar src={user?.image} firstName={user?.firstName || "U"} lastName={user?.lastName || ""} size="sm" />
-        <span className="hidden sm:block text-sm font-medium text-gray-800 leading-none">
+        <span className="hidden sm:block text-sm font-medium text-gray-800 dark:text-gray-200 leading-none">
           {user?.firstName ? `${user.firstName} ${user.lastName || ""}`.trim() : "Account"}
         </span>
         <ChevronDown
           size={14}
-          className={`text-gray-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`text-gray-500 dark:text-[#94a3b8] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -107,9 +110,9 @@ export default function ProfileDropdown() {
           <div
             id="profile-dropdown-menu"
             className="absolute right-0 mt-3 w-64 z-50
-                       bg-white rounded-2xl overflow-hidden
-                       shadow-[0_12px_45px_rgba(0,0,0,0.12)]
-                       border border-gray-100"
+                       bg-white dark:bg-[#202020] rounded-2xl overflow-hidden
+                       shadow-[0_12px_45px_rgba(0,0,0,0.12)] dark:shadow-[0_12px_45px_rgba(0,0,0,0.6)]
+                       border border-gray-100 dark:border-[#2e2e2e]"
             style={{ animation: "slideDown .2s cubic-bezier(.22,1,.36,1) both" }}
           >
 
@@ -125,18 +128,18 @@ export default function ProfileDropdown() {
                   />
                   {/* online dot */}
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 
-                                   rounded-full border-2 border-white shadow-xs" />
+                                   rounded-full border-2 border-white dark:border-[#202020] shadow-xs" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[13px] font-bold text-gray-900 truncate leading-tight">
+                  <p className="text-[13px] font-bold text-gray-900 dark:text-gray-100 truncate leading-tight">
                     {user?.firstName ? `${user.firstName} ${user.lastName || ""}` : "My Account"}
                   </p>
-                  <p className="text-[11px] text-gray-400 truncate mt-0.5">
+                  <p className="text-[11px] text-gray-400 dark:text-[#94a3b8] truncate mt-0.5">
                     {user?.email || "Signed in"}
                   </p>
                   {isAdmin && (
                     <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-semibold
-                                     bg-violet-50 text-violet-600 px-2 py-0.5 rounded-full border border-violet-100">
+                                     bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-300 px-2 py-0.5 rounded-full border border-violet-100 dark:border-violet-800/60">
                       <ShieldCheck size={9} /> Admin
                     </span>
                   )}
@@ -145,10 +148,10 @@ export default function ProfileDropdown() {
             </div>
 
             {/* horizontal line under header */}
-            <div className="h-px bg-gray-100" />
+            <div className="h-px bg-gray-100 dark:bg-[#2e2e2e]" />
 
             {/* menu items with horizontal line between each */}
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-gray-100 dark:divide-[#2e2e2e]">
               <Row
                 to="/dashboard/my-profile"
                 icon={CircleUserRound}
@@ -177,24 +180,39 @@ export default function ProfileDropdown() {
                 label="Settings"
                 onClick={close}
               />
+
+              {/* Theme Row */}
+              <div className="flex items-center justify-between px-3.5 py-2.5">
+                <div className="flex items-center gap-3">
+                  <span className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-amber-500/10 dark:bg-amber-400/15 text-amber-500 dark:text-amber-400">
+                    {resolvedTheme === "dark" ? <Moon size={15} /> : <Sun size={15} />}
+                  </span>
+                  <span className="text-[13px] font-semibold text-gray-800 dark:text-gray-200">
+                    Theme
+                  </span>
+                </div>
+                <ThemeToggle variant="icon" size="sm" />
+              </div>
+
+              {/* Logout button */}
               <button
                 onClick={() => {
                   close()
                   setShowLogoutModal(true)
                 }}
                 className="flex items-center gap-3 w-full px-3.5 py-2.5
-                           hover:bg-red-50/70 transition-colors duration-150 group cursor-pointer text-left"
+                           hover:bg-red-50/70 dark:hover:bg-red-950/30 transition-colors duration-150 group cursor-pointer text-left"
               >
                 <span className="w-8 h-8 rounded-full bg-[#EF4444] text-white flex items-center justify-center
                                   flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform duration-150">
                   <LogOut size={15} className="text-white" strokeWidth={2} />
                 </span>
-                <span className="text-[13px] font-semibold text-red-600 flex-1 leading-none group-hover:text-red-700 transition-colors">
+                <span className="text-[13px] font-semibold text-red-600 dark:text-red-400 flex-1 leading-none group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors">
                   Logout
                 </span>
                 <ChevronRight
                   size={14}
-                  className="text-red-300 group-hover:text-red-500 group-hover:translate-x-0.5 transition-all ml-auto shrink-0"
+                  className="text-red-300 dark:text-red-500/60 group-hover:text-red-500 dark:group-hover:text-red-400 group-hover:translate-x-0.5 transition-all ml-auto shrink-0"
                   strokeWidth={1.8}
                 />
               </button>

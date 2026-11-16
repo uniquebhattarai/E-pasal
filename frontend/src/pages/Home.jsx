@@ -12,7 +12,7 @@ import { ShoppingCart, Heart, Star } from "lucide-react";
 // ── Skeleton card ──────────────────────────────────────────────
 function ProductSkeleton() {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col justify-between">
+    <div className="bg-white dark:bg-[#202020] rounded-xl shadow-sm border border-gray-100 dark:border-[#2e2e2e] overflow-hidden flex flex-col justify-between">
       {/* image placeholder */}
       <div className="skeleton h-44 w-full rounded-none" />
       <div className="p-3.5 space-y-2.5">
@@ -79,7 +79,7 @@ function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white px-4 pt-6 pb-24 md:py-8">
+    <div className="min-h-screen bg-white dark:bg-[#171717] px-4 pt-6 pb-24 md:py-8 transition-colors duration-200">
       <div className="max-w-7xl mx-auto">
         {/* Grid: 1 in a row on mobile, 2 in a row on tab view, 4 on desktop */}
         <div className="grid grid-cols-1 min-[500px]:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
@@ -93,10 +93,10 @@ function Home() {
             list.map((item) => (
               <div
                 key={item._id}
-                className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group border border-gray-100 flex flex-col justify-between"
+                className="bg-white dark:bg-[#202020] rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group border border-gray-100 dark:border-[#2e2e2e] flex flex-col justify-between"
               >
                 {/* Image */}
-                <div className="relative h-40 sm:h-44 w-full bg-gray-50 overflow-hidden flex items-center justify-center">
+                <div className="relative h-40 sm:h-44 w-full bg-gray-50 dark:bg-[#141414] overflow-hidden flex items-center justify-center">
                   {item.image ? (
                     <img
                       src={item.image}
@@ -104,7 +104,7 @@ function Home() {
                       className="h-full w-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-100">
+                    <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-[#262626] dark:to-[#1a1a1a]">
                       <span className="text-3xl font-bold text-primary">
                         {item.name.charAt(0)}
                       </span>
@@ -114,7 +114,7 @@ function Home() {
                   {/* Wishlist */}
                   <button
                     onClick={() => handleToggleWishlist(item)}
-                    className="absolute top-2.5 right-2.5 p-1.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                    className="absolute top-2.5 right-2.5 p-1.5 bg-white/90 dark:bg-[#202020]/90 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 active:scale-95 transition-all cursor-pointer"
                     title={Boolean(token) && wishlistIds.includes(item._id) ? "Remove from wishlist" : "Add to wishlist"}
                     aria-label="Wishlist"
                   >
@@ -130,26 +130,26 @@ function Home() {
 
                 {/* Details */}
                 <div className="p-3 sm:p-3.5 flex flex-col flex-1">
-                  <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1 text-xs sm:text-sm group-hover:text-primary transition-colors">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1 line-clamp-1 text-xs sm:text-sm group-hover:text-primary transition-colors">
                     {item.name}
                   </h3>
-                  <p className="text-gray-500 text-[11px] sm:text-xs mb-2 line-clamp-2 leading-relaxed font-normal">
+                  <p className="text-gray-500 dark:text-[#94a3b8] text-[11px] sm:text-xs mb-2 line-clamp-2 leading-relaxed font-normal">
                     {item.description}
                   </p>
 
                   {/* Rating */}
                   <div className="flex items-center gap-1 mb-2 text-xs">
                     <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                    <span className="text-[11px] sm:text-xs font-semibold text-gray-700">
+                    <span className="text-[11px] sm:text-xs font-semibold text-gray-700 dark:text-[#cbd5e1]">
                       {item.rating || "4.5"}
                     </span>
-                    <span className="text-gray-400 text-[10px] sm:text-[11px]">(120)</span>
+                    <span className="text-gray-400 dark:text-[#64748b] text-[10px] sm:text-[11px]">(120)</span>
                   </div>
 
                   {/* Price */}
                   <div className="mt-auto pt-1 mb-2.5 flex items-baseline gap-1">
-                    <span className="text-xs font-semibold text-primary">Rs</span>
-                    <span className="text-sm sm:text-base font-bold text-primary tracking-tight">
+                    <span className="text-xs font-semibold text-primary dark:text-white">Rs</span>
+                    <span className="text-sm sm:text-base font-bold text-primary dark:text-white tracking-tight">
                       {item.price}
                     </span>
                   </div>

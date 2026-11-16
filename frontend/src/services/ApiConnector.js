@@ -3,6 +3,11 @@ import { refreshToken as refreshTokenEndpoint } from './Api';
 
 export const axiosInstance = axios.create({
   withCredentials: true,
+  headers: {
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    Pragma: 'no-cache',
+    Expires: '0',
+  },
 });
 
 // Concurrency queue to handle multiple API requests failing at the same time

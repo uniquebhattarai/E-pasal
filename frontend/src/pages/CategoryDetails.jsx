@@ -12,7 +12,7 @@ import { ShoppingCart, Heart, ChevronLeft } from "lucide-react";
 // ── Skeleton card ──────────────────────────────────────────────
 function ProductSkeleton() {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col justify-between">
+    <div className="bg-white dark:bg-[#202020] rounded-xl shadow-sm border border-gray-100 dark:border-[#2e2e2e] overflow-hidden flex flex-col justify-between">
       <div className="skeleton h-44 w-full rounded-none" />
       <div className="p-3.5 space-y-2.5">
         <div className="skeleton h-4 w-3/4 rounded" />
@@ -82,18 +82,18 @@ function CategoryDetails() {
   };
 
   return (
-    <div className="bg-white min-h-[calc(100dvh-4rem)] md:min-h-0 pb-24 md:pt-4 md:pb-6">
+    <div className="bg-white dark:bg-[#171717] min-h-[calc(100dvh-4rem)] md:min-h-0 pb-24 md:pt-4 md:pb-6 transition-colors duration-200">
       {/* Mobile Fixed/Sticky Top Bar */}
-      <header className="sticky top-0 z-30 bg-white border-b border-gray-200/90 h-14 flex items-center justify-between px-4 md:hidden">
+      <header className="sticky top-0 z-30 bg-white dark:bg-[#171717] border-b border-gray-200/90 dark:border-[#2e2e2e] h-14 flex items-center justify-between px-4 md:hidden">
         <button
           type="button"
           onClick={() => navigate("/category")}
-          className="w-8 h-8 -ml-1 flex items-center justify-start text-gray-900 hover:text-gray-600 transition cursor-pointer"
+          className="w-8 h-8 -ml-1 flex items-center justify-start text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300 transition cursor-pointer"
           aria-label="Back to Categories"
         >
           <ChevronLeft size={22} strokeWidth={2.4} />
         </button>
-        <h1 className="text-base sm:text-lg font-bold text-gray-900 text-center flex-1 tracking-tight truncate px-2">
+        <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100 text-center flex-1 tracking-tight truncate px-2">
           {category?.name || ""}
         </h1>
         <div className="w-8" aria-hidden="true" />
@@ -107,11 +107,11 @@ function CategoryDetails() {
           ) : (
             category && (
               <div className="mb-4 sm:mb-5 text-left">
-                <h1 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">
+                <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
                   {category.name}
                 </h1>
                 {category.description && (
-                  <p className="text-gray-500 mt-0.5 text-xs sm:text-[13px] max-w-2xl">
+                  <p className="text-gray-500 dark:text-[#94a3b8] mt-0.5 text-xs sm:text-[13px] max-w-2xl">
                     {category.description}
                   </p>
                 )}
@@ -128,10 +128,10 @@ function CategoryDetails() {
             category.products.map((product) => (
               <div
                 key={product._id}
-                className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group border border-gray-100 flex flex-col justify-between"
+                className="bg-white dark:bg-[#202020] rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group border border-gray-100 dark:border-[#2e2e2e] flex flex-col justify-between"
               >
                 {/* Image */}
-                <div className="h-40 sm:h-44 w-full bg-gray-50 overflow-hidden relative flex items-center justify-center">
+                <div className="h-40 sm:h-44 w-full bg-gray-50 dark:bg-[#141414] overflow-hidden relative flex items-center justify-center">
                   {product.image ? (
                     <img
                       src={product.image}
@@ -139,7 +139,7 @@ function CategoryDetails() {
                       className="h-full w-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-100">
+                    <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-[#262626] dark:to-[#1a1a1a]">
                       <span className="text-3xl font-bold text-primary">
                         {product.name.charAt(0)}
                       </span>
@@ -149,7 +149,7 @@ function CategoryDetails() {
                   {/* Wishlist */}
                   <button
                     onClick={() => handleToggleWishlist(product)}
-                    className="absolute top-2.5 right-2.5 p-1.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                    className="absolute top-2.5 right-2.5 p-1.5 bg-white/90 dark:bg-[#202020]/90 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 active:scale-95 transition-all cursor-pointer"
                     title={Boolean(token) && wishlistIds.includes(product._id) ? "Remove from wishlist" : "Add to wishlist"}
                     aria-label="Wishlist"
                   >
@@ -165,17 +165,17 @@ function CategoryDetails() {
 
                 {/* Details */}
                 <div className="p-3 sm:p-3.5 flex flex-col flex-1">
-                  <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1 text-xs sm:text-sm group-hover:text-primary transition-colors">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1 line-clamp-1 text-xs sm:text-sm group-hover:text-primary transition-colors">
                     {product.name}
                   </h3>
-                  <p className="text-gray-500 text-[11px] sm:text-xs mb-2 line-clamp-2 leading-relaxed font-normal">
+                  <p className="text-gray-500 dark:text-[#94a3b8] text-[11px] sm:text-xs mb-2 line-clamp-2 leading-relaxed font-normal">
                     {product.description}
                   </p>
                   
                   {/* Price */}
                   <div className="mt-auto pt-1 mb-2.5 flex items-baseline gap-1">
-                    <span className="text-xs font-semibold text-primary">Rs</span>
-                    <span className="text-sm sm:text-base font-bold text-primary tracking-tight">
+                    <span className="text-xs font-semibold text-primary dark:text-white">Rs</span>
+                    <span className="text-sm sm:text-base font-bold text-primary dark:text-white tracking-tight">
                       {product.price}
                     </span>
                   </div>

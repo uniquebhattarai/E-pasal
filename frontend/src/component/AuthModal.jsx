@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import ColoredIcon from "../../public/colored icon.png";
+import WhiteLogo from "../../public/logo.png";
 import { useDispatch, useSelector } from "react-redux";
 import { ChevronLeft } from "lucide-react";
 
@@ -8,9 +9,11 @@ import { Modal } from "./common";
 import LoginForm from "./auth/LoginForm";
 import SignupForm from "./auth/SignupForm";
 import VerifyEmailForm from "./auth/VerifyEmailForm";
+import { useTheme } from "../context/ThemeContext";
 
 export default function AuthModal() {
   const dispatch = useDispatch();
+  const { isDark } = useTheme();
   const isAuthOpen = useSelector((state) => state.auth.authModal?.isOpen);
   const mode = useSelector((state) => state.auth.authModal?.mode) || "login";
   const signupData = useSelector((state) => state.auth.signupData);
@@ -113,25 +116,24 @@ export default function AuthModal() {
 
         {/* Brand Header */}
         <div
-          className={`mb-2 sm:mb-4 shrink-0 ${
-            isVerifyEmail ? "text-center pt-2 sm:pt-4" : "text-left"
-          }`}
+          className={`mb-2 sm:mb-4 shrink-0 ${isVerifyEmail ? "text-center pt-2 sm:pt-4" : "text-left"
+            }`}
         >
           {/* Logo is hidden inside verify-email view */}
           {!isVerifyEmail && (
             <img
-              src={ColoredIcon || "/colored icon.png"}
+              src={isDark ? WhiteLogo : (ColoredIcon || "/colored icon.png")}
               alt="E-Pasal"
-              className="h-6 sm:h-7 w-auto object-contain mx-auto mb-1.5"
+              className={`w-auto object-contain mx-auto mb-1.5 ${isDark ? "h-16 sm:h-20 -my-4 sm:-my-5" : "h-6 sm:h-7"
+                } dark:h-16 dark:sm:h-20 dark:-my-4 dark:sm:-my-5`}
             />
           )}
 
           <h3
-            className={`font-semibold text-text-main tracking-tight transition-colors duration-150 ${
-              isVerifyEmail
-                ? "hidden sm:block text-base sm:text-lg text-center font-bold"
-                : "text-sm sm:text-base text-left"
-            }`}
+            className={`font-semibold text-text-main tracking-tight transition-colors duration-150 ${isVerifyEmail
+              ? "hidden sm:block text-base sm:text-lg text-center font-bold"
+              : "text-sm sm:text-base text-left"
+              }`}
           >
             {getHeaderTitle()}
           </h3>

@@ -24,6 +24,8 @@ dotenv.config();
 
 Database.connect();
 
+// Disable ETags for dynamic REST API so responses always return 200 OK with fresh data instead of 304 Not Modified
+app.set("etag", false);
 
 app.use(express.json());
 app.use(cookieParser());
@@ -62,6 +64,17 @@ app.use(
 
 // Connect to  Cloudinary
 cloudinaryConnect();
+
+// Disable HTTP caching for all API routes to ensure always fresh 200 OK responses
+app.use("/api/v1", (req, res, next) => {
+  res.set({
+    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0",
+    "Surrogate-Control": "no-store",
+  });
+  next();
+});
 
 // Setting up routes
 app.use("/api/v1/auth", userRoutes);

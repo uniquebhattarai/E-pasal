@@ -31,20 +31,20 @@ export default function LogoutConfirmationModal({ isOpen, onClose, onConfirm }) 
         role="dialog"
         aria-modal="true"
         aria-labelledby="logout-confirm-title"
-        className="relative z-10 w-full max-w-md bg-white rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 shadow-2xl border-t sm:border border-gray-100 animate-slideUp sm:animate-scaleIn pb-8 sm:pb-6"
+        className="relative z-10 w-full max-w-md bg-white dark:bg-[#202020] rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 shadow-2xl border-t sm:border border-gray-100 dark:border-[#2e2e2e] animate-slideUp sm:animate-scaleIn pb-8 sm:pb-6"
       >
         {/* Grab Handle (visible on mobile) */}
-        <div className="sm:hidden w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-4" />
+        <div className="sm:hidden w-12 h-1.5 bg-gray-300 dark:bg-[#333333] rounded-full mx-auto mb-4" />
 
         {/* Warning Icon & Text */}
         <div className="text-center">
-          <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-3">
+          <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto mb-3">
             <LogOut size={22} strokeWidth={2.2} />
           </div>
-          <h3 id="logout-confirm-title" className="text-base sm:text-lg font-bold text-gray-900">
+          <h3 id="logout-confirm-title" className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100">
             Log Out of E-pasal?
           </h3>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1 max-w-xs mx-auto">
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-[#94a3b8] mt-1 max-w-xs mx-auto">
             Are you sure you want to log out? You will need to sign back in to access your profile and orders.
           </p>
         </div>
@@ -54,7 +54,7 @@ export default function LogoutConfirmationModal({ isOpen, onClose, onConfirm }) 
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-3 px-4 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-xs sm:text-sm transition cursor-pointer active:scale-[0.98] text-center"
+            className="flex-1 py-3 px-4 rounded-xl bg-gray-100 dark:bg-[#282828] hover:bg-gray-200 dark:hover:bg-[#333333] text-gray-700 dark:text-[#e2e8f0] font-semibold text-xs sm:text-sm transition cursor-pointer active:scale-[0.98] text-center"
           >
             Cancel
           </button>
