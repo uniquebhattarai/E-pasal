@@ -1,19 +1,40 @@
-// Resolve base URL dynamically so mobile devices on the same Wi-Fi connect seamlessly
+const RENDER_BACKEND_URL = "https://e-pasal-backend.onrender.com/api/v1";
+
+// Resolve base URL dynamically for local dev, LAN testing, and production (Vercel -> Render)
 const getBaseUrl = () => {
   const envUrl = import.meta.env.VITE_BASE_URL;
 
   if (typeof window !== "undefined") {
     const hostname = window.location.hostname;
-    // When accessing from a phone/tablet on local Wi-Fi (not localhost / 127.0.0.1)
-    if (hostname !== "localhost" && hostname !== "127.0.0.1") {
+
+    // 1. Localhost development
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      return envUrl || "http://localhost:3069/api/v1";
+    }
+
+    // 2. Testing on mobile phone via LAN Wi-Fi (e.g. 192.168.x.x, 10.x.x.x, 172.x.x.x)
+    const isPrivateIp = /^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/.test(hostname);
+    if (isPrivateIp) {
       if (envUrl && envUrl.includes("localhost")) {
         return envUrl.replace("localhost", hostname);
       }
-      return "/api/v1";
+      return `http://${hostname}:3069/api/v1`;
     }
+
+    // 3. Deployed / Production (Vercel, etc.)
+    if (envUrl && envUrl.startsWith("http")) {
+      // If localhost URL was accidentally used in production, fall back to Render
+      if (envUrl.includes("localhost") || envUrl.includes("127.0.0.1")) {
+        return RENDER_BACKEND_URL;
+      }
+      return envUrl;
+    }
+
+    // Default production backend on Render
+    return RENDER_BACKEND_URL;
   }
 
-  return envUrl || "/api/v1";
+  return envUrl || RENDER_BACKEND_URL;
 };
 
 const BASE_URL = getBaseUrl();
@@ -101,4 +122,8 @@ export const orderEndpoints = {
     PLACE_ORDER_API: BASE_URL + "/orders/placeOrder",
     GET_ALL_ORDERS_API: BASE_URL + "/orders/getAllOrders",
     UPDATE_ORDER_STATUS_API: BASE_URL + "/orders/updateOrderStatus",
+};
+
+export const paymentEndpoints = {
+    PAYMENT_INIT_API: BASE_URL + "/payment/init",
 };

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { Button } from "./common";
 import { placeOrder } from "../services/orderService";
+import { paymentEndpoints } from "../services/Api";
 
 
 const EsewaCheckout = ({ totalAmount, className = "", size = "sm" }) => {
@@ -45,7 +46,7 @@ const EsewaCheckout = ({ totalAmount, className = "", size = "sm" }) => {
 
     try {
       const { data } = await axios.post(
-        `${VITE_BASE_URL}/payment/init`,
+        paymentEndpoints.PAYMENT_INIT_API,
         {
           amount: totalAmount,
           transaction_uuid,

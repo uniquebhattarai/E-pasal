@@ -16,6 +16,9 @@ For recruiters and visitors evaluating the live project on Vercel, pre-configure
 | **Email** | `cool99619@gmail.com` |
 | **Password** | `Password@123` |
 
+> [!NOTE]
+> **Hosted on Render Free Tier**: The backend API is deployed on Render's free tier. If the server was idle, the initial cold start takes approximately **30–50 seconds** to wake up. An animated Lottie loader and auto-retry mechanism will keep trying until the backend responds. Once awake, all data and requests load instantaneously.
+
 ---
 
 ## ✨ Features & Architecture Highlights
