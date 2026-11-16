@@ -215,11 +215,6 @@ function Home() {
                 />
               </div>
 
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 text-xs font-medium mb-3">
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-                <span>Hosted on Render Free Tier</span>
-              </div>
-
               <h2 className="text-base sm:text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 tracking-tight">
                 Server is waking up...
               </h2>
