@@ -204,11 +204,16 @@ exports.login = async (req, res) => {
         await User.findByIdAndUpdate(userDetails._id, { image: null });
       }
 
+      const isProduction =
+        process.env.NODE_ENV === "production" || Boolean(process.env.RENDER);
+
       // Access Token Cookie (15 minutes)
       const accessTokenOptions = {
         expires: new Date(Date.now() + 15 * 60 * 1000),
         httpOnly: true,
         path: "/",
+        sameSite: isProduction ? "none" : "lax",
+        secure: isProduction,
       };
 
       // Refresh Token Cookie (30 days)
@@ -216,6 +221,8 @@ exports.login = async (req, res) => {
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         httpOnly: true,
         path: "/",
+        sameSite: isProduction ? "none" : "lax",
+        secure: isProduction,
       };
 
       const userResponse = userDetails.toObject();
@@ -299,16 +306,23 @@ exports.refreshToken = async (req, res) => {
       expiresIn: "30d",
     });
 
+    const isProduction =
+      process.env.NODE_ENV === "production" || Boolean(process.env.RENDER);
+
     const accessTokenOptions = {
       expires: new Date(Date.now() + 15 * 60 * 1000),
       httpOnly: true,
       path: "/",
+      sameSite: isProduction ? "none" : "lax",
+      secure: isProduction,
     };
 
     const refreshTokenOptions = {
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       httpOnly: true,
       path: "/",
+      sameSite: isProduction ? "none" : "lax",
+      secure: isProduction,
     };
 
     res.cookie("token", newAccessToken, accessTokenOptions);
@@ -331,10 +345,15 @@ exports.refreshToken = async (req, res) => {
 
 exports.logout = async (req, res) => {
   try {
+    const isProduction =
+      process.env.NODE_ENV === "production" || Boolean(process.env.RENDER);
+
     const cookieOptions = {
       httpOnly: true,
       expires: new Date(0),
       path: "/",
+      sameSite: isProduction ? "none" : "lax",
+      secure: isProduction,
     };
 
     res.clearCookie("token", cookieOptions);

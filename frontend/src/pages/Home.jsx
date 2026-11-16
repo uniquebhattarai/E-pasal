@@ -7,7 +7,8 @@ import { getWishlist, toggleWishlistItem } from "../services/wishlistService";
 import { resetWishlist } from "../slices/WishlistSlice";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { ShoppingCart, Heart, Star } from "lucide-react";
+import { ShoppingCart, Heart, Star, RefreshCw } from "lucide-react";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 // ── Skeleton card ──────────────────────────────────────────────
 function ProductSkeleton() {
@@ -39,21 +40,27 @@ function ProductSkeleton() {
 function Home() {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [isSlowLoading, setIsSlowLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const token = useSelector((state) => state.auth.token);
   const { wishlistIds } = useSelector((state) => state.wishlist);
 
-  const fetchProduct = async () => {
+  const fetchProduct = async (silent = false) => {
+    if (!silent) {
+      setIsRetrying(true);
+    }
     try {
       const result = await ApiConnector("GET", products.PRODUCTS_API);
-      if (result.data.success) {
+      if (result?.data?.success && Array.isArray(result?.data?.products)) {
         setList(result.data.products);
       }
     } catch (error) {
       console.log("Could not fetch products", error);
     } finally {
       setLoading(false);
+      setIsRetrying(false);
     }
   };
 
@@ -65,6 +72,30 @@ function Home() {
       dispatch(resetWishlist());
     }
   }, [token, dispatch]);
+
+  // Detect slow loading (Render cold start)
+  useEffect(() => {
+    let timer;
+    if (loading) {
+      timer = setTimeout(() => {
+        setIsSlowLoading(true);
+      }, 2500);
+    } else {
+      setIsSlowLoading(false);
+    }
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  // Auto-retry polling every 8s if backend is still spinning up on Render
+  useEffect(() => {
+    let retryTimer;
+    if (!loading && list.length === 0) {
+      retryTimer = setTimeout(() => {
+        fetchProduct(true);
+      }, 8000);
+    }
+    return () => clearTimeout(retryTimer);
+  }, [loading, list.length]);
 
   const handleToggleWishlist = (item) => {
     toggleWishlistItem(item, dispatch, token, () => {
@@ -81,9 +112,18 @@ function Home() {
   return (
     <div className="min-h-screen bg-white dark:bg-[#171717] px-4 pt-6 pb-24 md:py-8 transition-colors duration-200">
       <div className="max-w-7xl mx-auto">
+        {/* Render Free Tier Warmup Notification during loading */}
+        {isSlowLoading && (
+          <div className="mb-4 sm:mb-5 p-3 rounded-xl bg-blue-50/90 dark:bg-[#1c2230] border border-blue-200/80 dark:border-blue-900/50 text-blue-800 dark:text-blue-300 flex items-center gap-2.5 text-xs sm:text-sm animate-fadeIn">
+            <RefreshCw className="w-4 h-4 animate-spin shrink-0 text-primary" />
+            <p className="leading-relaxed">
+              <span className="font-semibold">Waking up backend server...</span> Hosted on Render free tier, the initial cold start takes approximately 30–50s.
+            </p>
+          </div>
+        )}
+
         {/* Grid: 1 in a row on mobile, 2 in a row on tab view, 4 on desktop */}
         <div className="grid grid-cols-1 min-[500px]:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-
           {loading ? (
             // Show 8 skeleton cards while loading
             Array.from({ length: 8 }).map((_, i) => (
@@ -119,11 +159,10 @@ function Home() {
                     aria-label="Wishlist"
                   >
                     <Heart
-                      className={`w-3.5 h-3.5 transition-colors ${
-                        Boolean(token) && wishlistIds.includes(item._id)
-                          ? "fill-red-500 text-red-500"
-                          : "text-gray-400 hover:text-red-400"
-                      }`}
+                      className={`w-3.5 h-3.5 transition-colors ${Boolean(token) && wishlistIds.includes(item._id)
+                        ? "fill-red-500 text-red-500"
+                        : "text-gray-400 hover:text-red-400"
+                        }`}
                     />
                   </button>
                 </div>
@@ -166,9 +205,42 @@ function Home() {
               </div>
             ))
           ) : (
-            <div className="col-span-full flex flex-col items-center justify-center py-16 text-gray-400">
-              <ShoppingCart className="w-12 h-12 mb-3 opacity-30" />
-              <p className="text-sm font-medium">No products found.</p>
+            /* Render Free Tier Warmup & Empty State with Lottie */
+            <div className="col-span-full flex flex-col items-center justify-center text-center px-4 py-10 sm:py-16">
+              <div className="w-48 h-48 sm:w-60 sm:h-60 flex items-center justify-center -my-3 shrink-0">
+                <DotLottieReact
+                  src="/no-data.lottie"
+                  loop
+                  autoplay
+                />
+              </div>
+
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 text-xs font-medium mb-3">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                <span>Hosted on Render Free Tier</span>
+              </div>
+
+              <h2 className="text-base sm:text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 tracking-tight">
+                Server is waking up...
+              </h2>
+
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-[#94a3b8] max-w-md mb-2 leading-relaxed">
+                The backend is deployed on Render's free tier. After a period of inactivity, the server spins down and may take <span className="font-semibold text-gray-900 dark:text-white">30–50 seconds</span> to restart.
+              </p>
+
+              <p className="text-xs text-gray-500 dark:text-[#64748b] max-w-md mb-6 leading-relaxed">
+                Thank you for your patience! Products will load automatically once the server is awake.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => fetchProduct(false)}
+                disabled={isRetrying}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-primary text-white text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg active:scale-95 transition cursor-pointer disabled:opacity-60"
+              >
+                <RefreshCw className={`w-4 h-4 ${isRetrying ? "animate-spin" : ""}`} />
+                {isRetrying ? "Connecting to server..." : "Retry Connection"}
+              </button>
             </div>
           )}
         </div>

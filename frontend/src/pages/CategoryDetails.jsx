@@ -7,7 +7,8 @@ import { addItemToCart } from "../services/cartService";
 import { getWishlist, toggleWishlistItem } from "../services/wishlistService";
 import { resetWishlist } from "../slices/WishlistSlice";
 import { toast } from "react-hot-toast";
-import { ShoppingCart, Heart, ChevronLeft } from "lucide-react";
+import { ShoppingCart, Heart, ChevronLeft, RefreshCw } from "lucide-react";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 // ── Skeleton card ──────────────────────────────────────────────
 function ProductSkeleton() {
@@ -154,11 +155,10 @@ function CategoryDetails() {
                     aria-label="Wishlist"
                   >
                     <Heart
-                      className={`w-3.5 h-3.5 transition-colors ${
-                        Boolean(token) && wishlistIds.includes(product._id)
-                          ? "fill-red-500 text-red-500"
-                          : "text-gray-400 hover:text-red-400"
-                      }`}
+                      className={`w-3.5 h-3.5 transition-colors ${Boolean(token) && wishlistIds.includes(product._id)
+                        ? "fill-red-500 text-red-500"
+                        : "text-gray-400 hover:text-red-400"
+                        }`}
                     />
                   </button>
                 </div>
@@ -171,7 +171,7 @@ function CategoryDetails() {
                   <p className="text-gray-500 dark:text-[#94a3b8] text-[11px] sm:text-xs mb-2 line-clamp-2 leading-relaxed font-normal">
                     {product.description}
                   </p>
-                  
+
                   {/* Price */}
                   <div className="mt-auto pt-1 mb-2.5 flex items-baseline gap-1">
                     <span className="text-xs font-semibold text-primary dark:text-white">Rs</span>
@@ -191,9 +191,24 @@ function CategoryDetails() {
               </div>
             ))
           ) : (
-            <div className="col-span-full flex flex-col items-center justify-center py-16 text-gray-400">
-              <ShoppingCart className="w-12 h-12 mb-3 opacity-30" />
-              <p className="text-sm font-medium">No products in this category yet.</p>
+            <div className="col-span-full flex flex-col items-center justify-center text-center px-4 py-10 sm:py-16">
+              <div className="w-44 h-44 sm:w-56 sm:h-56 flex items-center justify-center -my-2 shrink-0">
+                <DotLottieReact src="/no-data.lottie" loop autoplay />
+              </div>
+              <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">
+                No products found
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-[#94a3b8] max-w-sm mb-4 leading-relaxed">
+                No products in this category yet, or the server is waking up on Render's free tier.
+              </p>
+              <button
+                type="button"
+                onClick={fetchCategoryDetails}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-primary text-white text-xs sm:text-sm font-semibold shadow-sm hover:shadow active:scale-95 transition cursor-pointer"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Retry
+              </button>
             </div>
           )}
         </div>

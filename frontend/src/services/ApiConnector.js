@@ -14,6 +14,25 @@ export const axiosInstance = axios.create({
 let isRefreshing = false;
 let failedQueue = [];
 
+// Request Interceptor: attach token header fallback from localStorage if present
+axiosInstance.interceptors.request.use(
+  (config) => {
+    try {
+      const rawToken = localStorage.getItem('token');
+      if (rawToken) {
+        const token = JSON.parse(rawToken);
+        if (token && typeof token === 'string' && token !== 'cookie') {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      }
+    } catch (e) {
+      // Ignore storage/parse error
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 const processQueue = (error, token = null) => {
   failedQueue.forEach((prom) => {
     if (error) {

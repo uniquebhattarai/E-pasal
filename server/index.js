@@ -46,7 +46,11 @@ app.use(
         origin
       );
 
-      if (staticAllowed.includes(origin) || isLocalNetwork) {
+      // Allow any Vercel domain (production domain or preview deployments)
+      const isVercel =
+        origin.endsWith(".vercel.app") || origin.includes("vercel.app");
+
+      if (staticAllowed.includes(origin) || isLocalNetwork || isVercel) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
