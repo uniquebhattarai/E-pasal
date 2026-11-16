@@ -116,7 +116,7 @@ export default function AuthModal() {
 
         {/* Brand Header */}
         <div
-          className={`mb-2 sm:mb-4 shrink-0 ${isVerifyEmail ? "text-center pt-2 sm:pt-4" : "text-left"
+          className={`mb-1.5 sm:mb-4 shrink-0 ${isVerifyEmail ? "text-center pt-2 sm:pt-4" : "text-left"
             }`}
         >
           {/* Logo is hidden inside verify-email view */}
@@ -124,15 +124,15 @@ export default function AuthModal() {
             <img
               src={isDark ? WhiteLogo : (ColoredIcon || "/colored icon.png")}
               alt="E-Pasal"
-              className={`w-auto object-contain mx-auto mb-1.5 ${isDark ? "h-16 sm:h-20 -my-4 sm:-my-5" : "h-6 sm:h-7"
-                } dark:h-16 dark:sm:h-20 dark:-my-4 dark:sm:-my-5`}
+              className={`w-auto object-contain mx-auto mb-1 sm:mb-1.5 ${isDark ? "h-14 sm:h-20 -my-3 sm:-my-5" : "h-5 sm:h-7"
+                } dark:h-14 dark:sm:h-20 dark:-my-3 dark:sm:-my-5`}
             />
           )}
 
           <h3
             className={`font-semibold text-text-main tracking-tight transition-colors duration-150 ${isVerifyEmail
               ? "hidden sm:block text-base sm:text-lg text-center font-bold"
-              : "text-sm sm:text-base text-left"
+              : "text-xs sm:text-base text-left"
               }`}
           >
             {getHeaderTitle()}
