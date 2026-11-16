@@ -2,7 +2,8 @@
   "name": "e-pasal",
   "private": true,
   "scripts": {
-    "start": "concurrently -n frontend,server -c blue,green \"npm run dev --prefix frontend\" \"npm run dev --prefix server\""
+    "start": "concurrently -n frontend,server -c blue,green \"npm run dev --prefix frontend\" \"npm run dev --prefix server\"",
+    "dev": "npm start"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

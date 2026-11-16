@@ -1,170 +1,247 @@
-import React, { useState } from "react";
-import Logo from "../../public/logo.png";
-import { Link, NavLink } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { FaCartShopping } from "react-icons/fa6";
+import React from "react";
+import Logo from "../../public/colored icon.png";
+import WhiteLogo from "../../public/logo.png";
+import { Link, NavLink, useLocation } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import {
-  Menu,
-  X,
+  Home,
+  LayoutGrid,
+  Heart,
+  ShoppingCart,
+  User,
 } from "lucide-react";
 import ProfileDropDown from "../component/ProfileDropDown";
+import { openAuthModal } from "../slices/AuthSlice";
+import { Button, ThemeToggle } from "./common";
+import { useIsMobile } from "../hooks/useMobile";
+import { useTheme } from "../context/ThemeContext";
 
 function Navbar() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const { isDark } = useTheme();
+  // Call custom hook for viewport check
+  const isMobile = useIsMobile();
 
-  const { token } = useSelector((state) => state.auth);
+  const token = useSelector((state) => state.auth.token);
   const { user } = useSelector((state) => state.profile);
   const { totalItems } = useSelector((state) => state.cart);
+  const { wishlistIds } = useSelector((state) => state.wishlist);
 
-  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+  const isAccountPage = location.pathname.startsWith("/dashboard");
+  const isCartPage = location.pathname === "/cart";
+  const isCategoryDetailsPage = location.pathname.startsWith("/category/");
+  const hideBottomNav = isCartPage && Boolean(token) && totalItems > 0;
 
   const navLinks = [
-    { id: "home", label: "Home", href: "/" },
-    { id: "category", label: "Category", href: "/category" },
+    { id: "home", label: "Home", href: "/", icon: Home },
+    { id: "category", label: "Category", href: "/category", icon: LayoutGrid },
   ];
 
   return (
-    <nav className="bg-gradient-to-r from-green-700 via-green-600 to-emerald-600 shadow-lg sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
+    <>
+      {/* ── TOP NAVBAR ─────────────────────────────────────────── */}
+      <nav className={`bg-white dark:bg-[#171717] border-b-0 md:border-b border-border-main dark:border-[#2e2e2e] shadow-none md:shadow-xs relative md:sticky md:top-0 z-40 ${(isAccountPage || isCartPage || isCategoryDetailsPage) ? "hidden md:block" : ""}`}>
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex justify-between items-center h-14">
 
-          {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <img src={Logo} width={150} height={40} alt="Logo" />
-          </Link>
+            {/* Logo: uses white logo in dark mode, colored logo in light mode */}
+            <Link to="/" className="flex items-center">
+              <img
+                src={isDark ? WhiteLogo : Logo}
+                className={`w-auto object-contain ${isDark
+                  ? "h-[84px] sm:h-[102px] md:h-[124px] -my-[30px] sm:-my-[37px] md:-my-[46px] -ml-[10px] sm:-ml-[13px] md:-ml-[16px]"
+                  : "h-6 sm:h-7 md:h-8"
+                  } dark:h-[84px] dark:sm:h-[102px] dark:md:h-[124px] dark:-my-[30px] dark:sm:-my-[37px] dark:md:-my-[46px] dark:-ml-[10px] dark:sm:-ml-[13px] dark:md:-ml-[16px]`}
+                alt="Logo"
+              />
+            </Link>
 
-          {/* Desktop Menu */}
-          <ul className="hidden md:flex items-center gap-x-6 font-medium text-white">
-            {navLinks.map((link) => (
-              <li key={link.id}>
-                <NavLink
-                  to={link.href}
-                  className={({ isActive }) =>
-                    `px-4 py-2 rounded-lg transition ${
-                      isActive
-                        ? "bg-white text-green-700 shadow-md"
-                        : "hover:bg-green-500"
-                    }`
-                  }
+            {/* Desktop Navigation Links */}
+            <ul className="hidden md:flex items-center gap-x-1.5 font-medium">
+              {navLinks.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <li key={link.id}>
+                    <NavLink
+                      to={link.href}
+                      className={({ isActive }) =>
+                        `inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm transition ${isActive
+                          ? "bg-primary-light text-primary dark:text-white dark:bg-white/10 font-semibold"
+                          : "text-text-muted hover:bg-primary-light hover:text-primary dark:hover:bg-white/5 dark:hover:text-white"
+                        }`
+                      }
+                    >
+                      {Icon && <Icon className="w-4 h-4 shrink-0" />}
+                      <span>{link.label}</span>
+                    </NavLink>
+                  </li>
+                );
+              })}
+
+              {/* Cart link placed just right of Category */}
+              {(!user || user.accountType !== "Admin") && (
+                <li>
+                  <NavLink
+                    to="/cart"
+                    className={({ isActive }) =>
+                      `inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm transition ${isActive
+                        ? "bg-primary-light text-primary dark:text-white dark:bg-white/10 font-semibold"
+                        : "text-text-muted hover:bg-primary-light hover:text-primary dark:hover:bg-white/5 dark:hover:text-white"
+                      }`
+                    }
+                    aria-label="Cart"
+                  >
+                    <span className="relative flex items-center">
+                      <ShoppingCart className="w-4 h-4 shrink-0" />
+                      {Boolean(token) && totalItems > 0 && (
+                        <span className={`absolute -top-2 -right-2.5 flex items-center justify-center ${totalItems > 9 ? "min-w-[17px] px-1 h-[17px]" : "w-[17px] h-[17px]"} aspect-square bg-gradient-primary text-white text-[9.5px] font-bold rounded-full shadow-xs leading-none animate-bounce`}>
+                          {totalItems}
+                        </span>
+                      )}
+                    </span>
+                    <span>Cart</span>
+                  </NavLink>
+                </li>
+              )}
+            </ul>
+
+            {/* Desktop Right Section */}
+            <div className="hidden md:flex items-center gap-2.5 text-text-main">
+              <ThemeToggle size="md" />
+
+              {/* Auth */}
+              {token ? (
+                <ProfileDropDown />
+              ) : (
+                <Button
+                  size="sm"
+                  onClick={() => dispatch(openAuthModal("login"))}
                 >
-                  {link.label}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
+                  Log in
+                </Button>
+              )}
+            </div>
 
-          {/* Right Section */}
-          <div className="hidden md:flex items-center gap-6 text-white">
+            {/* Mobile Top Right Section (replaces hamburger button) */}
+            <div className="flex md:hidden items-center gap-2">
+              <ThemeToggle size="sm" />
 
-            {/* Cart */}
-            {user && user.accountType !== "Admin" && (
-              <Link to="/cart" className="relative">
-                <FaCartShopping className="text-2xl" />
-                {totalItems > 0 && (
-                  <span className="absolute -top-2 -right-2 flex items-center justify-center w-5 h-5 bg-yellow-400 text-green-900 text-xs font-bold rounded-full shadow-md animate-bounce">
+              {/* Only show Log in button when not logged in. Cart & Profile are in bottom nav */}
+              {!token && (
+                <Button
+                  size="sm"
+                  onClick={() => dispatch(openAuthModal("login"))}
+                  className="text-xs px-3 py-1"
+                >
+                  Log in
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* ── MOBILE BOTTOM NAVIGATION BAR ───────────────────────── */}
+      {isMobile && !hideBottomNav && (
+        <nav
+          aria-label="Mobile Navigation"
+          className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#171717] border-t border-border-main dark:border-[#2e2e2e] shadow-[0_-2px_10px_rgba(0,0,0,0.2)] px-2 py-1 flex items-center justify-around pb-[max(0.25rem,env(safe-area-inset-bottom))] transition-colors duration-200"
+        >
+          {/* Home */}
+          <NavLink
+            to="/"
+            end
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center flex-1 py-1.5 transition ${isActive
+                ? "text-primary dark:text-white font-semibold"
+                : "text-text-muted hover:text-primary dark:hover:text-white"
+              }`
+            }
+          >
+            <Home className="w-5 h-5 shrink-0" />
+            <span className="text-[11px] mt-0.5 tracking-tight">Home</span>
+          </NavLink>
+
+          {/* Category */}
+          <NavLink
+            to="/category"
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center flex-1 py-1.5 transition ${isActive
+                ? "text-primary dark:text-white font-semibold"
+                : "text-text-muted hover:text-primary dark:hover:text-white"
+              }`
+            }
+          >
+            <LayoutGrid className="w-5 h-5 shrink-0" />
+            <span className="text-[11px] mt-0.5 tracking-tight">Category</span>
+          </NavLink>
+
+          {/* Wishlist (Mobile only) */}
+          <NavLink
+            to="/dashboard/wishlist"
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center flex-1 py-1.5 transition ${isActive || location.pathname === "/dashboard/wishlist" || location.pathname === "/wishlist"
+                ? "text-primary dark:text-white font-semibold"
+                : "text-text-muted hover:text-primary dark:hover:text-white"
+              }`
+            }
+          >
+            <Heart className="w-5 h-5 shrink-0" />
+            <span className="text-[11px] mt-0.5 tracking-tight">Wishlist</span>
+          </NavLink>
+
+          {/* Cart */}
+          {(!user || user.accountType !== "Admin") && (
+            <NavLink
+              to="/cart"
+              className={({ isActive }) =>
+                `relative flex flex-col items-center justify-center flex-1 py-1.5 transition ${isActive
+                  ? "text-primary dark:text-white font-semibold"
+                  : "text-text-muted hover:text-primary dark:hover:text-white"
+                }`
+              }
+            >
+              <div className="relative">
+                <ShoppingCart className="w-5 h-5 shrink-0" />
+                {Boolean(token) && totalItems > 0 && (
+                  <span className={`absolute -top-1.5 -right-2.5 flex items-center justify-center ${totalItems > 9 ? "min-w-[17px] px-1 h-[17px]" : "w-[17px] h-[17px]"} aspect-square bg-gradient-primary text-white text-[9.5px] font-bold rounded-full shadow-xs leading-none animate-bounce`}>
                     {totalItems}
                   </span>
                 )}
-              </Link>
-            )}
+              </div>
+              <span className="text-[11px] mt-0.5 tracking-tight">Cart</span>
+            </NavLink>
+          )}
 
-            {/* Auth */}
-            {token ? (
-              <ProfileDropDown />
-            ) : (
-              <>
-                <Link to="/login">
-                  <button className="border border-green-700 bg-white text-green-700 px-4 py-2 rounded-lg font-semibold hover:bg-green-50">
-                    Log in
-                  </button>
-                </Link>
-                <Link to="/signup">
-                  <button className="border border-white bg-green-800 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-900">
-                    Sign up
-                  </button>
-                </Link>
-              </>
-            )}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={toggleMobileMenu}
-            className="md:hidden p-2 text-white"
+          {/* Profile / Account */}
+          <NavLink
+            to="/dashboard/account"
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center flex-1 py-1.5 transition ${isActive || location.pathname.startsWith("/dashboard")
+                ? "text-primary dark:text-white font-semibold"
+                : "text-text-muted hover:text-primary dark:hover:text-white"
+              }`
+            }
           >
-            {isMobileMenuOpen ? (
-              <X className="w-6 h-6" />
+            {token && user?.image && !user.image.includes("dicebear.com") ? (
+              <img
+                src={user.image}
+                alt={user?.firstName || "Profile"}
+                className="w-5 h-5 rounded-full object-cover shrink-0"
+              />
+            ) : token ? (
+              <span className="w-5 h-5 rounded-full bg-gradient-to-br from-[#5891f8] to-[#0c61f6] flex items-center justify-center text-[9px] font-bold text-white shrink-0 select-none">
+                {`${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.toUpperCase() || "U"}
+              </span>
             ) : (
-              <Menu className="w-6 h-6" />
+              <User className="w-5 h-5 shrink-0" />
             )}
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden bg-green-700 py-4 rounded-lg mt-2">
-            <ul className="flex flex-col gap-2 text-white text-lg">
-
-              {navLinks.map((link) => (
-                <li key={link.id} className="px-4">
-                  <NavLink
-                    to={link.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={({ isActive }) =>
-                      `block w-full px-3 py-2 rounded-md ${
-                        isActive ? "bg-white text-green-700" : "hover:bg-green-500"
-                      }`
-                    }
-                  >
-                    {link.label}
-                  </NavLink>
-                </li>
-              ))}
-
-              {/* Cart in Mobile */}
-              {user && user.accountType !== "Admin" && (
-                <Link
-                  to="/cart"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="relative px-4 flex items-center gap-3 py-2"
-                >
-                  <FaCartShopping className="text-2xl" />
-                  Cart
-                  {totalItems > 0 && (
-                    <span className="ml-auto flex items-center justify-center w-5 h-5 bg-yellow-400 text-green-900 text-xs font-bold rounded-full">
-                      {totalItems}
-                    </span>
-                  )}
-                </Link>
-              )}
-
-              {/* Auth Buttons */}
-              {!token && (
-                <div className="flex flex-col gap-2 mt-3 px-4">
-                  <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                    <button className="w-full bg-white text-green-700 px-4 py-2 rounded-lg font-semibold">
-                      Log in
-                    </button>
-                  </Link>
-                  <Link to="/signup" onClick={() => setIsMobileMenuOpen(false)}>
-                    <button className="w-full bg-green-900 text-white px-4 py-2 rounded-lg font-semibold">
-                      Sign up
-                    </button>
-                  </Link>
-                </div>
-              )}
-
-              {/* Profile Dropdown in mobile */}
-              {token && (
-                <div className="px-4 mt-2">
-                  <ProfileDropDown mobile />
-                </div>
-              )}
-            </ul>
-          </div>
-        )}
-      </div>
-    </nav>
+            <span className="text-[11px] mt-0.5 tracking-tight">Account</span>
+          </NavLink>
+        </nav>
+      )}
+    </>
   );
 }
 

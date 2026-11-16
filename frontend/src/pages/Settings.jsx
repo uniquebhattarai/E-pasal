@@ -6,8 +6,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { toast } from "react-hot-toast"
 import { setUser } from "../slices/ProfileSlice"
-import { setToken } from "../slices/AuthSlice"
-import { resetCart } from "../slices/CartSlice"
+import { logoutUser } from "../services/authService"
 import { ApiConnector } from "../services/ApiConnector"
 import {
   updatedisplaypicture,
@@ -15,14 +14,19 @@ import {
   changepassword,
   deleteprofile,
 } from "../services/Api"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import { Button, ThemeBottomSheet } from "../component/common"
+import ThemeToggle from "../component/common/ThemeToggle"
+import { useTheme } from "../context/ThemeContext"
 
 const genders = ["Male", "Female", "Non-Binary", "Prefer not to say", "Other"]
 
 export default function Settings() {
   const { user } = useSelector((state) => state.profile)
-  const { token } = useSelector((state) => state.auth)
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const { theme } = useTheme()
+  const [showThemeSheet, setShowThemeSheet] = useState(false)
 
   // ---------- Profile Picture ----------
   const [loading, setLoading] = useState(false)
@@ -115,11 +119,12 @@ export default function Settings() {
 
       if (!response.success) throw new Error(response.message)
 
-      const userImage =
-        response.updatedUserDetails.image ||
-        `https://api.dicebear.com/5.x/initials/svg?seed=${response.updatedUserDetails.firstName} ${response.updatedUserDetails.lastName}`
+      const userDetails = response.updatedUserDetails
+      if (userDetails?.image && userDetails.image.includes("dicebear.com")) {
+        userDetails.image = null
+      }
 
-      dispatch(setUser({ ...response.updatedUserDetails, image: userImage }))
+      dispatch(setUser(userDetails))
       toast.success("Profile Updated Successfully")
     } catch (error) {
       toast.error(error?.message || "Could not update profile")
@@ -152,14 +157,8 @@ export default function Settings() {
   }
 
   // ---------- Delete Account ----------
-  const handleLogout = () => {
-    dispatch(setToken(null))
-    dispatch(setUser(null))
-    dispatch(resetCart())
-    localStorage.removeItem("token")
-    localStorage.removeItem("user")
-    toast.success("Logged Out")
-    navigate("/")
+  const handleLogout = async () => {
+    await logoutUser(dispatch, navigate)
   }
 
   const handleDeleteAccount = async () => {
@@ -182,162 +181,222 @@ export default function Settings() {
   }
 
   return (
-    <div className="space-y-10">
-      <h1 className="text-3xl font-bold text-green-700">Settings</h1>
+    <div className="w-full max-w-[1000px] mx-auto pb-12">
+      {/* Mobile Fixed/Sticky Top Bar */}
+      <header className="sticky top-0 z-30 bg-white dark:bg-[#171717] border-b border-gray-200/90 dark:border-[#2e2e2e] h-14 flex items-center justify-between px-4 md:hidden">
+        <button
+          type="button"
+          onClick={() => navigate("/dashboard/account")}
+          className="w-8 h-8 -ml-1 flex items-center justify-start text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-[#cbd5e1] transition cursor-pointer"
+          aria-label="Back"
+        >
+          <ChevronLeft size={22} strokeWidth={2.4} />
+        </button>
+        <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100 text-center flex-1 tracking-tight">
+          Settings
+        </h1>
+        <div className="w-8" aria-hidden="true" />
+      </header>
 
-      {/* Profile Picture */}
-      <div className="flex items-center gap-x-6 rounded-2xl border border-green-300 bg-white/80 backdrop-blur-sm p-8 shadow-md hover:shadow-lg transition">
-        <img
-          src={previewSource || user?.image}
-          alt={`profile-${user?.firstName}`}
-          className="aspect-square w-20 rounded-full object-cover ring-2 ring-green-500"
-        />
-        <div className="space-y-3">
-          <p className="font-semibold text-green-900">Change Profile Picture</p>
-          <div className="flex gap-3">
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              className="hidden"
-              accept="image/png, image/gif, image/jpeg"
-            />
+      <div className="px-3.5 sm:px-6 md:px-0 py-3 sm:py-5 md:py-0 space-y-4">
+        <h1 className="hidden md:block text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100 tracking-tight">
+          Settings
+        </h1>
+
+        {/* Appearance / Theme */}
+        <div className="rounded-xl border border-gray-100 dark:border-[#2e2e2e] bg-white dark:bg-[#202020] p-3.5 sm:p-4 shadow-2xs hover:shadow-xs transition">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1 pr-2">
+              <h2 className="text-xs sm:text-[13px] font-semibold text-gray-900 dark:text-gray-100">
+                Appearance & Theme
+              </h2>
+              <p className="text-[11px] text-gray-500 dark:text-[#94a3b8] mt-0.5">
+                Customize your interface appearance. System mode automatically matches your device.
+              </p>
+            </div>
+            {/* Desktop: Segmented Pill */}
+            <div className="hidden sm:block shrink-0">
+              <ThemeToggle variant="pill" />
+            </div>
+            {/* Mobile: Tap to open Bottom Sheet */}
             <button
               type="button"
-              onClick={handleClick}
-              disabled={loading}
-              className="rounded-md bg-green-600 px-5 py-2 text-white font-semibold shadow hover:bg-green-700"
+              onClick={() => setShowThemeSheet(true)}
+              className="sm:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-[#282828] text-xs font-semibold text-gray-800 dark:text-gray-200 cursor-pointer shrink-0"
             >
-              Select
+              <span>{theme === "system" ? "System Default" : theme === "dark" ? "Dark Mode" : "Light Mode"}</span>
+              <ChevronRight size={13} className="text-gray-400 dark:text-[#64748b]" />
             </button>
+          </div>
+        </div>
+
+        {/* Profile Picture */}
+        <div className="flex items-center gap-x-4 rounded-xl border border-gray-100 dark:border-[#2e2e2e] bg-white dark:bg-[#202020] p-3.5 sm:p-4 shadow-2xs hover:shadow-xs transition">
+          {previewSource || (user?.image && !user.image.includes("dicebear.com")) ? (
+            <img
+              src={previewSource || user.image}
+              alt={`profile-${user?.firstName}`}
+              className="aspect-square w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-[#0c61f6]"
+            />
+          ) : (
+            <div className="aspect-square w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-[#5891f8] to-[#0c61f6] flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-2xs ring-2 ring-[#0c61f6]">
+              {`${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`.toUpperCase() || "U"}
+            </div>
+          )}
+          <div className="space-y-1.5">
+            <p className="text-xs sm:text-[13px] font-semibold text-gray-900 dark:text-gray-100">Change Profile Picture</p>
+            <div className="flex gap-2">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                accept="image/png, image/gif, image/jpeg"
+              />
+              <Button
+                type="button"
+                onClick={handleClick}
+                disabled={loading}
+                size="sm"
+                variant="outline"
+                className="!py-1 !px-2.5 !text-xs"
+              >
+                Select
+              </Button>
+              <Button
+                type="button"
+                onClick={handleFileUpload}
+                loading={loading}
+                loadingText="Uploading..."
+                size="sm"
+                rightIcon={FiUpload}
+                className="!py-1 !px-2.5 !text-xs"
+              >
+                Upload
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Edit Profile Form */}
+        <form
+          onSubmit={handleSubmit(submitProfileForm)}
+          className="space-y-3 rounded-xl border border-gray-100 dark:border-[#2e2e2e] bg-white dark:bg-[#202020] p-3.5 sm:p-4 shadow-2xs hover:shadow-xs transition"
+        >
+          <h2 className="text-xs sm:text-[13px] font-semibold text-gray-900 dark:text-gray-100">Edit Profile</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <input
+              type="text"
+              placeholder="First Name"
+              {...register("firstName")}
+              className="w-full rounded-lg border border-gray-200 dark:border-[#2e2e2e] bg-white dark:bg-[#171717] px-3 py-1.5 text-xs text-gray-800 dark:text-gray-100 focus:border-[#0c61f6] focus:ring-1 focus:ring-[#0c61f6]/30 outline-none"
+            />
+            <input
+              type="text"
+              placeholder="Last Name"
+              {...register("lastName")}
+              className="w-full rounded-lg border border-gray-200 dark:border-[#2e2e2e] bg-white dark:bg-[#171717] px-3 py-1.5 text-xs text-gray-800 dark:text-gray-100 focus:border-[#0c61f6] focus:ring-1 focus:ring-[#0c61f6]/30 outline-none"
+            />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <input
+              type="date"
+              {...register("dateOfBirth")}
+              className="w-full rounded-lg border border-gray-200 dark:border-[#2e2e2e] bg-white dark:bg-[#171717] px-3 py-1.5 text-xs text-gray-800 dark:text-gray-100 focus:border-[#0c61f6] focus:ring-1 focus:ring-[#0c61f6]/30 outline-none"
+            />
+            <select
+              {...register("gender")}
+              className="w-full rounded-lg border border-gray-200 dark:border-[#2e2e2e] bg-white dark:bg-[#171717] px-3 py-1.5 text-xs text-gray-800 dark:text-gray-100 focus:border-[#0c61f6] focus:ring-1 focus:ring-[#0c61f6]/30 outline-none"
+            >
+              {genders.map((g) => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </select>
+          </div>
+          <input
+            type="text"
+            placeholder="Contact Number"
+            {...register("contactNumber")}
+            className="w-full rounded-lg border border-gray-200 dark:border-[#2e2e2e] bg-white dark:bg-[#171717] px-3 py-1.5 text-xs text-gray-800 dark:text-gray-100 focus:border-[#0c61f6] focus:ring-1 focus:ring-[#0c61f6]/30 outline-none"
+          />
+          <textarea
+            rows={3}
+            placeholder="About"
+            {...register("about")}
+            className="w-full rounded-lg border border-gray-200 dark:border-[#2e2e2e] bg-white dark:bg-[#171717] px-3 py-1.5 text-xs text-gray-800 dark:text-gray-100 focus:border-[#0c61f6] focus:ring-1 focus:ring-[#0c61f6]/30 outline-none"
+          />
+          <Button type="submit" variant="primary" size="sm" className="!py-1.5 !px-3 !text-xs">
+            Update Profile
+          </Button>
+        </form>
+
+        {/* Update Password Form */}
+        <form
+          onSubmit={handleSubmitPwd(submitPasswordForm)}
+          className="space-y-3 rounded-xl border border-gray-100 dark:border-[#2e2e2e] bg-white dark:bg-[#202020] p-3.5 sm:p-4 shadow-2xs hover:shadow-xs transition"
+        >
+          <h2 className="text-xs sm:text-[13px] font-semibold text-gray-900 dark:text-gray-100">Change Password</h2>
+          <div className="relative">
+            <input
+              type={showOldPassword ? "text" : "password"}
+              placeholder="Old Password"
+              {...registerPwd("oldPassword")}
+              className="w-full rounded-lg border border-gray-200 dark:border-[#2e2e2e] bg-white dark:bg-[#171717] px-3 py-1.5 pr-8 text-xs text-gray-800 dark:text-gray-100 focus:border-[#0c61f6] focus:ring-1 focus:ring-[#0c61f6]/30 outline-none"
+            />
+            <span
+              className="absolute right-2.5 top-2 cursor-pointer text-gray-400 dark:text-[#94a3b8] hover:text-gray-600 dark:hover:text-[#e2e8f0]"
+              onClick={() => setShowOldPassword(!showOldPassword)}
+            >
+              {showOldPassword ? <AiOutlineEyeInvisible size={16} /> : <AiOutlineEye size={16} />}
+            </span>
+          </div>
+          <div className="relative">
+            <input
+              type={showNewPassword ? "text" : "password"}
+              placeholder="New Password"
+              {...registerPwd("newPassword")}
+              className="w-full rounded-lg border border-gray-200 dark:border-[#2e2e2e] bg-white dark:bg-[#171717] px-3 py-1.5 pr-8 text-xs text-gray-800 dark:text-gray-100 focus:border-[#0c61f6] focus:ring-1 focus:ring-[#0c61f6]/30 outline-none"
+            />
+            <span
+              className="absolute right-2.5 top-2 cursor-pointer text-gray-400 dark:text-[#94a3b8] hover:text-gray-600 dark:hover:text-[#e2e8f0]"
+              onClick={() => setShowNewPassword(!showNewPassword)}
+            >
+              {showNewPassword ? <AiOutlineEyeInvisible size={16} /> : <AiOutlineEye size={16} />}
+            </span>
+          </div>
+          <Button type="submit" variant="primary" size="sm" className="!py-1.5 !px-3 !text-xs">
+            Change Password
+          </Button>
+        </form>
+
+        {/* Delete Account */}
+        <div className="flex gap-x-3.5 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50/70 dark:bg-red-950/20 p-3.5 sm:p-4 shadow-2xs hover:shadow-xs transition">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-950/50">
+            <FiTrash2 className="text-base text-red-600 dark:text-red-400" />
+          </div>
+          <div className="flex flex-col space-y-1">
+            <h2 className="text-xs sm:text-[13px] font-semibold text-red-700 dark:text-red-300">Delete Account</h2>
+            <p className="text-[11px] text-red-600/80 dark:text-red-400/80">
+              This action is permanent and will remove all your data. Please
+              proceed carefully.
+            </p>
             <button
               type="button"
-              onClick={handleFileUpload}
-              disabled={loading}
-              className="flex items-center gap-2 rounded-md bg-green-600 px-5 py-2 text-white font-semibold shadow hover:bg-green-700"
+              className="w-fit cursor-pointer text-xs font-semibold text-red-600 dark:text-red-400 hover:underline pt-0.5"
+              onClick={handleDeleteAccount}
             >
-              {loading ? "Uploading..." : "Upload"} <FiUpload />
+              I want to delete my account
             </button>
           </div>
         </div>
       </div>
 
-      {/* Edit Profile Form */}
-      <form
-        onSubmit={handleSubmit(submitProfileForm)}
-        className="space-y-4 rounded-2xl border border-green-300 bg-white/80 backdrop-blur-sm p-6 shadow-md hover:shadow-lg transition"
-      >
-        <h2 className="text-lg font-semibold text-green-900">Edit Profile</h2>
-        <div className="flex gap-4">
-          <input
-            type="text"
-            placeholder="First Name"
-            {...register("firstName")}
-            className="w-1/2 rounded-md border border-gray-300 bg-white/70 p-2 text-green-900 focus:border-green-500 focus:ring-1 focus:ring-green-500"
-          />
-          <input
-            type="text"
-            placeholder="Last Name"
-            {...register("lastName")}
-            className="w-1/2 rounded-md border border-gray-300 bg-white/70 p-2 text-green-900 focus:border-green-500 focus:ring-1 focus:ring-green-500"
-          />
-        </div>
-        <input
-          type="date"
-          {...register("dateOfBirth")}
-          className="w-full rounded-md border border-gray-300 bg-white/70 p-2 text-green-900 focus:border-green-500 focus:ring-1 focus:ring-green-500"
-        />
-        <select
-          {...register("gender")}
-          className="w-full rounded-md border border-gray-300 bg-white/70 p-2 text-green-900 focus:border-green-500 focus:ring-1 focus:ring-green-500"
-        >
-          {genders.map((g) => (
-            <option key={g} value={g}>
-              {g}
-            </option>
-          ))}
-        </select>
-        <input
-          type="text"
-          placeholder="Contact Number"
-          {...register("contactNumber")}
-          className="w-full rounded-md border border-gray-300 bg-white/70 p-2 text-green-900 focus:border-green-500 focus:ring-1 focus:ring-green-500"
-        />
-        <textarea
-          placeholder="About"
-          {...register("about")}
-          className="w-full rounded-md border border-gray-300 bg-white/70 p-2 text-green-900 focus:border-green-500 focus:ring-1 focus:ring-green-500"
-        />
-        <button
-          type="submit"
-          className="rounded-md bg-green-600 px-5 py-2 font-semibold text-white shadow hover:bg-green-700"
-        >
-          Update Profile
-        </button>
-      </form>
-
-      {/* Update Password Form */}
-      <form
-        onSubmit={handleSubmitPwd(submitPasswordForm)}
-        className="space-y-4 rounded-2xl border border-green-300 bg-white/80 backdrop-blur-sm p-6 shadow-md hover:shadow-lg transition"
-      >
-        <h2 className="text-lg font-semibold text-green-900">Change Password</h2>
-        <div className="relative">
-          <input
-            type={showOldPassword ? "text" : "password"}
-            placeholder="Old Password"
-            {...registerPwd("oldPassword")}
-            className="w-full rounded-md border border-gray-300 bg-white/70 p-2 text-green-900 focus:border-green-500 focus:ring-1 focus:ring-green-500"
-          />
-          <span
-            className="absolute right-3 top-2.5 cursor-pointer text-gray-500"
-            onClick={() => setShowOldPassword(!showOldPassword)}
-          >
-            {showOldPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
-          </span>
-        </div>
-        <div className="relative">
-          <input
-            type={showNewPassword ? "text" : "password"}
-            placeholder="New Password"
-            {...registerPwd("newPassword")}
-            className="w-full rounded-md border border-gray-300 bg-white/70 p-2 text-green-900 focus:border-green-500 focus:ring-1 focus:ring-green-500"
-          />
-          <span
-            className="absolute right-3 top-2.5 cursor-pointer text-gray-500"
-            onClick={() => setShowNewPassword(!showNewPassword)}
-          >
-            {showNewPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
-          </span>
-        </div>
-        <button
-          type="submit"
-          className="rounded-md bg-green-600 px-5 py-2 font-semibold text-white shadow hover:bg-green-700"
-        >
-          Change Password
-        </button>
-      </form>
-
-      {/* Delete Account */}
-      <div className="flex gap-x-5 rounded-2xl border border-red-300 bg-red-50/90 backdrop-blur-sm p-8 shadow-md hover:shadow-lg transition">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-100">
-          <FiTrash2 className="text-2xl text-red-500" />
-        </div>
-        <div className="flex flex-col space-y-2">
-          <h2 className="text-lg font-semibold text-red-700">Delete Account</h2>
-          <p className="text-sm text-red-600">
-            This action is permanent and will remove all your data. Please
-            proceed carefully.
-          </p>
-          <button
-            type="button"
-            className="w-fit cursor-pointer font-medium text-red-600 hover:underline"
-            onClick={handleDeleteAccount}
-          >
-            I want to delete my account
-          </button>
-        </div>
-      </div>
+      <ThemeBottomSheet
+        isOpen={showThemeSheet}
+        onClose={() => setShowThemeSheet(false)}
+      />
     </div>
   )
 }

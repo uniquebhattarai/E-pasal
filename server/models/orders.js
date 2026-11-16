@@ -5,14 +5,23 @@ const orderSchema = new mongoose.Schema({
   products: [
     {
       product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-      quantity: { type: Number, required: true },
+      quantity: { type: Number, required: true, default: 1 },
     },
   ],
   totalAmount: { type: Number, required: true },
   status: {
     type: String,
     enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"],
-    default: "Pending",
+    default: "Processing",
+  },
+  paymentStatus: {
+    type: String,
+    enum: ["Pending", "Paid", "Failed"],
+    default: "Paid",
+  },
+  paymentMethod: {
+    type: String,
+    default: "eSewa",
   },
   shippingAddress: {
     street: String,

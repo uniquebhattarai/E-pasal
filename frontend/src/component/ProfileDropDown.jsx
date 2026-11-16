@@ -1,23 +1,22 @@
 import { useRef, useState, useEffect } from "react"
-import { User, LogOut, Settings, Package, Heart, ChevronDown, ShieldCheck } from "lucide-react"
+import { CircleUserRound, LogOut, Settings, Package, Heart, ChevronDown, ChevronRight, ShieldCheck, Sun, Moon } from "lucide-react"
 import { useDispatch, useSelector } from "react-redux"
 import { Link, useNavigate } from "react-router-dom"
-import { toast } from "react-hot-toast"
-
-import { setToken } from "../slices/AuthSlice"
-import { setUser } from "../slices/ProfileSlice"
-import { resetCart } from "../slices/CartSlice"
+import { logoutUser } from "../services/authService"
+import LogoutConfirmationModal from "./LogoutConfirmationModal"
+import { useTheme } from "../context/ThemeContext"
+import ThemeToggle from "./common/ThemeToggle"
 
 /* ── Avatar with initials fallback ───────────────────────────────────────── */
 function Avatar({ src, firstName = "", lastName = "", size = "sm" }) {
   const [err, setErr] = useState(false)
   const initials = `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase() || "U"
-  const dim = size === "lg" ? "w-11 h-11 text-sm" : "w-8 h-8 text-xs"
+  const dim = size === "lg" ? "w-9 h-9 text-xs" : "w-7 h-7 text-[11px]"
 
-  return !src || err ? (
+  return !src || err || src.includes("dicebear.com") ? (
     <span
-      className={`${dim} rounded-full bg-gradient-to-br from-violet-500 to-purple-700 
-                  flex items-center justify-center font-bold text-white flex-shrink-0 select-none`}
+      className={`${dim} rounded-full bg-gradient-to-br from-[#5891f8] to-[#0c61f6] 
+                  flex items-center justify-center font-bold text-white flex-shrink-0 select-none shadow-xs`}
     >
       {initials}
     </span>
@@ -26,30 +25,34 @@ function Avatar({ src, firstName = "", lastName = "", size = "sm" }) {
       src={src}
       alt={firstName}
       onError={() => setErr(true)}
-      className={`${dim} rounded-full object-cover flex-shrink-0`}
+      className={`${dim} rounded-full object-cover flex-shrink-0 shadow-xs`}
     />
   )
 }
 
 /* ── Single menu row ─────────────────────────────────────────────────────── */
-function Row({ to, icon: Icon, color, label, sub, onClick }) {
+function Row({ to, icon: Icon, bgColor, label, onClick }) {
   return (
     <Link
       to={to}
       onClick={onClick}
-      className="flex items-center gap-3 px-3 py-2.5 rounded-xl
-                 hover:bg-gray-50 transition-colors duration-150 group"
+      className="flex items-center gap-3 px-3.5 py-2.5
+                 hover:bg-gray-50/80 dark:hover:bg-[#262626] transition-colors duration-150 group"
     >
       <span
-        className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
-                    ${color} group-hover:scale-110 transition-transform duration-150`}
+        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
+                    ${bgColor} shadow-xs group-hover:scale-105 transition-transform duration-150`}
       >
-        <Icon size={15} />
+        <Icon size={15} className="text-white" strokeWidth={2} />
       </span>
-      <span className="min-w-0">
-        <p className="text-[13px] font-semibold text-gray-800 leading-tight">{label}</p>
-        <p className="text-[11px] text-gray-400 leading-tight">{sub}</p>
+      <span className="text-[13px] font-semibold text-gray-800 dark:text-gray-200 flex-1 leading-none group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+        {label}
       </span>
+      <ChevronRight
+        size={14}
+        className="text-gray-400 dark:text-[#64748b] group-hover:text-gray-600 dark:group-hover:text-[#94a3b8] group-hover:translate-x-0.5 transition-all ml-auto shrink-0"
+        strokeWidth={1.8}
+      />
     </Link>
   )
 }
@@ -59,7 +62,9 @@ export default function ProfileDropdown() {
   const { user }  = useSelector((s) => s.profile)
   const dispatch  = useDispatch()
   const navigate  = useNavigate()
+  const { resolvedTheme } = useTheme()
   const [open, setOpen] = useState(false)
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
   const ref = useRef(null)
 
   useEffect(() => {
@@ -68,19 +73,11 @@ export default function ProfileDropdown() {
     return () => document.removeEventListener("mousedown", handler)
   }, [])
 
-  if (!user) return null
-
   const close = () => setOpen(false)
 
-  const handleLogout = () => {
-    dispatch(setToken(null))
-    dispatch(setUser(null))
-    dispatch(resetCart())
-    localStorage.removeItem("token")
-    localStorage.removeItem("user")
-    toast.success("Logged out successfully!")
-    navigate("/")
-    close()
+  const handleLogout = async () => {
+    setShowLogoutModal(false)
+    await logoutUser(dispatch, navigate)
   }
 
   const isAdmin = user?.accountType === "Admin" || user?.role === "admin"
@@ -92,18 +89,16 @@ export default function ProfileDropdown() {
       <button
         id="profile-dropdown-trigger"
         onClick={() => setOpen((p) => !p)}
-        className="flex items-center gap-2 p-1 pr-2.5 rounded-full
-                   bg-white/15 hover:bg-white/25 backdrop-blur-sm
-                   border border-white/20 hover:border-white/40
-                   transition-all duration-200"
+        className="flex items-center gap-2 py-1 px-1.5 rounded-lg
+                   hover:bg-gray-100/70 dark:hover:bg-[#202020] transition-colors duration-150 cursor-pointer"
       >
-        <Avatar src={user?.image} firstName={user?.firstName} lastName={user?.lastName} size="sm" />
-        <span className="hidden sm:block text-sm font-semibold text-white">
-          {user?.firstName}
+        <Avatar src={user?.image} firstName={user?.firstName || "U"} lastName={user?.lastName || ""} size="sm" />
+        <span className="hidden sm:block text-sm font-medium text-gray-800 dark:text-gray-200 leading-none">
+          {user?.firstName ? `${user.firstName} ${user.lastName || ""}`.trim() : "Account"}
         </span>
         <ChevronDown
           size={14}
-          className={`text-white/70 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+          className={`text-gray-500 dark:text-[#94a3b8] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -115,34 +110,36 @@ export default function ProfileDropdown() {
           <div
             id="profile-dropdown-menu"
             className="absolute right-0 mt-3 w-64 z-50
-                       bg-white rounded-2xl overflow-hidden
-                       shadow-[0_8px_40px_rgba(0,0,0,0.18)]
-                       border border-gray-100"
+                       bg-white dark:bg-[#202020] rounded-2xl overflow-hidden
+                       shadow-[0_12px_45px_rgba(0,0,0,0.12)] dark:shadow-[0_12px_45px_rgba(0,0,0,0.6)]
+                       border border-gray-100 dark:border-[#2e2e2e]"
             style={{ animation: "slideDown .2s cubic-bezier(.22,1,.36,1) both" }}
           >
 
             {/* header */}
-            <div className="px-4 py-4">
-              <div className="flex items-center gap-3">
+            <div className="px-3.5 py-3">
+              <div className="flex items-center gap-2.5">
                 <div className="relative">
                   <Avatar
                     src={user?.image}
-                    firstName={user?.firstName}
-                    lastName={user?.lastName}
+                    firstName={user?.firstName || "U"}
+                    lastName={user?.lastName || ""}
                     size="lg"
                   />
                   {/* online dot */}
-                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 
-                                   rounded-full border-2 border-gray-950" />
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 
+                                   rounded-full border-2 border-white dark:border-[#202020] shadow-xs" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-black truncate leading-tight">
-                    {user?.firstName} {user?.lastName}
+                  <p className="text-[13px] font-bold text-gray-900 dark:text-gray-100 truncate leading-tight">
+                    {user?.firstName ? `${user.firstName} ${user.lastName || ""}` : "My Account"}
                   </p>
-                  <p className="text-[11px] text-gray-400 truncate mt-0.5">{user?.email}</p>
+                  <p className="text-[11px] text-gray-400 dark:text-[#94a3b8] truncate mt-0.5">
+                    {user?.email || "Signed in"}
+                  </p>
                   {isAdmin && (
-                    <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-semibold
-                                     bg-violet-500/20 text-violet-300 px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-semibold
+                                     bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-300 px-2 py-0.5 rounded-full border border-violet-100 dark:border-violet-800/60">
                       <ShieldCheck size={9} /> Admin
                     </span>
                   )}
@@ -150,63 +147,85 @@ export default function ProfileDropdown() {
               </div>
             </div>
 
-            {/* menu */}
-            <div className="p-2 space-y-0.5">
+            {/* horizontal line under header */}
+            <div className="h-px bg-gray-100 dark:bg-[#2e2e2e]" />
+
+            {/* menu items with horizontal line between each */}
+            <div className="divide-y divide-gray-100 dark:divide-[#2e2e2e]">
               <Row
                 to="/dashboard/my-profile"
-                icon={User}
-                color="bg-emerald-100 text-emerald-700"
+                icon={CircleUserRound}
+                bgColor="bg-[#1877F2]"
                 label="My Profile"
-                sub="View and edit profile"
                 onClick={close}
               />
               <Row
-                to="/dashboard/orders"
+                to="/dashboard/my-orders"
                 icon={Package}
-                color="bg-blue-100 text-blue-700"
+                bgColor="bg-[#9333EA]"
                 label="My Orders"
-                sub="Track your orders"
                 onClick={close}
               />
               <Row
                 to="/dashboard/wishlist"
                 icon={Heart}
-                color="bg-rose-100 text-rose-600"
+                bgColor="bg-[#F43F5E]"
                 label="Wishlist"
-                sub="Your saved items"
                 onClick={close}
               />
               <Row
                 to="/dashboard/settings"
                 icon={Settings}
-                color="bg-violet-100 text-violet-700"
+                bgColor="bg-[#6366F1]"
                 label="Settings"
-                sub="Account preferences"
                 onClick={close}
               />
-            </div>
 
-            {/* divider + logout */}
-            <div className="px-2 pb-2">
-              <div className="h-px bg-gray-100 mb-2" />
+              {/* Theme Row */}
+              <div className="flex items-center justify-between px-3.5 py-2.5">
+                <div className="flex items-center gap-3">
+                  <span className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-amber-500/10 dark:bg-amber-400/15 text-amber-500 dark:text-amber-400">
+                    {resolvedTheme === "dark" ? <Moon size={15} /> : <Sun size={15} />}
+                  </span>
+                  <span className="text-[13px] font-semibold text-gray-800 dark:text-gray-200">
+                    Theme
+                  </span>
+                </div>
+                <ThemeToggle variant="icon" size="sm" />
+              </div>
+
+              {/* Logout button */}
               <button
-                onClick={handleLogout}
-                className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl
-                           hover:bg-red-50 transition-colors duration-150 group"
+                onClick={() => {
+                  close()
+                  setShowLogoutModal(true)
+                }}
+                className="flex items-center gap-3 w-full px-3.5 py-2.5
+                           hover:bg-red-50/70 dark:hover:bg-red-950/30 transition-colors duration-150 group cursor-pointer text-left"
               >
-                <span className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center
-                                  flex-shrink-0 group-hover:scale-110 transition-transform duration-150">
-                  <LogOut size={15} />
+                <span className="w-8 h-8 rounded-full bg-[#EF4444] text-white flex items-center justify-center
+                                  flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform duration-150">
+                  <LogOut size={15} className="text-white" strokeWidth={2} />
                 </span>
-                <span className="text-left">
-                  <p className="text-[13px] font-semibold text-red-600 leading-tight">Logout</p>
-                  <p className="text-[11px] text-red-400 leading-tight">Sign out of your account</p>
+                <span className="text-[13px] font-semibold text-red-600 dark:text-red-400 flex-1 leading-none group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors">
+                  Logout
                 </span>
+                <ChevronRight
+                  size={14}
+                  className="text-red-300 dark:text-red-500/60 group-hover:text-red-500 dark:group-hover:text-red-400 group-hover:translate-x-0.5 transition-all ml-auto shrink-0"
+                  strokeWidth={1.8}
+                />
               </button>
             </div>
           </div>
         </>
       )}
+
+      <LogoutConfirmationModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleLogout}
+      />
 
       <style>{`
         @keyframes slideDown {

@@ -1,0 +1,179 @@
+/* ==========================================================================
+   Base Design System Colors & Theme Variables
+   Changing variables here updates the theme across the entire application.
+   ========================================================================== */
+
+:root {
+  /* Brand / Primary Palette (Vibrant Blue Gradient Theme) */
+  --color-primary: #0c61f6;
+  --color-primary-hover: #0952d6;
+  --color-primary-active: #0746b8;
+  --color-primary-light: #eff6ff;
+  --color-primary-subtle: #dbeafe;
+  --color-primary-border: #bfdbfe;
+  --color-primary-ring: rgba(12, 97, 246, 0.25);
+
+  /* Blue Gradient sampled from design (#5891f8 -> #0c61f6) */
+  --gradient-primary: linear-gradient(90deg, #5891f8 0%, #0c61f6 100%);
+  --gradient-primary-hover: linear-gradient(90deg, #4882f0 0%, #0952d6 100%);
+  --gradient-primary-active: linear-gradient(90deg, #3771df 0%, #0746b8 100%);
+
+  /* Danger / Error Palette */
+  --color-danger: #ef4444;
+  --color-danger-hover: #dc2626;
+  --color-danger-active: #b91c1c;
+  --color-danger-light: #fef2f2;
+  --color-danger-border: #fecaca;
+  --color-danger-ring: rgba(239, 68, 68, 0.25);
+
+  /* Neutrals & Text */
+  --color-text-main: #111827;
+  --color-text-muted: #4b5563;
+  --color-text-light: #9ca3af;
+  --color-text-placeholder: #9ca3af;
+
+  /* Surfaces & Backgrounds */
+  --color-bg-page: #ffffff;
+  --color-bg-card: #ffffff;
+  --color-bg-input: #f9fafb;
+  --color-bg-input-focus: #ffffff;
+  --color-bg-disabled: #f3f4f6;
+
+  /* Borders */
+  --color-border-main: #e5e7eb;
+  --color-border-input: #d1d5db;
+  --color-border-focus: #0c61f6;
+}
+
+:root.dark,
+html.dark {
+  /* Brand / Primary Palette (Calibrated for Neutral Charcoal Dark) */
+  --color-primary: #3b82f6;
+  --color-primary-hover: #60a5fa;
+  --color-primary-active: #2563eb;
+  --color-primary-light: rgba(59, 130, 246, 0.15);
+  --color-primary-subtle: rgba(59, 130, 246, 0.22);
+  --color-primary-border: rgba(59, 130, 246, 0.35);
+  --color-primary-ring: rgba(59, 130, 246, 0.35);
+
+  /* Blue Gradient for Dark Mode */
+  --gradient-primary: linear-gradient(90deg, #60a5fa 0%, #2563eb 100%);
+  --gradient-primary-hover: linear-gradient(90deg, #93c5fd 0%, #3b82f6 100%);
+  --gradient-primary-active: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+
+  /* Danger / Error Palette */
+  --color-danger: #f87171;
+  --color-danger-hover: #ef4444;
+  --color-danger-active: #dc2626;
+  --color-danger-light: rgba(239, 68, 68, 0.15);
+  --color-danger-border: rgba(239, 68, 68, 0.35);
+  --color-danger-ring: rgba(239, 68, 68, 0.35);
+
+  /* ── User-Specified Antigravity Charcoal Dark Tokens (Zero Blue Tint) ── */
+  --background: #171717;
+  --background-alt: #191919;
+  --card: #202020;
+  --surface: #000000;
+  --surface-alt: #202020;
+  --neutral: #000000;
+
+  --text: #f8fafc;
+  --text-light: #94a3b8;
+  --text-muted: #64748b;
+  --placeholder: #94a3b8;
+
+  --border: #2e2e2e;
+  --border-light: #2d3748;
+  --input-border: #475569;
+  --otp-border: rgba(148, 163, 184, 0.5);
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-upward: 0 -4px 16px rgba(0, 0, 0, 0.3);
+
+  --hover-surface: #232323;
+
+  /* Aliased Design System Tokens */
+  --color-text-main: #f8fafc;
+  --color-text-muted: #94a3b8;
+  --color-text-light: #64748b;
+  --color-text-placeholder: #94a3b8;
+
+  /* Surfaces & Backgrounds - Pure Neutral Charcoal (#171717 & #202020) */
+  --color-bg-page: #171717;
+  --color-bg-card: #202020;
+  --color-bg-input: #171717;
+  --color-bg-input-focus: #202020;
+  --color-bg-disabled: #2e2e2e;
+
+  /* Borders (#2e2e2e) */
+  --color-border-main: #2e2e2e;
+  --color-border-input: #475569;
+  --color-border-focus: #3b82f6;
+}
+
+html.dark {
+  background-color: #171717;
+  color: #f8fafc;
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-bg-page);
+  color: var(--color-text-main);
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary: var(--color-primary);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-primary-active: var(--color-primary-active);
+  --color-primary-light: var(--color-primary-light);
+  --color-primary-subtle: var(--color-primary-subtle);
+  --color-primary-border: var(--color-primary-border);
+  --color-primary-ring: var(--color-primary-ring);
+
+  --color-danger: var(--color-danger);
+  --color-danger-hover: var(--color-danger-hover);
+  --color-danger-active: var(--color-danger-active);
+  --color-danger-light: var(--color-danger-light);
+  --color-danger-border: var(--color-danger-border);
+  --color-danger-ring: var(--color-danger-ring);
+
+  --color-text-main: var(--color-text-main);
+  --color-text-muted: var(--color-text-muted);
+  --color-text-light: var(--color-text-light);
+
+  --color-bg-page: var(--color-bg-page);
+  --color-bg-card: var(--color-bg-card);
+  --color-bg-input: var(--color-bg-input);
+  --color-bg-input-focus: var(--color-bg-input-focus);
+  --color-bg-disabled: var(--color-bg-disabled);
+
+  --color-border-main: var(--color-border-main);
+  --color-border-input: var(--color-border-input);
+}
+
+/* Primary Blue Gradient Utilities */
+.bg-gradient-primary {
+  background: linear-gradient(90deg, #5891f8 0%, #0c61f6 100%);
+}
+
+.bg-gradient-primary:hover {
+  background: linear-gradient(90deg, #4882f0 0%, #0952d6 100%);
+}
+
+.bg-gradient-primary:active {
+  background: linear-gradient(90deg, #3771df 0%, #0746b8 100%);
+}
+
+.text-gradient-primary {
+  background: linear-gradient(90deg, #5891f8 0%, #0c61f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+

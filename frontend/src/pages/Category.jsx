@@ -7,7 +7,7 @@ import { ChevronRight, Tag } from "lucide-react";
 // ── Skeleton card ──────────────────────────────────────────────
 function CategorySkeleton() {
   return (
-    <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100">
+    <div className="bg-white dark:bg-[#202020] rounded-2xl shadow-md overflow-hidden border border-gray-100 dark:border-[#2e2e2e]">
       <div className="skeleton h-36 w-full rounded-none" />
       <div className="p-4 space-y-2">
         <div className="skeleton h-5 w-2/3 rounded-md" />
@@ -40,10 +40,10 @@ function Category() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 px-4 py-10">
+    <div className="min-h-screen bg-white dark:bg-[#171717] px-4 pt-6 pb-24 md:py-8 transition-colors duration-200">
       <div className="max-w-7xl mx-auto">
-        {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {/* Grid: 1 in a row on mobile, 2 in a row on tab view, 4 on desktop */}
+        <div className="grid grid-cols-1 min-[500px]:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {loading ? (
             Array.from({ length: 8 }).map((_, i) => <CategorySkeleton key={i} />)
           ) : list.length > 0 ? (
@@ -51,19 +51,19 @@ function Category() {
               <div
                 key={item._id}
                 onClick={() => navigate(`/category/${item._id}`)}
-                className="bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden group border border-gray-100 cursor-pointer"
+                className="bg-white dark:bg-[#202020] rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group border border-gray-100 dark:border-[#2e2e2e] cursor-pointer"
               >
                 {/* Image */}
-                <div className="h-36 w-full bg-gray-100 overflow-hidden relative">
+                <div className="h-32 sm:h-36 w-full bg-gray-50 dark:bg-[#141414] overflow-hidden relative flex items-center justify-center">
                   {item.image ? (
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="h-full w-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-green-100 to-emerald-100">
-                      <Tag className="w-10 h-10 text-green-500 opacity-60" />
+                    <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-[#262626] dark:to-[#1a1a1a]">
+                      <Tag className="w-8 h-8 text-primary opacity-60" />
                     </div>
                   )}
                   {/* Hover overlay */}
@@ -71,22 +71,22 @@ function Category() {
                 </div>
 
                 {/* Info */}
-                <div className="p-4">
+                <div className="p-3 sm:p-3.5">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-gray-800 text-base group-hover:text-emerald-600 transition-colors">
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-xs sm:text-sm group-hover:text-primary transition-colors">
                       {item.name}
                     </h3>
-                    <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
+                    <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-[#64748b] group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
                   </div>
-                  <p className="text-gray-500 text-xs mt-1 line-clamp-2 leading-relaxed">
+                  <p className="text-gray-500 dark:text-[#94a3b8] text-[11px] sm:text-xs mt-1 line-clamp-2 leading-relaxed">
                     {item.description}
                   </p>
                 </div>
               </div>
             ))
           ) : (
-            <div className="col-span-full text-center py-20 text-gray-400">
-              <p className="text-lg font-medium">No categories found.</p>
+            <div className="col-span-full text-center py-16 text-gray-400 dark:text-[#64748b]">
+              <p className="text-sm font-medium">No categories found.</p>
             </div>
           )}
         </div>

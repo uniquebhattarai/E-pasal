@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { Button } from "./common";
+import { placeOrder } from "../services/orderService";
 
 
-const EsewaCheckout = ({ totalAmount }) => {
+const EsewaCheckout = ({ totalAmount, className = "", size = "sm" }) => {
   const [loading, setLoading] = useState(false);
 
   const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -59,6 +61,13 @@ const EsewaCheckout = ({ totalAmount }) => {
       if (data.success) {
         console.log("[eSewa] Submitting form to:", data.formUrl);
 
+        // Pre-create order in database for order history
+        try {
+          await placeOrder({ totalAmount });
+        } catch (orderErr) {
+          console.warn("Order creation warning:", orderErr);
+        }
+
         // Dynamically create a form and POST to eSewa
         const form = document.createElement("form");
         form.method = "POST";
@@ -89,15 +98,17 @@ const EsewaCheckout = ({ totalAmount }) => {
   };
 
   return (
-    <button
+    <Button
       onClick={handlePayment}
-      disabled={loading}
-      className={`bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-2.5 px-6 rounded-xl shadow hover:shadow-lg transition-all duration-200 active:scale-95 ${
-        loading ? "opacity-50 cursor-not-allowed" : ""
-      }`}
+      loading={loading}
+      loadingText="Processing..."
+      variant="primary"
+      size={size}
+      fullWidth
+      className={className}
     >
-      {loading ? "Processing..." : "Pay with eSewa"}
-    </button>
+      Pay with eSewa
+    </Button>
   );
 };
 

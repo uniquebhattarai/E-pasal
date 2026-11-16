@@ -5,8 +5,13 @@ const otpGenerator = require("otp-generator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mailSender = require("../utils/mailSender");
+const path = require("path");
+const fs = require("fs");
 const { passwordUpdated } = require("../mail/templates/emailTemplates");
 require("dotenv").config();
+
+const REFRESH_TOKEN_SECRET =
+  process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET + "_refresh";
 
 
 
@@ -134,8 +139,10 @@ exports.signUp = async (req, res) => {
       accountType,
       contactNumber,
       additionalDetails: profileDetails._id,
-      image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName}${lastName}`,
+      image: null,
     });
+
+    newUser.password = undefined;
 
     return res.status(200).json({
       success: true,
@@ -166,7 +173,8 @@ exports.login = async (req, res) => {
       });
     }
 
-    const userDetails = await User.findOne({ email: email.toLowerCase() }).populate("additionalDetails");
+    const userDetails = await User.findOne({ email: email.toLowerCase() })
+      .populate("additionalDetails");
     if (!userDetails) {
       return res.status(401).json({
         success: false,
@@ -181,22 +189,49 @@ exports.login = async (req, res) => {
         role: userDetails.accountType,
       };
 
+      // 1. Short-lived Access Token (15 minutes)
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: "2h",
+        expiresIn: "15m",
       });
 
-      userDetails.token = token;
-      userDetails.password = undefined;
+      // 2. Long-lived Refresh Token (30 days — Amazon / Daraz standard)
+      const refreshToken = jwt.sign(payload, REFRESH_TOKEN_SECRET, {
+        expiresIn: "30d",
+      });
 
-      const options = {
-        expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+      if (userDetails.image && userDetails.image.includes("dicebear.com")) {
+        userDetails.image = null;
+        await User.findByIdAndUpdate(userDetails._id, { image: null });
+      }
+
+      // Access Token Cookie (15 minutes)
+      const accessTokenOptions = {
+        expires: new Date(Date.now() + 15 * 60 * 1000),
         httpOnly: true,
+        path: "/",
       };
 
-      // Token is set in the httpOnly cookie — do NOT expose it in the response body
-      return res.cookie("token", token, options).status(200).json({
+      // Refresh Token Cookie (30 days)
+      const refreshTokenOptions = {
+        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        httpOnly: true,
+        path: "/",
+      };
+
+      const userResponse = userDetails.toObject();
+      delete userResponse.password;
+      delete userResponse.cart;
+      delete userResponse.wishlist;
+      delete userResponse.token;
+
+      // Set both cookies securely (httpOnly)
+      res.cookie("token", token, accessTokenOptions);
+      res.cookie("refreshToken", refreshToken, refreshTokenOptions);
+
+      return res.status(200).json({
         success: true,
-        user: userDetails,
+        user: userResponse,
+        token: token,
         message: "Logged in successfully",
       });
 
@@ -212,6 +247,110 @@ exports.login = async (req, res) => {
     return res.status(400).json({
       success: false,
       message: "Error while login, please try again later",
+      error: error.message,
+    });
+  }
+};
+
+// Refresh Access Token endpoint
+exports.refreshToken = async (req, res) => {
+  try {
+    const incomingRefreshToken =
+      req.cookies?.refreshToken || req.body?.refreshToken;
+
+    if (!incomingRefreshToken) {
+      return res.status(401).json({
+        success: false,
+        message: "Refresh token is missing",
+      });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(incomingRefreshToken, REFRESH_TOKEN_SECRET);
+    } catch (err) {
+      return res.status(401).json({
+        success: false,
+        message: "Refresh token is invalid or expired. Please login again.",
+      });
+    }
+
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const payload = {
+      email: user.email,
+      id: user._id,
+      role: user.accountType,
+    };
+
+    // Issue a new fresh 15-minute Access Token
+    const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "15m",
+    });
+
+    // Rolling 30-day Refresh Token (Amazon / Daraz standard)
+    const newRefreshToken = jwt.sign(payload, REFRESH_TOKEN_SECRET, {
+      expiresIn: "30d",
+    });
+
+    const accessTokenOptions = {
+      expires: new Date(Date.now() + 15 * 60 * 1000),
+      httpOnly: true,
+      path: "/",
+    };
+
+    const refreshTokenOptions = {
+      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+      path: "/",
+    };
+
+    res.cookie("token", newAccessToken, accessTokenOptions);
+    res.cookie("refreshToken", newRefreshToken, refreshTokenOptions);
+
+    return res.status(200).json({
+      success: true,
+      message: "Token refreshed successfully",
+      token: newAccessToken,
+    });
+  } catch (error) {
+    console.error("Refresh token error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error while refreshing token",
+      error: error.message,
+    });
+  }
+};
+
+exports.logout = async (req, res) => {
+  try {
+    const cookieOptions = {
+      httpOnly: true,
+      expires: new Date(0),
+      path: "/",
+    };
+
+    res.clearCookie("token", cookieOptions);
+    res.clearCookie("refreshToken", cookieOptions);
+    res.cookie("token", "", cookieOptions);
+    res.cookie("refreshToken", "", cookieOptions);
+
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    console.error("Logout error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error while logging out",
       error: error.message,
     });
   }
@@ -242,7 +381,7 @@ exports.changePassword = async (req, res) => {
     try {
       await mailSender(
         updatedUserDetails.email,
-        `Password updated successfully for ${updatedUserDetails.firstName} ${updatedUserDetails.lastName}`,
+        `Password Updated Successfully - e-pasal`,
         passwordUpdated(updatedUserDetails.email, updatedUserDetails.firstName)
       );
     } catch (mailError) {
