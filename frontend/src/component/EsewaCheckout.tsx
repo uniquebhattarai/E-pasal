@@ -1,0 +1,111 @@
+import React, { useState } from "react";
+import axios from "axios";
+import { Button } from "./common";
+import { placeOrder } from "../services/orderService";
+import { paymentEndpoints } from "../services/Api";
+import { ButtonSize } from "./common/Button";
+
+export interface EsewaCheckoutProps {
+  totalAmount: number;
+  className?: string;
+  size?: ButtonSize;
+}
+
+const EsewaCheckout: React.FC<EsewaCheckoutProps> = ({ totalAmount, className = "", size = "sm" }) => {
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const handlePayment = async () => {
+    if (!totalAmount) {
+      alert("Payment data missing! Make sure totalAmount is provided.");
+      return;
+    }
+
+    const transaction_uuid = `epsl-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+    const envUrl = (import.meta.env.VITE_FRONTEND_URL || "").trim().replace(/\/$/, "");
+    const origin = window.location.origin.replace(/\/$/, "");
+
+    const isSafeUrl = (url: string) => url.startsWith("https://");
+
+    let baseUrl: string;
+    if (isSafeUrl(envUrl)) {
+      baseUrl = envUrl;
+    } else if (isSafeUrl(origin)) {
+      baseUrl = origin;
+    } else {
+      baseUrl = "https://e-pasal-two.vercel.app";
+    }
+
+    const successUrl = `${baseUrl}/payment-success`;
+    const failureUrl = `${baseUrl}/payment-failure`;
+
+    setLoading(true);
+
+    try {
+      const { data } = await axios.post(
+        paymentEndpoints.PAYMENT_INIT_API,
+        {
+          amount: totalAmount,
+          transaction_uuid,
+          success_url: successUrl,
+          failure_url: failureUrl,
+          tax_amount: 0,
+          product_delivery_charge: 0,
+          product_service_charge: 0,
+        },
+        { withCredentials: true }
+      );
+
+      if (data.success) {
+        console.log("[eSewa] Submitting form to:", data.formUrl);
+
+        try {
+          await placeOrder({ totalAmount });
+        } catch (orderErr) {
+          console.warn("Order creation warning:", orderErr);
+        }
+
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = data.formUrl;
+
+        for (const key in data.fields) {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = key;
+          input.value = data.fields[key];
+          form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+      } else {
+        alert("Failed to initialize payment: " + data.message);
+      }
+    } catch (err: any) {
+      console.error("[eSewa] Error:", err);
+      alert(
+        "Error connecting to backend: " +
+          (err.response?.data?.message || err.message)
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Button
+      onClick={handlePayment}
+      loading={loading}
+      loadingText="Processing..."
+      variant="primary"
+      size={size}
+      fullWidth
+      className={className}
+    >
+      Pay with eSewa
+    </Button>
+  );
+};
+
+export default EsewaCheckout;
