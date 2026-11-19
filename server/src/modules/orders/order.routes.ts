@@ -4,8 +4,8 @@ import {
   getUserOrders,
   getAllOrders,
   updateOrderStatus,
-} from "../controller/order";
-import { auth, isAdmin } from "../middleware/auth";
+} from "./order.controller";
+import { auth, isAdmin } from "../../middleware/auth";
 
 const router: Router = express.Router();
 

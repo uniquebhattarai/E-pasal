@@ -33,15 +33,15 @@ __export(index_exports, {
 });
 module.exports = __toCommonJS(index_exports);
 var import_express7 = __toESM(require("express"));
-var import_dotenv5 = __toESM(require("dotenv"));
+var import_dotenv4 = __toESM(require("dotenv"));
 var import_cors = __toESM(require("cors"));
 var import_express_fileupload = __toESM(require("express-fileupload"));
 var import_cookie_parser = __toESM(require("cookie-parser"));
 
-// src/routes/user.ts
+// src/modules/auth/auth.routes.ts
 var import_express = __toESM(require("express"));
 
-// src/models/user.ts
+// src/modules/users/user.model.ts
 var import_mongoose = __toESM(require("mongoose"));
 var userSchema = new import_mongoose.Schema({
   firstName: { type: String, required: true, trim: true },
@@ -50,7 +50,7 @@ var userSchema = new import_mongoose.Schema({
   password: { type: String, required: true },
   accountType: {
     type: String,
-    enum: ["Customer", "Admin", "Instructor"],
+    enum: ["Customer", "Admin"],
     default: "Customer"
   },
   address: {
@@ -88,10 +88,34 @@ var userSchema = new import_mongoose.Schema({
   }
 });
 var User = import_mongoose.default.model("User", userSchema);
-var user_default = User;
+var user_model_default = User;
 
-// src/models/otp.ts
+// src/modules/users/profile.model.ts
 var import_mongoose2 = __toESM(require("mongoose"));
+var profileSchema = new import_mongoose2.Schema({
+  gender: {
+    type: String,
+    default: null
+  },
+  dateOfBirth: {
+    type: String,
+    default: null
+  },
+  about: {
+    type: String,
+    trim: true,
+    default: null
+  },
+  contactNumber: {
+    type: Number,
+    default: null
+  }
+});
+var Profile = import_mongoose2.default.model("profile", profileSchema);
+var profile_model_default = Profile;
+
+// src/modules/auth/otp.model.ts
+var import_mongoose3 = __toESM(require("mongoose"));
 
 // src/utils/mailSender.ts
 var import_nodemailer = __toESM(require("nodemailer"));
@@ -283,8 +307,8 @@ var passwordResetTemplate = (url, email) => {
   });
 };
 
-// src/models/otp.ts
-var otpSchema = new import_mongoose2.Schema({
+// src/modules/auth/otp.model.ts
+var otpSchema = new import_mongoose3.Schema({
   email: {
     type: String,
     required: true
@@ -319,273 +343,328 @@ otpSchema.pre("save", async function(next) {
   }
   next();
 });
-var OTP = import_mongoose2.default.model("OTP", otpSchema);
-var otp_default = OTP;
+var OTP = import_mongoose3.default.model("OTP", otpSchema);
+var otp_model_default = OTP;
 
-// src/models/profile.ts
-var import_mongoose3 = __toESM(require("mongoose"));
-var profileSchema = new import_mongoose3.Schema({
-  gender: {
-    type: String,
-    default: null
-  },
-  dateOfBirth: {
-    type: String,
-    default: null
-  },
-  about: {
-    type: String,
-    trim: true,
-    default: null
-  },
-  contactNumber: {
-    type: Number,
-    default: null
-  }
-});
-var Profile = import_mongoose3.default.model("profile", profileSchema);
-var profile_default = Profile;
-
-// src/controller/auth.ts
+// src/modules/auth/auth.service.ts
 var import_otp_generator = __toESM(require("otp-generator"));
 var import_bcrypt = __toESM(require("bcrypt"));
 var import_jsonwebtoken = __toESM(require("jsonwebtoken"));
+var import_crypto = __toESM(require("crypto"));
 var import_dotenv = __toESM(require("dotenv"));
 import_dotenv.default.config();
 var REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET + "_refresh";
-var sendOtp = async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: "Email is required"
-      });
-    }
-    const checkUserPresent = await user_default.findOne({ email: email.toLowerCase() });
-    if (checkUserPresent) {
-      return res.status(401).json({
-        success: false,
-        message: "User already registered"
-      });
-    }
-    let otp = import_otp_generator.default.generate(6, {
+var sendOtp = async (email) => {
+  if (!email) {
+    throw new Error("Email is required");
+  }
+  const checkUserPresent = await user_model_default.findOne({ email: email.toLowerCase() });
+  if (checkUserPresent) {
+    const error = new Error("User already registered");
+    error.statusCode = 401;
+    throw error;
+  }
+  let otp = import_otp_generator.default.generate(6, {
+    upperCaseAlphabets: false,
+    lowerCaseAlphabets: false,
+    specialChars: false
+  });
+  let result = await otp_model_default.findOne({ otp });
+  while (result) {
+    otp = import_otp_generator.default.generate(6, {
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
       specialChars: false
     });
-    let result = await otp_default.findOne({ otp });
-    while (result) {
-      otp = import_otp_generator.default.generate(6, {
-        upperCaseAlphabets: false,
-        lowerCaseAlphabets: false,
-        specialChars: false
-      });
-      result = await otp_default.findOne({ otp });
+    result = await otp_model_default.findOne({ otp });
+  }
+  const otpPayload = { email: email.toLowerCase(), otp };
+  await otp_model_default.create(otpPayload);
+  return { message: "OTP sent successfully" };
+};
+var signUp = async (input) => {
+  const {
+    firstName,
+    lastName,
+    email,
+    password,
+    confirmPassword,
+    accountType,
+    contactNumber,
+    otp
+  } = input;
+  if (!firstName || !lastName || !email || !password || !confirmPassword || !otp) {
+    const error = new Error("All fields are necessary");
+    error.statusCode = 403;
+    throw error;
+  }
+  if (password !== confirmPassword) {
+    const error = new Error("Passwords must match");
+    error.statusCode = 400;
+    throw error;
+  }
+  const existingUser = await user_model_default.findOne({ email: email.toLowerCase() });
+  if (existingUser) {
+    const error = new Error("User already exists");
+    error.statusCode = 400;
+    throw error;
+  }
+  const recentOtp = await otp_model_default.findOne({ email: email.toLowerCase() }).sort({ createdAt: -1 });
+  if (!recentOtp) {
+    const error = new Error("OTP not found");
+    error.statusCode = 400;
+    throw error;
+  } else if (otp !== recentOtp.otp) {
+    const error = new Error("OTP does not match");
+    error.statusCode = 400;
+    throw error;
+  }
+  const hashedPassword = await import_bcrypt.default.hash(password, 10);
+  const profileDetails = await profile_model_default.create({
+    gender: null,
+    dateOfBirth: null,
+    about: null,
+    contactNumber: null
+  });
+  const newUser = await user_model_default.create({
+    firstName,
+    lastName,
+    email: email.toLowerCase(),
+    password: hashedPassword,
+    accountType,
+    contactNumber,
+    additionalDetails: profileDetails._id,
+    image: null
+  });
+  const userObj = newUser.toObject();
+  delete userObj.password;
+  return userObj;
+};
+var login = async (input) => {
+  const { email, password } = input;
+  if (!email || !password) {
+    const error = new Error("Every field is necessary");
+    error.statusCode = 403;
+    throw error;
+  }
+  const userDetails = await user_model_default.findOne({ email: email.toLowerCase() }).populate("additionalDetails");
+  if (!userDetails) {
+    const error = new Error("User does not exist, please signup");
+    error.statusCode = 401;
+    throw error;
+  }
+  const isPasswordMatch = await import_bcrypt.default.compare(password, userDetails.password || "");
+  if (!isPasswordMatch) {
+    return { isPasswordMatch: false, user: null, token: null, refreshToken: null };
+  }
+  const payload = {
+    email: userDetails.email,
+    id: userDetails._id.toString(),
+    role: userDetails.accountType
+  };
+  const jwtSecret = process.env.JWT_SECRET;
+  const token = import_jsonwebtoken.default.sign(payload, jwtSecret, { expiresIn: "15m" });
+  const refreshToken3 = import_jsonwebtoken.default.sign(payload, REFRESH_TOKEN_SECRET, { expiresIn: "30d" });
+  if (userDetails.image && userDetails.image.includes("dicebear.com")) {
+    userDetails.image = null;
+    await user_model_default.findByIdAndUpdate(userDetails._id, { image: null });
+  }
+  const userResponse = userDetails.toObject();
+  delete userResponse.password;
+  delete userResponse.cart;
+  delete userResponse.wishlist;
+  delete userResponse.token;
+  return {
+    isPasswordMatch: true,
+    user: userResponse,
+    token,
+    refreshToken: refreshToken3
+  };
+};
+var refreshToken = async (incomingRefreshToken) => {
+  if (!incomingRefreshToken) {
+    const error = new Error("Refresh token is missing");
+    error.statusCode = 401;
+    throw error;
+  }
+  let decoded;
+  try {
+    decoded = import_jsonwebtoken.default.verify(incomingRefreshToken, REFRESH_TOKEN_SECRET);
+  } catch (err) {
+    const error = new Error("Refresh token is invalid or expired. Please login again.");
+    error.statusCode = 401;
+    throw error;
+  }
+  const user = await user_model_default.findById(decoded.id);
+  if (!user) {
+    const error = new Error("User not found");
+    error.statusCode = 401;
+    throw error;
+  }
+  const payload = {
+    email: user.email,
+    id: user._id.toString(),
+    role: user.accountType
+  };
+  const jwtSecret = process.env.JWT_SECRET;
+  const newAccessToken = import_jsonwebtoken.default.sign(payload, jwtSecret, { expiresIn: "15m" });
+  const newRefreshToken = import_jsonwebtoken.default.sign(payload, REFRESH_TOKEN_SECRET, { expiresIn: "30d" });
+  return {
+    newAccessToken,
+    newRefreshToken
+  };
+};
+var changePassword = async (input) => {
+  const { userId, oldPassword, newPassword } = input;
+  if (!userId) {
+    const error = new Error("Unauthorized");
+    error.statusCode = 401;
+    throw error;
+  }
+  const userDetails = await user_model_default.findById(userId);
+  if (!userDetails) {
+    const error = new Error("User not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  const isPasswordMatch = await import_bcrypt.default.compare(oldPassword, userDetails.password || "");
+  if (!isPasswordMatch) {
+    const error = new Error("Old password is incorrect");
+    error.statusCode = 401;
+    throw error;
+  }
+  const encryptedPassword = await import_bcrypt.default.hash(newPassword, 10);
+  const updatedUserDetails = await user_model_default.findByIdAndUpdate(
+    userId,
+    { password: encryptedPassword },
+    { new: true }
+  );
+  if (updatedUserDetails) {
+    try {
+      await mailSender_default(
+        updatedUserDetails.email,
+        `Password Updated Successfully - e-pasal`,
+        passwordUpdated(updatedUserDetails.email, updatedUserDetails.firstName)
+      );
+    } catch (mailError) {
+      console.error("Mail error during password change:", mailError);
     }
-    const otpPayload = { email: email.toLowerCase(), otp };
-    await otp_default.create(otpPayload);
+  }
+  return { message: "Password updated successfully" };
+};
+var resetPasswordToken = async (email) => {
+  if (!email) {
+    const error = new Error("Email is required");
+    error.statusCode = 400;
+    throw error;
+  }
+  const user = await user_model_default.findOne({ email });
+  if (!user) {
+    const error = new Error("User does not exist");
+    error.statusCode = 400;
+    throw error;
+  }
+  const token = import_crypto.default.randomUUID();
+  await user_model_default.findOneAndUpdate(
+    { email },
+    {
+      token,
+      resetPasswordExpires: new Date(Date.now() + 5 * 60 * 1e3)
+      // 5 minutes
+    },
+    { new: true }
+  );
+  const frontendUrl = process.env.FRONTEND_URL || "https://e-pasal-two.vercel.app";
+  const url = `${frontendUrl}/update-password/${token}`;
+  await mailSender_default(
+    email,
+    "Password Reset Link - e-pasal",
+    passwordResetTemplate(url, email)
+  );
+  return { message: "Email sent successfully. Check your inbox." };
+};
+var resetPassword = async (input) => {
+  const { password, confirmPassword, token } = input;
+  if (!password || !confirmPassword || !token) {
+    return { success: false, message: "All fields are required" };
+  }
+  if (password !== confirmPassword) {
+    return { success: false, message: "Passwords do not match" };
+  }
+  const userDetails = await user_model_default.findOne({ token });
+  if (!userDetails) {
+    return { success: false, message: "Invalid token" };
+  }
+  if (userDetails.resetPasswordExpires && userDetails.resetPasswordExpires.getTime() < Date.now()) {
+    return { success: false, message: "Token expired. Try again." };
+  }
+  const hashedPassword = await import_bcrypt.default.hash(password, 10);
+  await user_model_default.findOneAndUpdate(
+    { token },
+    {
+      password: hashedPassword,
+      token: null,
+      resetPasswordExpires: null
+    },
+    { new: true }
+  );
+  return { success: true, message: "Password reset successful" };
+};
+var auth_service_default = {
+  sendOtp,
+  signUp,
+  login,
+  refreshToken,
+  changePassword,
+  resetPasswordToken,
+  resetPassword
+};
+
+// src/modules/auth/auth.controller.ts
+var sendOtp2 = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const result = await auth_service_default.sendOtp(email);
     return res.status(200).json({
       success: true,
-      message: "OTP sent successfully"
+      message: result.message
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({
+    console.error("sendOtp error:", error);
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
       message: error.message
     });
   }
 };
-var signUp = async (req, res) => {
+var signUp2 = async (req, res) => {
   try {
-    const {
-      firstName,
-      lastName,
-      email,
-      password,
-      confirmPassword,
-      accountType,
-      contactNumber,
-      otp
-    } = req.body;
-    if (!firstName || !lastName || !email || !password || !confirmPassword || !otp) {
-      return res.status(403).json({
-        success: false,
-        message: "All fields are necessary"
-      });
-    }
-    if (password !== confirmPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "Passwords must match"
-      });
-    }
-    const existingUser = await user_default.findOne({ email: email.toLowerCase() });
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "User already exists"
-      });
-    }
-    const recentOtp = await otp_default.findOne({ email: email.toLowerCase() }).sort({ createdAt: -1 });
-    if (!recentOtp) {
-      return res.status(400).json({
-        success: false,
-        message: "OTP not found"
-      });
-    } else if (otp !== recentOtp.otp) {
-      return res.status(400).json({
-        success: false,
-        message: "OTP does not match"
-      });
-    }
-    const hashedPassword = await import_bcrypt.default.hash(password, 10);
-    const profileDetails = await profile_default.create({
-      gender: null,
-      dateOfBirth: null,
-      about: null,
-      contactNumber: null
-    });
-    const newUser = await user_default.create({
-      firstName,
-      lastName,
-      email: email.toLowerCase(),
-      password: hashedPassword,
-      accountType,
-      contactNumber,
-      additionalDetails: profileDetails._id,
-      image: null
-    });
-    const userObj = newUser.toObject();
-    delete userObj.password;
+    const user = await auth_service_default.signUp(req.body);
     return res.status(200).json({
       success: true,
       message: "Signup successful",
-      user: userObj
+      user
     });
   } catch (error) {
-    console.error(error);
-    return res.status(400).json({
+    console.error("signUp error:", error);
+    const statusCode = error.statusCode || 400;
+    return res.status(statusCode).json({
       success: false,
-      message: "Error while doing signup",
-      error: error.message
+      message: error.message || "Error while doing signup"
     });
   }
 };
-var login = async (req, res) => {
+var login2 = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(403).json({
-        success: false,
-        message: "Every field is necessary"
-      });
-    }
-    const userDetails = await user_default.findOne({ email: email.toLowerCase() }).populate("additionalDetails");
-    if (!userDetails) {
-      return res.status(401).json({
-        success: false,
-        message: "User does not exist, please signup"
-      });
-    }
-    if (await import_bcrypt.default.compare(password, userDetails.password || "")) {
-      const payload = {
-        email: userDetails.email,
-        id: userDetails._id.toString(),
-        role: userDetails.accountType
-      };
-      const jwtSecret = process.env.JWT_SECRET;
-      const token = import_jsonwebtoken.default.sign(payload, jwtSecret, {
-        expiresIn: "15m"
-      });
-      const refreshToken2 = import_jsonwebtoken.default.sign(payload, REFRESH_TOKEN_SECRET, {
-        expiresIn: "30d"
-      });
-      if (userDetails.image && userDetails.image.includes("dicebear.com")) {
-        userDetails.image = null;
-        await user_default.findByIdAndUpdate(userDetails._id, { image: null });
-      }
-      const isProduction = process.env.NODE_ENV === "production" || Boolean(process.env.RENDER);
-      const accessTokenOptions = {
-        expires: new Date(Date.now() + 15 * 60 * 1e3),
-        httpOnly: true,
-        path: "/",
-        sameSite: isProduction ? "none" : "lax",
-        secure: isProduction
-      };
-      const refreshTokenOptions = {
-        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1e3),
-        httpOnly: true,
-        path: "/",
-        sameSite: isProduction ? "none" : "lax",
-        secure: isProduction
-      };
-      const userResponse = userDetails.toObject();
-      delete userResponse.password;
-      delete userResponse.cart;
-      delete userResponse.wishlist;
-      delete userResponse.token;
-      res.cookie("token", token, accessTokenOptions);
-      res.cookie("refreshToken", refreshToken2, refreshTokenOptions);
-      return res.status(200).json({
-        success: true,
-        user: userResponse,
-        token,
-        message: "Logged in successfully"
-      });
-    } else {
+    const result = await auth_service_default.login({ email, password });
+    if (!result.isPasswordMatch) {
       return res.status(200).json({
         success: false,
         message: "Password is incorrect"
       });
     }
-  } catch (error) {
-    console.error(error);
-    return res.status(400).json({
-      success: false,
-      message: "Error while login, please try again later",
-      error: error.message
-    });
-  }
-};
-var refreshToken = async (req, res) => {
-  try {
-    const incomingRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
-    if (!incomingRefreshToken) {
-      return res.status(401).json({
-        success: false,
-        message: "Refresh token is missing"
-      });
-    }
-    let decoded;
-    try {
-      decoded = import_jsonwebtoken.default.verify(incomingRefreshToken, REFRESH_TOKEN_SECRET);
-    } catch (err) {
-      return res.status(401).json({
-        success: false,
-        message: "Refresh token is invalid or expired. Please login again."
-      });
-    }
-    const user = await user_default.findById(decoded.id);
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "User not found"
-      });
-    }
-    const payload = {
-      email: user.email,
-      id: user._id.toString(),
-      role: user.accountType
-    };
-    const jwtSecret = process.env.JWT_SECRET;
-    const newAccessToken = import_jsonwebtoken.default.sign(payload, jwtSecret, {
-      expiresIn: "15m"
-    });
-    const newRefreshToken = import_jsonwebtoken.default.sign(payload, REFRESH_TOKEN_SECRET, {
-      expiresIn: "30d"
-    });
     const isProduction = process.env.NODE_ENV === "production" || Boolean(process.env.RENDER);
     const accessTokenOptions = {
       expires: new Date(Date.now() + 15 * 60 * 1e3),
@@ -601,23 +680,59 @@ var refreshToken = async (req, res) => {
       sameSite: isProduction ? "none" : "lax",
       secure: isProduction
     };
-    res.cookie("token", newAccessToken, accessTokenOptions);
-    res.cookie("refreshToken", newRefreshToken, refreshTokenOptions);
+    res.cookie("token", result.token, accessTokenOptions);
+    res.cookie("refreshToken", result.refreshToken, refreshTokenOptions);
     return res.status(200).json({
       success: true,
-      message: "Token refreshed successfully",
-      token: newAccessToken
+      user: result.user,
+      token: result.token,
+      message: "Logged in successfully"
     });
   } catch (error) {
-    console.error("Refresh token error:", error);
-    return res.status(500).json({
+    console.error("login error:", error);
+    const statusCode = error.statusCode || 400;
+    return res.status(statusCode).json({
       success: false,
-      message: "Error while refreshing token",
-      error: error.message
+      message: error.message || "Error while login, please try again later"
     });
   }
 };
-var logout = async (req, res) => {
+var refreshToken2 = async (req, res) => {
+  try {
+    const incomingRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+    const tokens = await auth_service_default.refreshToken(incomingRefreshToken);
+    const isProduction = process.env.NODE_ENV === "production" || Boolean(process.env.RENDER);
+    const accessTokenOptions = {
+      expires: new Date(Date.now() + 15 * 60 * 1e3),
+      httpOnly: true,
+      path: "/",
+      sameSite: isProduction ? "none" : "lax",
+      secure: isProduction
+    };
+    const refreshTokenOptions = {
+      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1e3),
+      httpOnly: true,
+      path: "/",
+      sameSite: isProduction ? "none" : "lax",
+      secure: isProduction
+    };
+    res.cookie("token", tokens.newAccessToken, accessTokenOptions);
+    res.cookie("refreshToken", tokens.newRefreshToken, refreshTokenOptions);
+    return res.status(200).json({
+      success: true,
+      message: "Token refreshed successfully",
+      token: tokens.newAccessToken
+    });
+  } catch (error) {
+    console.error("refreshToken error:", error);
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
+      success: false,
+      message: error.message || "Error while refreshing token"
+    });
+  }
+};
+var logout = async (_req, res) => {
   try {
     const isProduction = process.env.NODE_ENV === "production" || Boolean(process.env.RENDER);
     const cookieOptions = {
@@ -636,7 +751,7 @@ var logout = async (req, res) => {
       message: "Logged out successfully"
     });
   } catch (error) {
-    console.error("Logout error:", error);
+    console.error("logout error:", error);
     return res.status(500).json({
       success: false,
       message: "Error while logging out",
@@ -644,166 +759,72 @@ var logout = async (req, res) => {
     });
   }
 };
-var changePassword = async (req, res) => {
+var changePassword2 = async (req, res) => {
   try {
-    if (!req.user?.id) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
-    }
-    const userDetails = await user_default.findById(req.user.id);
-    if (!userDetails) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
+    const userId = req.user?.id;
     const { oldPassword, newPassword } = req.body;
-    const isPasswordMatch = await import_bcrypt.default.compare(oldPassword, userDetails.password || "");
-    if (!isPasswordMatch) {
-      return res.status(401).json({
-        success: false,
-        message: "Old password is incorrect"
-      });
-    }
-    const encryptedPassword = await import_bcrypt.default.hash(newPassword, 10);
-    const updatedUserDetails = await user_default.findByIdAndUpdate(
-      req.user.id,
-      { password: encryptedPassword },
-      { new: true }
-    );
-    if (updatedUserDetails) {
-      try {
-        await mailSender_default(
-          updatedUserDetails.email,
-          `Password Updated Successfully - e-pasal`,
-          passwordUpdated(updatedUserDetails.email, updatedUserDetails.firstName)
-        );
-      } catch (mailError) {
-        console.error(mailError);
-        return res.status(500).json({
-          success: false,
-          message: "Error occurred while sending password update email",
-          error: mailError.message
-        });
-      }
-    }
+    const result = await auth_service_default.changePassword({
+      userId,
+      oldPassword,
+      newPassword
+    });
     return res.status(200).json({
       success: true,
-      message: "Password updated successfully"
+      message: result.message
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({
+    console.error("changePassword error:", error);
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
-      message: "Error while updating password",
-      error: error.message
+      message: error.message || "Error while updating password"
     });
   }
 };
 
-// src/controller/resetPassword.ts
-var import_bcrypt2 = __toESM(require("bcrypt"));
-var import_crypto = __toESM(require("crypto"));
-var import_dotenv2 = __toESM(require("dotenv"));
-if (process.env.NODE_ENV !== "production") {
-  import_dotenv2.default.config();
-}
-var resetPasswordToken = async (req, res) => {
+// src/modules/auth/resetPassword.controller.ts
+var resetPasswordToken2 = async (req, res) => {
   try {
-    const email = req.body.email;
-    if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: "Email is required"
-      });
-    }
-    const user = await user_default.findOne({ email });
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: "User does not exist"
-      });
-    }
-    const token = import_crypto.default.randomUUID();
-    await user_default.findOneAndUpdate(
-      { email },
-      {
-        token,
-        resetPasswordExpires: new Date(Date.now() + 5 * 60 * 1e3)
-        // 5 minutes
-      },
-      { new: true }
-    );
-    const frontendUrl = process.env.FRONTEND_URL || "https://e-pasal-two.vercel.app";
-    const url = `${frontendUrl}/update-password/${token}`;
-    await mailSender_default(
-      email,
-      "Password Reset Link - e-pasal",
-      passwordResetTemplate(url, email)
-    );
-    return res.json({
+    const { email } = req.body;
+    const result = await auth_service_default.resetPasswordToken(email);
+    return res.status(200).json({
       success: true,
-      message: "Email sent successfully. Check your inbox."
+      message: result.message
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({
+    console.error("resetPasswordToken error:", error);
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
-      message: "Error while generating reset token"
+      message: error.message || "Error while generating reset token"
     });
   }
 };
-var resetPassword = async (req, res) => {
+var resetPassword2 = async (req, res) => {
   try {
     const { password, confirmPassword, token } = req.body;
-    if (!password || !confirmPassword || !token) {
-      return res.json({
-        success: false,
-        message: "All fields are required"
-      });
-    }
-    if (password !== confirmPassword) {
-      return res.json({
-        success: false,
-        message: "Passwords do not match"
-      });
-    }
-    const userDetails = await user_default.findOne({ token });
-    if (!userDetails) {
-      return res.json({
-        success: false,
-        message: "Invalid token"
-      });
-    }
-    if (userDetails.resetPasswordExpires && userDetails.resetPasswordExpires.getTime() < Date.now()) {
-      return res.json({
-        success: false,
-        message: "Token expired. Try again."
-      });
-    }
-    const hashedPassword = await import_bcrypt2.default.hash(password, 10);
-    await user_default.findOneAndUpdate(
-      { token },
-      {
-        password: hashedPassword,
-        token: null,
-        resetPasswordExpires: null
-      },
-      { new: true }
-    );
-    return res.status(200).json({
-      success: true,
-      message: "Password reset successful"
+    const result = await auth_service_default.resetPassword({
+      password,
+      confirmPassword,
+      token
     });
+    if (!result.success) {
+      return res.status(200).json(result);
+    }
+    return res.status(200).json(result);
   } catch (error) {
-    console.log(error);
+    console.error("resetPassword error:", error);
     return res.status(500).json({
       success: false,
-      message: "Error while resetting password"
+      message: error.message || "Error while resetting password"
     });
   }
 };
 
 // src/middleware/auth.ts
 var import_jsonwebtoken2 = __toESM(require("jsonwebtoken"));
-var import_dotenv3 = __toESM(require("dotenv"));
-import_dotenv3.default.config();
+var import_dotenv2 = __toESM(require("dotenv"));
+import_dotenv2.default.config();
 var auth = async (req, res, next) => {
   try {
     let token = req.cookies?.token;
@@ -845,7 +866,7 @@ var isAdmin = async (req, res, next) => {
         message: "Invalid token payload: email missing"
       });
     }
-    const userDetails = await user_default.findOne({ email: req.user.email });
+    const userDetails = await user_model_default.findOne({ email: req.user.email });
     if (!userDetails) {
       return res.status(404).json({
         success: false,
@@ -864,23 +885,23 @@ var isAdmin = async (req, res, next) => {
   }
 };
 
-// src/routes/user.ts
+// src/modules/auth/auth.routes.ts
 var router = import_express.default.Router();
-router.post("/login", login);
-router.post("/refresh-token", refreshToken);
+router.post("/login", login2);
+router.post("/refresh-token", refreshToken2);
 router.post("/logout", logout);
 router.get("/logout", logout);
-router.post("/signup", signUp);
-router.post("/sendotp", sendOtp);
-router.post("/changepassword", auth, changePassword);
-router.post("/reset-password-token", resetPasswordToken);
-router.post("/reset-password", resetPassword);
-var user_default2 = router;
+router.post("/signup", signUp2);
+router.post("/sendotp", sendOtp2);
+router.post("/changepassword", auth, changePassword2);
+router.post("/reset-password-token", resetPasswordToken2);
+router.post("/reset-password", resetPassword2);
+var auth_routes_default = router;
 
-// src/routes/profile.ts
+// src/modules/users/profile.routes.ts
 var import_express2 = __toESM(require("express"));
 
-// src/models/orders.ts
+// src/modules/orders/order.model.ts
 var import_mongoose4 = __toESM(require("mongoose"));
 var orderSchema = new import_mongoose4.Schema({
   user: { type: import_mongoose4.default.Schema.Types.ObjectId, ref: "User", required: true },
@@ -915,9 +936,9 @@ var orderSchema = new import_mongoose4.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 var Order = import_mongoose4.default.model("Order", orderSchema);
-var orders_default = Order;
+var order_model_default = Order;
 
-// src/models/product.ts
+// src/modules/products/product.model.ts
 var import_mongoose5 = __toESM(require("mongoose"));
 var productSchema = new import_mongoose5.Schema({
   name: { type: String, required: true },
@@ -946,7 +967,7 @@ var productSchema = new import_mongoose5.Schema({
   }
 });
 var Product = import_mongoose5.default.model("Product", productSchema);
-var product_default = Product;
+var product_model_default = Product;
 
 // src/utils/imageUploader.ts
 var import_cloudinary = require("cloudinary");
@@ -962,81 +983,354 @@ var uploadImageToCloudinary = async (file, folder, height, quality) => {
   return await import_cloudinary.v2.uploader.upload(file.tempFilePath, options);
 };
 
-// src/controller/profile.ts
-var updateProfile = async (req, res) => {
+// src/modules/users/profile.service.ts
+var updateProfile = async (input) => {
+  const { userId, firstName, lastName, dateOfBirth, about, contactNumber, gender } = input;
+  const userDetails = await user_model_default.findById(userId);
+  if (!userDetails) {
+    const error = new Error("User not found. Invalid or expired token.");
+    error.statusCode = 404;
+    throw error;
+  }
+  let profile = await profile_model_default.findById(userDetails.additionalDetails);
+  if (!profile) {
+    profile = await profile_model_default.create({
+      gender: null,
+      dateOfBirth: null,
+      about: null,
+      contactNumber: null
+    });
+    userDetails.additionalDetails = profile._id;
+    await userDetails.save();
+  }
+  if (firstName) userDetails.firstName = firstName;
+  if (lastName) userDetails.lastName = lastName;
+  await userDetails.save();
+  profile.dateOfBirth = dateOfBirth || profile.dateOfBirth;
+  profile.about = about || profile.about;
+  profile.contactNumber = contactNumber || profile.contactNumber;
+  profile.gender = gender || profile.gender;
+  await profile.save();
+  const updatedUserDetails = await user_model_default.findById(userId).select("-password").populate("additionalDetails").exec();
+  if (updatedUserDetails && updatedUserDetails.image && updatedUserDetails.image.includes("dicebear.com")) {
+    updatedUserDetails.image = null;
+    await user_model_default.findByIdAndUpdate(userId, { image: null });
+  }
+  return updatedUserDetails;
+};
+var updateProfileHeader = async (userId, firstName, lastName, displayPicture) => {
+  const userDetails = await user_model_default.findById(userId);
+  if (!userDetails) {
+    const error = new Error("User not found. Invalid or expired token.");
+    error.statusCode = 404;
+    throw error;
+  }
+  if (firstName) userDetails.firstName = firstName;
+  if (lastName !== void 0) userDetails.lastName = lastName;
+  if (displayPicture) {
+    const folderName = process.env.FOLDER_NAME || "unique";
+    const image = await uploadImageToCloudinary(displayPicture, folderName, 1e3, 1e3);
+    userDetails.image = image.secure_url;
+  }
+  await userDetails.save();
+  const updatedUserDetails = await user_model_default.findById(userId).select("-password").populate("additionalDetails").exec();
+  if (updatedUserDetails && updatedUserDetails.image && updatedUserDetails.image.includes("dicebear.com")) {
+    updatedUserDetails.image = null;
+    await user_model_default.findByIdAndUpdate(userId, { image: null });
+  }
+  return updatedUserDetails;
+};
+var updateAbout = async (userId, about) => {
+  const userDetails = await user_model_default.findById(userId);
+  if (!userDetails) {
+    const error = new Error("User not found. Invalid or expired token.");
+    error.statusCode = 404;
+    throw error;
+  }
+  let profile = await profile_model_default.findById(userDetails.additionalDetails);
+  if (!profile) {
+    profile = await profile_model_default.create({
+      gender: null,
+      dateOfBirth: null,
+      about: typeof about === "string" ? about : null,
+      contactNumber: null
+    });
+    userDetails.additionalDetails = profile._id;
+    await userDetails.save();
+  } else {
+    profile.about = typeof about === "string" ? about : profile.about;
+    await profile.save();
+  }
+  const updatedUserDetails = await user_model_default.findById(userId).select("-password").populate("additionalDetails").exec();
+  if (updatedUserDetails && updatedUserDetails.image && updatedUserDetails.image.includes("dicebear.com")) {
+    updatedUserDetails.image = null;
+    await user_model_default.findByIdAndUpdate(userId, { image: null });
+  }
+  return updatedUserDetails;
+};
+var updatePersonalDetails = async (userId, data) => {
+  const { firstName, lastName, dateOfBirth, contactNumber, gender } = data;
+  const userDetails = await user_model_default.findById(userId);
+  if (!userDetails) {
+    const error = new Error("User not found. Invalid or expired token.");
+    error.statusCode = 404;
+    throw error;
+  }
+  if (firstName) userDetails.firstName = firstName;
+  if (lastName !== void 0) userDetails.lastName = lastName;
+  await userDetails.save();
+  let profile = await profile_model_default.findById(userDetails.additionalDetails);
+  if (!profile) {
+    profile = await profile_model_default.create({
+      gender: gender || null,
+      dateOfBirth: dateOfBirth || null,
+      about: null,
+      contactNumber: contactNumber || null
+    });
+    userDetails.additionalDetails = profile._id;
+    await userDetails.save();
+  } else {
+    if (dateOfBirth !== void 0) profile.dateOfBirth = dateOfBirth;
+    if (contactNumber !== void 0) profile.contactNumber = contactNumber;
+    if (gender !== void 0) profile.gender = gender;
+    await profile.save();
+  }
+  const updatedUserDetails = await user_model_default.findById(userId).select("-password").populate("additionalDetails").exec();
+  if (updatedUserDetails && updatedUserDetails.image && updatedUserDetails.image.includes("dicebear.com")) {
+    updatedUserDetails.image = null;
+    await user_model_default.findByIdAndUpdate(userId, { image: null });
+  }
+  return updatedUserDetails;
+};
+var deleteAccount = async (userId) => {
+  const user = await user_model_default.findById(userId);
+  if (!user) {
+    const error = new Error("User not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  await profile_model_default.findByIdAndDelete(user.additionalDetails);
+  await product_model_default.updateMany({ reviews: userId }, { $pull: { reviews: userId } });
+  await order_model_default.deleteMany({ user: userId });
+  await user_model_default.findByIdAndDelete(userId);
+  return { message: "User account deleted successfully" };
+};
+var getUserDetails = async (userId) => {
+  const userDetails = await user_model_default.findById(userId).select("-password -cart -wishlist").populate("additionalDetails").exec();
+  if (userDetails && userDetails.image && userDetails.image.includes("dicebear.com")) {
+    userDetails.image = null;
+    await user_model_default.findByIdAndUpdate(userId, { image: null });
+  }
+  return userDetails;
+};
+var updateDisplayPicture = async (userId, displayPicture) => {
+  if (!displayPicture) {
+    const error = new Error("No image file uploaded");
+    error.statusCode = 400;
+    throw error;
+  }
+  const folderName = process.env.FOLDER_NAME || "unique";
+  const image = await uploadImageToCloudinary(displayPicture, folderName, 1e3, 1e3);
+  const updatedUser = await user_model_default.findByIdAndUpdate(
+    userId,
+    { image: image.secure_url },
+    { new: true }
+  ).select("-password");
+  return updatedUser;
+};
+var getUserOrders = async (userId) => {
+  const orders = await order_model_default.find({ user: userId }).populate({
+    path: "products.product",
+    populate: { path: "category" }
+  }).sort({ createdAt: -1 });
+  return orders || [];
+};
+var shopDashboard = async (userId) => {
+  const products = await product_model_default.find({ createdBy: userId });
+  const dashboardData = products.map((product) => {
+    const totalOrders = product.orders?.length || 0;
+    const totalRevenue = totalOrders * product.price;
+    return {
+      _id: product._id,
+      name: product.name,
+      totalOrders,
+      totalRevenue
+    };
+  });
+  return dashboardData;
+};
+var toggleWishlist = async (userId, productId) => {
+  if (!productId) {
+    const error = new Error("Product ID is required");
+    error.statusCode = 400;
+    throw error;
+  }
+  const user = await user_model_default.findById(userId);
+  if (!user) {
+    const error = new Error("User not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  const wishlist = user.wishlist || [];
+  const isWishlisted = wishlist.some(
+    (id) => id.toString() === productId.toString()
+  );
+  let updatedUser;
+  if (isWishlisted) {
+    updatedUser = await user_model_default.findByIdAndUpdate(
+      userId,
+      { $pull: { wishlist: productId } },
+      { new: true }
+    ).populate("wishlist");
+  } else {
+    updatedUser = await user_model_default.findByIdAndUpdate(
+      userId,
+      { $addToSet: { wishlist: productId } },
+      { new: true }
+    ).populate("wishlist");
+  }
+  return {
+    isWishlisted,
+    wishlist: updatedUser ? updatedUser.wishlist : []
+  };
+};
+var getWishlist = async (userId) => {
+  const user = await user_model_default.findById(userId).populate({
+    path: "wishlist",
+    populate: {
+      path: "category"
+    }
+  });
+  if (!user) {
+    const error = new Error("User not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  return user.wishlist || [];
+};
+var addToCart = async (userId, productId) => {
+  if (!productId) {
+    const error = new Error("Product ID is required");
+    error.statusCode = 400;
+    throw error;
+  }
+  const user = await user_model_default.findById(userId);
+  if (!user) {
+    const error = new Error("User not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  const cart = user.cart || [];
+  const isInCart = cart.some(
+    (id) => id.toString() === productId.toString()
+  );
+  if (isInCart) {
+    return { added: false, message: "Item is already in cart", cart: [] };
+  }
+  const updatedUser = await user_model_default.findByIdAndUpdate(
+    userId,
+    { $addToSet: { cart: productId } },
+    { new: true }
+  ).populate({
+    path: "cart",
+    populate: {
+      path: "category"
+    }
+  });
+  return {
+    added: true,
+    message: "Item added to cart",
+    cart: updatedUser ? updatedUser.cart : []
+  };
+};
+var removeFromCart = async (userId, productId) => {
+  if (!productId) {
+    const error = new Error("Product ID is required");
+    error.statusCode = 400;
+    throw error;
+  }
+  const updatedUser = await user_model_default.findByIdAndUpdate(
+    userId,
+    { $pull: { cart: productId } },
+    { new: true }
+  ).populate({
+    path: "cart",
+    populate: {
+      path: "category"
+    }
+  });
+  return updatedUser ? updatedUser.cart : [];
+};
+var getCart = async (userId) => {
+  const user = await user_model_default.findById(userId).populate({
+    path: "cart",
+    populate: {
+      path: "category"
+    }
+  });
+  if (!user) {
+    const error = new Error("User not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  return user.cart || [];
+};
+var clearCart = async (userId) => {
+  await user_model_default.findByIdAndUpdate(userId, { $set: { cart: [] } });
+  return [];
+};
+var profile_service_default = {
+  updateProfile,
+  updateProfileHeader,
+  updateAbout,
+  updatePersonalDetails,
+  deleteAccount,
+  getUserDetails,
+  updateDisplayPicture,
+  getUserOrders,
+  shopDashboard,
+  toggleWishlist,
+  getWishlist,
+  addToCart,
+  removeFromCart,
+  getCart,
+  clearCart
+};
+
+// src/modules/users/profile.controller.ts
+var updateProfile2 = async (req, res) => {
   try {
-    const { firstName, lastName, dateOfBirth, about, contactNumber, gender } = req.body;
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
-    const userDetails = await user_default.findById(userId);
-    if (!userDetails) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found. Invalid or expired token."
-      });
-    }
-    let profile = await profile_default.findById(userDetails.additionalDetails);
-    if (!profile) {
-      profile = await profile_default.create({
-        gender: null,
-        dateOfBirth: null,
-        about: null,
-        contactNumber: null
-      });
-      userDetails.additionalDetails = profile._id;
-      await userDetails.save();
-    }
-    if (firstName) userDetails.firstName = firstName;
-    if (lastName) userDetails.lastName = lastName;
-    await userDetails.save();
-    profile.dateOfBirth = dateOfBirth || profile.dateOfBirth;
-    profile.about = about || profile.about;
-    profile.contactNumber = contactNumber || profile.contactNumber;
-    profile.gender = gender || profile.gender;
-    await profile.save();
-    const updatedUserDetails = await user_default.findById(userId).select("-password").populate("additionalDetails").exec();
-    if (updatedUserDetails && updatedUserDetails.image && updatedUserDetails.image.includes("dicebear.com")) {
-      updatedUserDetails.image = null;
-      await user_default.findByIdAndUpdate(userId, { image: null });
-    }
+    const updatedUserDetails = await profile_service_default.updateProfile({
+      userId,
+      ...req.body
+    });
     return res.json({
       success: true,
       message: "Profile updated successfully",
       updatedUserDetails
     });
   } catch (error) {
-    return res.status(500).json({
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
       error: error.message
     });
   }
 };
-var updateProfileHeader = async (req, res) => {
+var updateProfileHeader2 = async (req, res) => {
   try {
-    const { firstName, lastName } = req.body;
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
-    const userDetails = await user_default.findById(userId);
-    if (!userDetails) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found. Invalid or expired token."
-      });
-    }
-    if (firstName) userDetails.firstName = firstName;
-    if (lastName !== void 0) userDetails.lastName = lastName;
-    if (req.files && req.files.displayPicture) {
-      const displayPicture = req.files.displayPicture;
-      const folderName = process.env.FOLDER_NAME || "unique";
-      const image = await uploadImageToCloudinary(displayPicture, folderName, 1e3, 1e3);
-      userDetails.image = image.secure_url;
-    }
-    await userDetails.save();
-    const updatedUserDetails = await user_default.findById(userId).select("-password").populate("additionalDetails").exec();
-    if (updatedUserDetails && updatedUserDetails.image && updatedUserDetails.image.includes("dicebear.com")) {
-      updatedUserDetails.image = null;
-      await user_default.findByIdAndUpdate(userId, { image: null });
-    }
+    const { firstName, lastName } = req.body;
+    const displayPicture = req.files?.displayPicture;
+    const updatedUserDetails = await profile_service_default.updateProfileHeader(
+      userId,
+      firstName,
+      lastName,
+      displayPicture
+    );
     return res.json({
       success: true,
       message: "Profile header updated successfully",
@@ -1044,44 +1338,20 @@ var updateProfileHeader = async (req, res) => {
       updatedUserDetails
     });
   } catch (error) {
-    return res.status(500).json({
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
       message: "Failed to update profile header",
       error: error.message
     });
   }
 };
-var updateAbout = async (req, res) => {
+var updateAbout2 = async (req, res) => {
   try {
-    const { about } = req.body;
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
-    const userDetails = await user_default.findById(userId);
-    if (!userDetails) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found. Invalid or expired token."
-      });
-    }
-    let profile = await profile_default.findById(userDetails.additionalDetails);
-    if (!profile) {
-      profile = await profile_default.create({
-        gender: null,
-        dateOfBirth: null,
-        about: typeof about === "string" ? about : null,
-        contactNumber: null
-      });
-      userDetails.additionalDetails = profile._id;
-      await userDetails.save();
-    } else {
-      profile.about = typeof about === "string" ? about : profile.about;
-      await profile.save();
-    }
-    const updatedUserDetails = await user_default.findById(userId).select("-password").populate("additionalDetails").exec();
-    if (updatedUserDetails && updatedUserDetails.image && updatedUserDetails.image.includes("dicebear.com")) {
-      updatedUserDetails.image = null;
-      await user_default.findByIdAndUpdate(userId, { image: null });
-    }
+    const { about } = req.body;
+    const updatedUserDetails = await profile_service_default.updateAbout(userId, about);
     return res.json({
       success: true,
       message: "About section updated successfully",
@@ -1089,49 +1359,19 @@ var updateAbout = async (req, res) => {
       updatedUserDetails
     });
   } catch (error) {
-    return res.status(500).json({
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
       message: "Failed to update about section",
       error: error.message
     });
   }
 };
-var updatePersonalDetails = async (req, res) => {
+var updatePersonalDetails2 = async (req, res) => {
   try {
-    const { firstName, lastName, dateOfBirth, contactNumber, gender } = req.body;
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
-    const userDetails = await user_default.findById(userId);
-    if (!userDetails) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found. Invalid or expired token."
-      });
-    }
-    if (firstName) userDetails.firstName = firstName;
-    if (lastName !== void 0) userDetails.lastName = lastName;
-    await userDetails.save();
-    let profile = await profile_default.findById(userDetails.additionalDetails);
-    if (!profile) {
-      profile = await profile_default.create({
-        gender: gender || null,
-        dateOfBirth: dateOfBirth || null,
-        about: null,
-        contactNumber: contactNumber || null
-      });
-      userDetails.additionalDetails = profile._id;
-      await userDetails.save();
-    } else {
-      if (dateOfBirth !== void 0) profile.dateOfBirth = dateOfBirth;
-      if (contactNumber !== void 0) profile.contactNumber = contactNumber;
-      if (gender !== void 0) profile.gender = gender;
-      await profile.save();
-    }
-    const updatedUserDetails = await user_default.findById(userId).select("-password").populate("additionalDetails").exec();
-    if (updatedUserDetails && updatedUserDetails.image && updatedUserDetails.image.includes("dicebear.com")) {
-      updatedUserDetails.image = null;
-      await user_default.findByIdAndUpdate(userId, { image: null });
-    }
+    const updatedUserDetails = await profile_service_default.updatePersonalDetails(userId, req.body);
     return res.json({
       success: true,
       message: "Personal details updated successfully",
@@ -1139,49 +1379,37 @@ var updatePersonalDetails = async (req, res) => {
       updatedUserDetails
     });
   } catch (error) {
-    return res.status(500).json({
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
       message: "Failed to update personal details",
       error: error.message
     });
   }
 };
-var deleteAccount = async (req, res) => {
+var deleteAccount2 = async (req, res) => {
   try {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
-    const user = await user_default.findById(userId);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
-      });
-    }
-    await profile_default.findByIdAndDelete(user.additionalDetails);
-    await product_default.updateMany({ reviews: userId }, { $pull: { reviews: userId } });
-    await orders_default.deleteMany({ user: userId });
-    await user_default.findByIdAndDelete(userId);
+    const result = await profile_service_default.deleteAccount(userId);
     return res.status(200).json({
       success: true,
-      message: "User account deleted successfully"
+      message: result.message
     });
   } catch (error) {
-    return res.status(500).json({
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
-      message: "Cannot delete user",
+      message: error.message || "Cannot delete user",
       error: error.message
     });
   }
 };
-var getUserDetails = async (req, res) => {
+var getUserDetails2 = async (req, res) => {
   try {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
-    const userDetails = await user_default.findById(userId).select("-password -cart -wishlist").populate("additionalDetails").exec();
-    if (userDetails && userDetails.image && userDetails.image.includes("dicebear.com")) {
-      userDetails.image = null;
-      await user_default.findByIdAndUpdate(userId, { image: null });
-    }
+    const userDetails = await profile_service_default.getUserDetails(userId);
     return res.status(200).json({
       success: true,
       message: "User data fetched successfully",
@@ -1194,41 +1422,30 @@ var getUserDetails = async (req, res) => {
     });
   }
 };
-var updateDisplayPicture = async (req, res) => {
+var updateDisplayPicture2 = async (req, res) => {
   try {
-    const displayPicture = req.files?.displayPicture;
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
-    if (!displayPicture) {
-      return res.status(400).json({ success: false, message: "No image file uploaded" });
-    }
-    const folderName = process.env.FOLDER_NAME || "unique";
-    const image = await uploadImageToCloudinary(displayPicture, folderName, 1e3, 1e3);
-    const updatedUser = await user_default.findByIdAndUpdate(
-      userId,
-      { image: image.secure_url },
-      { new: true }
-    ).select("-password");
+    const displayPicture = req.files?.displayPicture;
+    const updatedUser = await profile_service_default.updateDisplayPicture(userId, displayPicture);
     return res.status(200).json({
       success: true,
       message: "Profile picture updated successfully",
       data: updatedUser
     });
   } catch (error) {
-    return res.status(500).json({
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
       message: error.message
     });
   }
 };
-var getUserOrders = async (req, res) => {
+var getUserOrders2 = async (req, res) => {
   try {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
-    const orders = await orders_default.find({ user: userId }).populate({
-      path: "products.product",
-      populate: { path: "category" }
-    }).sort({ createdAt: -1 });
+    const orders = await profile_service_default.getUserOrders(userId);
     return res.status(200).json({
       success: true,
       message: "Orders fetched successfully",
@@ -1242,203 +1459,115 @@ var getUserOrders = async (req, res) => {
     });
   }
 };
-var toggleWishlist = async (req, res) => {
+var toggleWishlist2 = async (req, res) => {
   try {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
     const { productId } = req.body;
-    if (!productId) {
-      return res.status(400).json({
-        success: false,
-        message: "Product ID is required"
-      });
-    }
-    const user = await user_default.findById(userId);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
-      });
-    }
-    const wishlist = user.wishlist || [];
-    const isWishlisted = wishlist.some(
-      (id) => id.toString() === productId.toString()
-    );
-    let updatedUser;
-    if (isWishlisted) {
-      updatedUser = await user_default.findByIdAndUpdate(
-        userId,
-        { $pull: { wishlist: productId } },
-        { new: true }
-      ).populate("wishlist");
-    } else {
-      updatedUser = await user_default.findByIdAndUpdate(
-        userId,
-        { $addToSet: { wishlist: productId } },
-        { new: true }
-      ).populate("wishlist");
-    }
+    const result = await profile_service_default.toggleWishlist(userId, productId);
     return res.status(200).json({
       success: true,
-      message: isWishlisted ? "Removed from wishlist" : "Added to wishlist",
-      inWishlist: !isWishlisted,
-      wishlist: updatedUser.wishlist
+      message: result.isWishlisted ? "Removed from wishlist" : "Added to wishlist",
+      inWishlist: !result.isWishlisted,
+      wishlist: result.wishlist
     });
   } catch (error) {
-    return res.status(500).json({
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
       message: error.message || "Failed to toggle wishlist"
     });
   }
 };
-var getWishlist = async (req, res) => {
+var getWishlist2 = async (req, res) => {
   try {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
-    const user = await user_default.findById(userId).populate({
-      path: "wishlist",
-      populate: {
-        path: "category"
-      }
-    });
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
-      });
-    }
+    const wishlist = await profile_service_default.getWishlist(userId);
     return res.status(200).json({
       success: true,
       message: "Wishlist fetched successfully",
-      data: user.wishlist || []
+      data: wishlist
     });
   } catch (error) {
-    return res.status(500).json({
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
       message: error.message || "Failed to fetch wishlist"
     });
   }
 };
-var addToCart = async (req, res) => {
+var addToCart2 = async (req, res) => {
   try {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
     const { productId } = req.body;
-    if (!productId) {
-      return res.status(400).json({
-        success: false,
-        message: "Product ID is required"
-      });
-    }
-    const user = await user_default.findById(userId);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
-      });
-    }
-    const cart = user.cart || [];
-    const isInCart = cart.some(
-      (id) => id.toString() === productId.toString()
-    );
-    if (isInCart) {
+    const result = await profile_service_default.addToCart(userId, productId);
+    if (!result.added) {
       return res.status(200).json({
         success: false,
-        message: "Item is already in cart"
+        message: result.message
       });
     }
-    const updatedUser = await user_default.findByIdAndUpdate(
-      userId,
-      { $addToSet: { cart: productId } },
-      { new: true }
-    ).populate({
-      path: "cart",
-      populate: {
-        path: "category"
-      }
-    });
     return res.status(200).json({
       success: true,
-      message: "Item added to cart",
-      cart: updatedUser ? updatedUser.cart : []
+      message: result.message,
+      cart: result.cart
     });
   } catch (error) {
-    return res.status(500).json({
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
       message: error.message || "Failed to add item to cart"
     });
   }
 };
-var removeFromCart = async (req, res) => {
+var removeFromCart2 = async (req, res) => {
   try {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
     const { productId } = req.body;
-    if (!productId) {
-      return res.status(400).json({
-        success: false,
-        message: "Product ID is required"
-      });
-    }
-    const updatedUser = await user_default.findByIdAndUpdate(
-      userId,
-      { $pull: { cart: productId } },
-      { new: true }
-    ).populate({
-      path: "cart",
-      populate: {
-        path: "category"
-      }
-    });
+    const cart = await profile_service_default.removeFromCart(userId, productId);
     return res.status(200).json({
       success: true,
       message: "Item removed from cart",
-      cart: updatedUser ? updatedUser.cart : []
+      cart
     });
   } catch (error) {
-    return res.status(500).json({
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
       message: error.message || "Failed to remove item from cart"
     });
   }
 };
-var getCart = async (req, res) => {
+var getCart2 = async (req, res) => {
   try {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
-    const user = await user_default.findById(userId).populate({
-      path: "cart",
-      populate: {
-        path: "category"
-      }
-    });
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
-      });
-    }
+    const cart = await profile_service_default.getCart(userId);
     return res.status(200).json({
       success: true,
       message: "Cart fetched successfully",
-      cart: user.cart || []
+      cart
     });
   } catch (error) {
-    return res.status(500).json({
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
       message: error.message || "Failed to fetch cart"
     });
   }
 };
-var clearCart = async (req, res) => {
+var clearCart2 = async (req, res) => {
   try {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
-    await user_default.findByIdAndUpdate(userId, { $set: { cart: [] } });
+    const cart = await profile_service_default.clearCart(userId);
     return res.status(200).json({
       success: true,
       message: "Cart cleared successfully",
-      cart: []
+      cart
     });
   } catch (error) {
     return res.status(500).json({
@@ -1448,29 +1577,29 @@ var clearCart = async (req, res) => {
   }
 };
 
-// src/routes/profile.ts
+// src/modules/users/profile.routes.ts
 var router2 = import_express2.default.Router();
-router2.delete("/deleteProfile", auth, deleteAccount);
-router2.put("/updateProfile", auth, updateProfile);
-router2.put("/updateProfileHeader", auth, updateProfileHeader);
-router2.put("/updateAbout", auth, updateAbout);
-router2.put("/updatePersonalDetails", auth, updatePersonalDetails);
-router2.get("/getUserDetails", auth, getUserDetails);
-router2.put("/updateDisplayPicture", auth, updateDisplayPicture);
-router2.post("/toggleWishlist", auth, toggleWishlist);
-router2.get("/getWishlist", auth, getWishlist);
-router2.get("/getCart", auth, getCart);
-router2.post("/addToCart", auth, addToCart);
-router2.post("/removeFromCart", auth, removeFromCart);
-router2.post("/clearCart", auth, clearCart);
-router2.get("/getUserOrders", auth, getUserOrders);
-router2.get("/myOrders", auth, getUserOrders);
-var profile_default2 = router2;
+router2.delete("/deleteProfile", auth, deleteAccount2);
+router2.put("/updateProfile", auth, updateProfile2);
+router2.put("/updateProfileHeader", auth, updateProfileHeader2);
+router2.put("/updateAbout", auth, updateAbout2);
+router2.put("/updatePersonalDetails", auth, updatePersonalDetails2);
+router2.get("/getUserDetails", auth, getUserDetails2);
+router2.put("/updateDisplayPicture", auth, updateDisplayPicture2);
+router2.post("/toggleWishlist", auth, toggleWishlist2);
+router2.get("/getWishlist", auth, getWishlist2);
+router2.get("/getCart", auth, getCart2);
+router2.post("/addToCart", auth, addToCart2);
+router2.post("/removeFromCart", auth, removeFromCart2);
+router2.post("/clearCart", auth, clearCart2);
+router2.get("/getUserOrders", auth, getUserOrders2);
+router2.get("/myOrders", auth, getUserOrders2);
+var profile_routes_default = router2;
 
-// src/routes/product.ts
+// src/modules/products/product.routes.ts
 var import_express3 = __toESM(require("express"));
 
-// src/models/category.ts
+// src/modules/categories/category.model.ts
 var import_mongoose6 = __toESM(require("mongoose"));
 var categorySchema = new import_mongoose6.Schema({
   name: { type: String, required: true, unique: true },
@@ -1484,34 +1613,131 @@ var categorySchema = new import_mongoose6.Schema({
   ]
 });
 var Category = import_mongoose6.default.model("Category", categorySchema);
-var category_default = Category;
+var category_model_default = Category;
 
-// src/controller/product.ts
-var createProduct = async (req, res) => {
+// src/modules/products/product.service.ts
+var createProduct = async (input) => {
+  const { name, description, price, category, userId, imageFile } = input;
+  if (!name || !price || !category) {
+    const error = new Error("Name, price, and category are required");
+    error.statusCode = 400;
+    throw error;
+  }
+  let imageUrl = "";
+  if (imageFile) {
+    const folderName = process.env.FOLDER_NAME || "unique";
+    const image = await uploadImageToCloudinary(imageFile, folderName);
+    imageUrl = image.secure_url;
+  }
+  const newProduct = await product_model_default.create({
+    name,
+    description,
+    price,
+    category,
+    image: imageUrl,
+    createdBy: userId
+  });
+  await category_model_default.findByIdAndUpdate(category, {
+    $push: { products: newProduct._id }
+  });
+  return newProduct;
+};
+var getAllProducts = async () => {
+  const products = await product_model_default.find().populate("category", "name description");
+  return products;
+};
+var getProductDetails = async (productId) => {
+  const product = await product_model_default.findById(productId).populate("category").populate("createdBy", "firstName lastName email");
+  if (!product) {
+    const error = new Error("Product not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  return product;
+};
+var getProductById = async (productId) => {
+  const product = await product_model_default.findById(productId).populate("category", "name").exec();
+  if (!product) {
+    const error = new Error("Product not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  return product;
+};
+var updateProduct = async (productId, input) => {
+  const { name, description, price, categoryId, imageFile } = input;
+  let updatedData = { name, description, price };
+  if (categoryId) updatedData.category = categoryId;
+  if (imageFile) {
+    const folderName = process.env.FOLDER_NAME || "unique";
+    const uploadedImage = await uploadImageToCloudinary(imageFile, folderName, 500, 500);
+    updatedData.image = uploadedImage.secure_url;
+  }
+  const updatedProduct = await product_model_default.findByIdAndUpdate(productId, updatedData, {
+    new: true
+  });
+  if (!updatedProduct) {
+    const error = new Error("Product not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  return updatedProduct;
+};
+var deleteProduct = async (productId) => {
+  const deletedProduct = await product_model_default.findByIdAndDelete(productId);
+  if (!deletedProduct) {
+    const error = new Error("Product not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  return { message: "Product deleted successfully" };
+};
+var searchProducts = async (keyword) => {
+  if (!keyword) {
+    const error = new Error("Keyword is required");
+    error.statusCode = 400;
+    throw error;
+  }
+  const products = await product_model_default.find({
+    name: { $regex: keyword, $options: "i" }
+  }).populate("category", "name");
+  return products;
+};
+var filterProducts = async (filters) => {
+  const { categoryId, minPrice, maxPrice } = filters;
+  let filter = {};
+  if (categoryId) filter.category = categoryId;
+  if (minPrice || maxPrice) {
+    filter.price = {};
+    if (minPrice) filter.price.$gte = parseFloat(minPrice);
+    if (maxPrice) filter.price.$lte = parseFloat(maxPrice);
+  }
+  const products = await product_model_default.find(filter).populate("category", "name");
+  return products;
+};
+var product_service_default = {
+  createProduct,
+  getAllProducts,
+  getProductDetails,
+  getProductById,
+  updateProduct,
+  deleteProduct,
+  searchProducts,
+  filterProducts
+};
+
+// src/modules/products/product.controller.ts
+var createProduct2 = async (req, res) => {
   try {
     const { name, description, price, category } = req.body;
-    if (!name || !price || !category) {
-      return res.status(400).json({
-        success: false,
-        message: "Name, price, and category are required"
-      });
-    }
-    let imageUrl = "";
-    if (req.files && req.files.image) {
-      const folderName = process.env.FOLDER_NAME || "unique";
-      const image = await uploadImageToCloudinary(req.files.image, folderName);
-      imageUrl = image.secure_url;
-    }
-    const newProduct = await product_default.create({
+    const imageFile = req.files?.image;
+    const newProduct = await product_service_default.createProduct({
       name,
       description,
       price,
       category,
-      image: imageUrl,
-      createdBy: req.user?.id
-    });
-    await category_default.findByIdAndUpdate(category, {
-      $push: { products: newProduct._id }
+      userId: req.user?.id,
+      imageFile
     });
     return res.status(200).json({
       success: true,
@@ -1519,16 +1745,17 @@ var createProduct = async (req, res) => {
       product: newProduct
     });
   } catch (error) {
-    return res.status(500).json({
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
-      message: "Error while creating product",
+      message: error.message || "Error while creating product",
       error: error.message
     });
   }
 };
-var getAllProducts = async (_req, res) => {
+var getAllProducts2 = async (_req, res) => {
   try {
-    const products = await product_default.find().populate("category", "name description");
+    const products = await product_service_default.getAllProducts();
     return res.status(200).json({
       success: true,
       products
@@ -1540,148 +1767,158 @@ var getAllProducts = async (_req, res) => {
     });
   }
 };
-var getProductDetails = async (req, res) => {
+var getProductDetails2 = async (req, res) => {
   try {
     const { productId } = req.params;
-    const product = await product_default.findById(productId).populate("category").populate("createdBy", "firstName lastName email");
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: "Product not found"
-      });
-    }
+    const product = await product_service_default.getProductDetails(productId);
     return res.status(200).json({
       success: true,
       product
     });
   } catch (error) {
-    return res.status(500).json({
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
       message: error.message
     });
   }
 };
-var updateProduct = async (req, res) => {
+var updateProduct2 = async (req, res) => {
   try {
     const { name, description, price, categoryId } = req.body;
-    let updatedData = { name, description, price };
-    if (categoryId) updatedData.category = categoryId;
-    if (req.files && req.files.image) {
-      const image = req.files.image;
-      const folderName = process.env.FOLDER_NAME || "unique";
-      const uploadedImage = await uploadImageToCloudinary(image, folderName, 500, 500);
-      updatedData.image = uploadedImage.secure_url;
-    }
-    const updatedProduct = await product_default.findByIdAndUpdate(req.params.id, updatedData, {
-      new: true
+    const imageFile = req.files?.image;
+    const updatedProduct = await product_service_default.updateProduct(req.params.id, {
+      name,
+      description,
+      price,
+      categoryId,
+      imageFile
     });
-    if (!updatedProduct) {
-      return res.status(404).json({ success: false, message: "Product not found" });
-    }
     return res.status(200).json({
       success: true,
       message: "Product updated successfully",
       data: updatedProduct
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({ success: false, message: error.message });
   }
 };
-var deleteProduct = async (req, res) => {
+var deleteProduct2 = async (req, res) => {
   try {
-    const deletedProduct = await product_default.findByIdAndDelete(req.params.id);
-    if (!deletedProduct) {
-      return res.status(404).json({ success: false, message: "Product not found" });
-    }
-    return res.status(200).json({ success: true, message: "Product deleted successfully" });
+    const result = await product_service_default.deleteProduct(req.params.id);
+    return res.status(200).json({ success: true, message: result.message });
   } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({ success: false, message: error.message });
   }
 };
-var searchProducts = async (req, res) => {
+var searchProducts2 = async (req, res) => {
   try {
     const { keyword } = req.query;
-    if (!keyword) {
-      return res.status(400).json({ success: false, message: "Keyword is required" });
-    }
-    const products = await product_default.find({
-      name: { $regex: keyword, $options: "i" }
-    }).populate("category", "name");
+    const products = await product_service_default.searchProducts(keyword);
     return res.status(200).json({ success: true, data: products });
   } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({ success: false, message: error.message });
   }
 };
-var filterProducts = async (req, res) => {
+var filterProducts2 = async (req, res) => {
   try {
     const { categoryId, minPrice, maxPrice } = req.query;
-    let filter = {};
-    if (categoryId) filter.category = categoryId;
-    if (minPrice || maxPrice) {
-      filter.price = {};
-      if (minPrice) filter.price.$gte = parseFloat(minPrice);
-      if (maxPrice) filter.price.$lte = parseFloat(maxPrice);
-    }
-    const products = await product_default.find(filter).populate("category", "name");
+    const products = await product_service_default.filterProducts({
+      categoryId,
+      minPrice,
+      maxPrice
+    });
     return res.status(200).json({ success: true, data: products });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// src/routes/product.ts
+// src/modules/products/product.routes.ts
 var router3 = import_express3.default.Router();
-router3.post("/createProduct", auth, isAdmin, createProduct);
-router3.put("/updateProduct/:id", auth, isAdmin, updateProduct);
-router3.delete("/deleteProduct/:id", auth, isAdmin, deleteProduct);
-router3.get("/getAllProducts", getAllProducts);
-router3.get("/getProduct/:id", getProductDetails);
-router3.get("/search", searchProducts);
-router3.get("/filter", filterProducts);
-var product_default2 = router3;
+router3.post("/createProduct", auth, isAdmin, createProduct2);
+router3.put("/updateProduct/:id", auth, isAdmin, updateProduct2);
+router3.delete("/deleteProduct/:id", auth, isAdmin, deleteProduct2);
+router3.get("/getAllProducts", getAllProducts2);
+router3.get("/getProduct/:id", getProductDetails2);
+router3.get("/search", searchProducts2);
+router3.get("/filter", filterProducts2);
+var product_routes_default = router3;
 
-// src/routes/category.ts
+// src/modules/categories/category.routes.ts
 var import_express4 = __toESM(require("express"));
 
-// src/controller/category.ts
-var createCategory = async (req, res) => {
+// src/modules/categories/category.service.ts
+var createCategory = async (input) => {
+  const { name, description, imageFile } = input;
+  if (!name) {
+    const error = new Error("All fields are required");
+    error.statusCode = 404;
+    throw error;
+  }
+  let imageUrl = "";
+  if (imageFile) {
+    const folderName = process.env.FOLDER_NAME || "unique";
+    const image = await uploadImageToCloudinary(imageFile, folderName);
+    imageUrl = image.secure_url;
+  }
+  const categoryDetails = await category_model_default.create({
+    name,
+    description,
+    image: imageUrl
+  });
+  return categoryDetails;
+};
+var showAllCategories = async () => {
+  const allCategories = await category_model_default.find(
+    {},
+    { name: true, description: true, image: true }
+  );
+  return allCategories;
+};
+var getCategoryPageDetails = async (categoryId) => {
+  const selectedCategory = await category_model_default.findById(categoryId).populate("products").exec();
+  if (!selectedCategory) {
+    const error = new Error("Data Not Found");
+    error.statusCode = 404;
+    throw error;
+  }
+  return selectedCategory;
+};
+var category_service_default = {
+  createCategory,
+  showAllCategories,
+  getCategoryPageDetails
+};
+
+// src/modules/categories/category.controller.ts
+var createCategory2 = async (req, res) => {
   try {
     const { name, description } = req.body;
-    if (!name) {
-      return res.status(404).json({
-        success: false,
-        message: "All fields are required"
-      });
-    }
-    let imageUrl = "";
-    if (req.files && req.files.image) {
-      const folderName = process.env.FOLDER_NAME || "unique";
-      const image = await uploadImageToCloudinary(req.files.image, folderName);
-      imageUrl = image.secure_url;
-    }
-    const CategoryDetails = await category_default.create({
+    const imageFile = req.files?.image;
+    await category_service_default.createCategory({
       name,
       description,
-      image: imageUrl
+      imageFile
     });
-    console.log(CategoryDetails);
     return res.status(200).json({
       success: true,
       message: "Category Created Successfully"
     });
   } catch (error) {
-    return res.status(500).json({
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
       message: error.message
     });
   }
 };
-var showAllCategories = async (_req, res) => {
+var showAllCategories2 = async (_req, res) => {
   try {
-    const allCategories = await category_default.find(
-      {},
-      { name: true, description: true, image: true }
-    );
+    const allCategories = await category_service_default.showAllCategories();
     return res.status(200).json({
       success: true,
       message: "All tags returned successfully",
@@ -1697,13 +1934,7 @@ var showAllCategories = async (_req, res) => {
 var categoryPageDetails = async (req, res) => {
   try {
     const { id } = req.params;
-    const selectedCategory = await category_default.findById(id).populate("products").exec();
-    if (!selectedCategory) {
-      return res.status(404).json({
-        success: false,
-        message: "Data Not Found"
-      });
-    }
+    const selectedCategory = await category_service_default.getCategoryPageDetails(id);
     return res.status(200).json({
       success: true,
       data: {
@@ -1711,82 +1942,137 @@ var categoryPageDetails = async (req, res) => {
       }
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
       message: error.message
     });
   }
 };
 
-// src/routes/category.ts
+// src/modules/categories/category.routes.ts
 var router4 = import_express4.default.Router();
-router4.post("/createCategory", auth, isAdmin, createCategory);
-router4.get("/showAllCategories", showAllCategories);
+router4.post("/createCategory", auth, isAdmin, createCategory2);
+router4.get("/showAllCategories", showAllCategories2);
 router4.get("/categoryPageDetails/:id", categoryPageDetails);
-var category_default2 = router4;
+var category_routes_default = router4;
 
-// src/routes/order.ts
+// src/modules/orders/order.routes.ts
 var import_express5 = __toESM(require("express"));
 
-// src/controller/order.ts
-var placeOrder = async (req, res) => {
+// src/modules/orders/order.service.ts
+var placeOrder = async (input) => {
+  const { userId, shippingAddress, totalAmount, paymentMethod, paymentStatus } = input;
+  let { products } = input;
+  const user = await user_model_default.findById(userId).populate("cart");
+  if (!user) {
+    const error = new Error("User not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  if ((!products || products.length === 0) && user.cart && user.cart.length > 0) {
+    products = user.cart.map((p) => ({
+      product: p._id,
+      quantity: 1
+    }));
+  }
+  if (!products || products.length === 0) {
+    const error = new Error("No products provided for order");
+    error.statusCode = 400;
+    throw error;
+  }
+  let calculatedTotal = 0;
+  const formattedProducts = [];
+  for (const item of products) {
+    const productId = item.product || item._id;
+    const qty = item.quantity || 1;
+    const productDoc = await product_model_default.findById(productId);
+    if (productDoc) {
+      calculatedTotal += (productDoc.price || 0) * qty;
+      formattedProducts.push({
+        product: productDoc._id,
+        quantity: qty
+      });
+      await product_model_default.findByIdAndUpdate(productDoc._id, {
+        $inc: { stock: -qty }
+      });
+    }
+  }
+  const finalAmount = totalAmount ? Number(totalAmount) : calculatedTotal;
+  const order = await order_model_default.create({
+    user: userId,
+    products: formattedProducts,
+    totalAmount: finalAmount,
+    shippingAddress: shippingAddress || {},
+    status: "Processing",
+    paymentStatus: paymentStatus || "Paid",
+    paymentMethod: paymentMethod || "eSewa"
+  });
+  await user_model_default.findByIdAndUpdate(userId, { $set: { cart: [] } });
+  const populatedOrder = await order_model_default.findById(order._id).populate({
+    path: "products.product",
+    populate: { path: "category" }
+  });
+  return populatedOrder;
+};
+var getUserOrders3 = async (userId) => {
+  const orders = await order_model_default.find({ user: userId }).populate({
+    path: "products.product",
+    populate: { path: "category" }
+  }).sort({ createdAt: -1 });
+  return orders || [];
+};
+var getAllOrders = async () => {
+  const orders = await order_model_default.find().populate("user", "firstName lastName email").populate({
+    path: "products.product",
+    populate: { path: "category" }
+  }).sort({ createdAt: -1 });
+  return orders || [];
+};
+var updateOrderStatus = async (orderId, status) => {
+  const validStatuses = ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
+  if (!validStatuses.includes(status)) {
+    const error = new Error("Invalid status value");
+    error.statusCode = 400;
+    throw error;
+  }
+  const updatedOrder = await order_model_default.findByIdAndUpdate(
+    orderId,
+    { status },
+    { new: true }
+  ).populate({
+    path: "products.product",
+    populate: { path: "category" }
+  });
+  if (!updatedOrder) {
+    const error = new Error("Order not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  return updatedOrder;
+};
+var order_service_default = {
+  placeOrder,
+  getUserOrders: getUserOrders3,
+  getAllOrders,
+  updateOrderStatus
+};
+
+// src/modules/orders/order.controller.ts
+var placeOrder2 = async (req, res) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    let { products, shippingAddress, totalAmount, paymentMethod, paymentStatus } = req.body;
-    const user = await user_default.findById(userId).populate("cart");
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
-      });
-    }
-    if ((!products || products.length === 0) && user.cart && user.cart.length > 0) {
-      products = user.cart.map((p) => ({
-        product: p._id,
-        quantity: 1
-      }));
-    }
-    if (!products || products.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "No products provided for order"
-      });
-    }
-    let calculatedTotal = 0;
-    const formattedProducts = [];
-    for (const item of products) {
-      const productId = item.product || item._id;
-      const qty = item.quantity || 1;
-      const productDoc = await product_default.findById(productId);
-      if (productDoc) {
-        calculatedTotal += (productDoc.price || 0) * qty;
-        formattedProducts.push({
-          product: productDoc._id,
-          quantity: qty
-        });
-        await product_default.findByIdAndUpdate(productDoc._id, {
-          $inc: { stock: -qty }
-        });
-      }
-    }
-    const finalAmount = totalAmount ? Number(totalAmount) : calculatedTotal;
-    const order = await orders_default.create({
-      user: userId,
-      products: formattedProducts,
-      totalAmount: finalAmount,
-      shippingAddress: shippingAddress || {},
-      status: "Processing",
-      paymentStatus: paymentStatus || "Paid",
-      paymentMethod: paymentMethod || "eSewa"
-    });
-    await user_default.findByIdAndUpdate(userId, { $set: { cart: [] } });
-    const populatedOrder = await orders_default.findById(order._id).populate({
-      path: "products.product",
-      populate: { path: "category" }
+    const { products, shippingAddress, totalAmount, paymentMethod, paymentStatus } = req.body;
+    const populatedOrder = await order_service_default.placeOrder({
+      userId,
+      products,
+      shippingAddress,
+      totalAmount,
+      paymentMethod,
+      paymentStatus
     });
     return res.status(201).json({
       success: true,
@@ -1795,23 +2081,21 @@ var placeOrder = async (req, res) => {
     });
   } catch (error) {
     console.error("Place order error:", error);
-    return res.status(500).json({
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
-      message: "Error while placing order",
+      message: error.message || "Error while placing order",
       error: error.message
     });
   }
 };
-var getUserOrders2 = async (req, res) => {
+var getUserOrders4 = async (req, res) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const orders = await orders_default.find({ user: userId }).populate({
-      path: "products.product",
-      populate: { path: "category" }
-    }).sort({ createdAt: -1 });
+    const orders = await order_service_default.getUserOrders(userId);
     return res.status(200).json({
       success: true,
       message: "User orders fetched successfully",
@@ -1822,85 +2106,63 @@ var getUserOrders2 = async (req, res) => {
     console.error("Fetch user orders error:", error);
     return res.status(500).json({
       success: false,
-      message: "Error while fetching user orders",
+      message: error.message || "Error while fetching user orders",
       error: error.message
     });
   }
 };
-var getAllOrders = async (_req, res) => {
+var getAllOrders2 = async (_req, res) => {
   try {
-    const orders = await orders_default.find().populate("user", "firstName lastName email").populate({
-      path: "products.product",
-      populate: { path: "category" }
-    }).sort({ createdAt: -1 });
+    const orders = await order_service_default.getAllOrders();
     return res.status(200).json({
       success: true,
       orders: orders || [],
       data: orders || []
     });
   } catch (error) {
-    console.error(error);
+    console.error("getAllOrders error:", error);
     return res.status(500).json({
       success: false,
-      message: "Error while fetching orders",
+      message: error.message || "Error while fetching orders",
       error: error.message
     });
   }
 };
-var updateOrderStatus = async (req, res) => {
+var updateOrderStatus2 = async (req, res) => {
   try {
     const { orderId, status } = req.body;
-    const validStatuses = ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid status value"
-      });
-    }
-    const updatedOrder = await orders_default.findByIdAndUpdate(
-      orderId,
-      { status },
-      { new: true }
-    ).populate({
-      path: "products.product",
-      populate: { path: "category" }
-    });
-    if (!updatedOrder) {
-      return res.status(404).json({
-        success: false,
-        message: "Order not found"
-      });
-    }
+    const updatedOrder = await order_service_default.updateOrderStatus(orderId, status);
     return res.status(200).json({
       success: true,
       message: `Order status updated to ${status}`,
       order: updatedOrder
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({
+    console.error("updateOrderStatus error:", error);
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
       success: false,
-      message: "Error while updating order status",
+      message: error.message || "Error while updating order status",
       error: error.message
     });
   }
 };
 
-// src/routes/order.ts
+// src/modules/orders/order.routes.ts
 var router5 = import_express5.default.Router();
-router5.post("/placeOrder", auth, placeOrder);
-router5.get("/getUserOrders", auth, getUserOrders2);
-router5.get("/myOrders", auth, getUserOrders2);
-router5.get("/getUserOrders/:id", auth, getUserOrders2);
-router5.get("/getAllOrders", auth, isAdmin, getAllOrders);
-router5.post("/updateOrderStatus", auth, isAdmin, updateOrderStatus);
-router5.put("/updateOrderStatus", auth, isAdmin, updateOrderStatus);
-var order_default = router5;
+router5.post("/placeOrder", auth, placeOrder2);
+router5.get("/getUserOrders", auth, getUserOrders4);
+router5.get("/myOrders", auth, getUserOrders4);
+router5.get("/getUserOrders/:id", auth, getUserOrders4);
+router5.get("/getAllOrders", auth, isAdmin, getAllOrders2);
+router5.post("/updateOrderStatus", auth, isAdmin, updateOrderStatus2);
+router5.put("/updateOrderStatus", auth, isAdmin, updateOrderStatus2);
+var order_routes_default = router5;
 
-// src/routes/payment.ts
+// src/modules/payments/payment.routes.ts
 var import_express6 = __toESM(require("express"));
 
-// src/controller/Payment.ts
+// src/modules/payments/payment.service.ts
 var import_crypto2 = __toESM(require("crypto"));
 var import_axios = __toESM(require("axios"));
 var ESEWA_PRODUCT_CODE = process.env.ESEWA_PRODUCT_CODE || "EPAYTEST";
@@ -1909,73 +2171,101 @@ var ESEWA_FORM_URL = process.env.ESEWA_FORM_URL || "https://rc-epay.esewa.com.np
 function signBase64(message, secret) {
   return import_crypto2.default.createHmac("sha256", secret).update(message).digest("base64");
 }
-var initEsewa = async (req, res) => {
+var initEsewa = async (input) => {
+  const {
+    amount,
+    tax_amount = 0,
+    product_delivery_charge = 0,
+    product_service_charge = 0,
+    transaction_uuid,
+    success_url,
+    failure_url
+  } = input;
+  if (!amount || !transaction_uuid || !success_url || !failure_url) {
+    const error = new Error("Missing fields");
+    error.statusCode = 400;
+    throw error;
+  }
+  const total_amount = Number(amount) + Number(tax_amount) + Number(product_delivery_charge) + Number(product_service_charge);
+  const signed_field_names = "total_amount,transaction_uuid,product_code";
+  const payload = {
+    amount: String(amount),
+    tax_amount: String(tax_amount),
+    total_amount: String(total_amount),
+    transaction_uuid: String(transaction_uuid),
+    product_code: ESEWA_PRODUCT_CODE,
+    product_service_charge: String(product_service_charge),
+    product_delivery_charge: String(product_delivery_charge),
+    success_url,
+    failure_url,
+    signed_field_names
+  };
+  const message = `total_amount=${payload.total_amount},transaction_uuid=${payload.transaction_uuid},product_code=${payload.product_code}`;
+  const signature = signBase64(message, ESEWA_SECRET);
+  return {
+    formUrl: ESEWA_FORM_URL,
+    fields: { ...payload, signature }
+  };
+};
+var checkEsewaStatus = async (uuid, total) => {
+  if (!uuid || !total) {
+    const error = new Error("Missing params");
+    error.statusCode = 400;
+    throw error;
+  }
+  const url = `https://rc.esewa.com.np/api/epay/transaction/status/?product_code=${ESEWA_PRODUCT_CODE}&total_amount=${encodeURIComponent(
+    total
+  )}&transaction_uuid=${encodeURIComponent(uuid)}`;
+  const { data } = await import_axios.default.get(url);
+  return data;
+};
+var payment_service_default = {
+  initEsewa,
+  checkEsewaStatus
+};
+
+// src/modules/payments/payment.controller.ts
+var initEsewa2 = async (req, res) => {
   try {
-    const {
-      amount,
-      tax_amount = 0,
-      product_delivery_charge = 0,
-      product_service_charge = 0,
-      transaction_uuid,
-      success_url,
-      failure_url
-    } = req.body;
-    if (!amount || !transaction_uuid || !success_url || !failure_url) {
-      return res.status(400).json({ success: false, message: "Missing fields" });
-    }
-    const total_amount = Number(amount) + Number(tax_amount) + Number(product_delivery_charge) + Number(product_service_charge);
-    const signed_field_names = "total_amount,transaction_uuid,product_code";
-    const payload = {
-      amount: String(amount),
-      tax_amount: String(tax_amount),
-      total_amount: String(total_amount),
-      transaction_uuid: String(transaction_uuid),
-      product_code: ESEWA_PRODUCT_CODE,
-      product_service_charge: String(product_service_charge),
-      product_delivery_charge: String(product_delivery_charge),
-      success_url,
-      failure_url,
-      signed_field_names
-    };
-    const message = `total_amount=${payload.total_amount},transaction_uuid=${payload.transaction_uuid},product_code=${payload.product_code}`;
-    const signature = signBase64(message, ESEWA_SECRET);
+    const result = await payment_service_default.initEsewa(req.body);
     return res.json({
       success: true,
-      formUrl: ESEWA_FORM_URL,
-      fields: { ...payload, signature }
+      ...result
     });
-  } catch (e) {
-    console.error(e);
-    return res.status(500).json({ success: false, message: "Server error" });
+  } catch (error) {
+    console.error("initEsewa error:", error);
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
+      success: false,
+      message: error.message || "Server error"
+    });
   }
 };
 var statusEsewa = async (req, res) => {
   try {
     const { uuid, total } = req.query;
-    if (!uuid || !total) {
-      return res.status(400).json({ success: false, message: "Missing params" });
-    }
-    const url = `https://rc.esewa.com.np/api/epay/transaction/status/?product_code=${ESEWA_PRODUCT_CODE}&total_amount=${encodeURIComponent(
-      total
-    )}&transaction_uuid=${encodeURIComponent(uuid)}`;
-    const { data } = await import_axios.default.get(url);
+    const data = await payment_service_default.checkEsewaStatus(uuid, total);
     return res.json({ success: true, data });
-  } catch (e) {
-    console.error(e?.response?.data || e.message);
-    return res.status(502).json({ success: false, message: "Status check failed" });
+  } catch (error) {
+    console.error("statusEsewa error:", error?.response?.data || error.message);
+    const statusCode = error.statusCode || 502;
+    return res.status(statusCode).json({
+      success: false,
+      message: error.message || "Status check failed"
+    });
   }
 };
 
-// src/routes/payment.ts
+// src/modules/payments/payment.routes.ts
 var router6 = import_express6.default.Router();
-router6.post("/init", initEsewa);
+router6.post("/init", initEsewa2);
 router6.get("/status", statusEsewa);
-var payment_default = router6;
+var payment_routes_default = router6;
 
 // src/config/database.ts
 var import_mongoose7 = __toESM(require("mongoose"));
-var import_dotenv4 = __toESM(require("dotenv"));
-import_dotenv4.default.config();
+var import_dotenv3 = __toESM(require("dotenv"));
+import_dotenv3.default.config();
 var connect = () => {
   const mongoUrl = process.env.MONGODB_URL;
   if (!mongoUrl) {
@@ -2006,7 +2296,7 @@ var cloudinaryConnect = () => {
 };
 
 // src/index.ts
-import_dotenv5.default.config();
+import_dotenv4.default.config();
 var app = (0, import_express7.default)();
 database_default.connect();
 app.set("etag", false);
@@ -2050,12 +2340,12 @@ app.use("/api/v1", (_req, res, next) => {
   });
   next();
 });
-app.use("/api/v1/auth", user_default2);
-app.use("/api/v1/profile", profile_default2);
-app.use("/api/v1/products", product_default2);
-app.use("/api/v1/categories", category_default2);
-app.use("/api/v1/orders", order_default);
-app.use("/api/v1/payment", payment_default);
+app.use("/api/v1/auth", auth_routes_default);
+app.use("/api/v1/profile", profile_routes_default);
+app.use("/api/v1/products", product_routes_default);
+app.use("/api/v1/categories", category_routes_default);
+app.use("/api/v1/orders", order_routes_default);
+app.use("/api/v1/payment", payment_routes_default);
 app.get("/", (_req, res) => {
   res.json({
     success: true,

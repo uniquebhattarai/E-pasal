@@ -4,12 +4,12 @@ import cors from "cors";
 import fileUpload from "express-fileupload";
 import cookieParser from "cookie-parser";
 
-import userRoutes from "./routes/user";
-import profileRoutes from "./routes/profile";
-import productRoutes from "./routes/product";
-import categoryRoutes from "./routes/category";
-import orderRoutes from "./routes/order";
-import paymentRoutes from "./routes/payment";
+import authRoutes from "./modules/auth/auth.routes";
+import profileRoutes from "./modules/users/profile.routes";
+import productRoutes from "./modules/products/product.routes";
+import categoryRoutes from "./modules/categories/category.routes";
+import orderRoutes from "./modules/orders/order.routes";
+import paymentRoutes from "./modules/payments/payment.routes";
 
 import Database from "./config/database";
 import { cloudinaryConnect } from "./config/cloudiary";
@@ -77,7 +77,7 @@ app.use("/api/v1", (_req: Request, res: Response, next: NextFunction) => {
 });
 
 // Setting up routes
-app.use("/api/v1/auth", userRoutes);
+app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/profile", profileRoutes);
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/categories", categoryRoutes);

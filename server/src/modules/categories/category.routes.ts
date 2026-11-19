@@ -3,8 +3,8 @@ import {
   createCategory,
   showAllCategories,
   categoryPageDetails,
-} from "../controller/category";
-import { auth, isAdmin } from "../middleware/auth";
+} from "./category.controller";
+import { auth, isAdmin } from "../../middleware/auth";
 
 const router: Router = express.Router();
 

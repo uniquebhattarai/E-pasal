@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { IProfile } from "../types";
+import { IProfile } from "../../types";
 
 const profileSchema = new Schema<IProfile>({
   gender: {

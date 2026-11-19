@@ -1,7 +1,7 @@
 import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import User from "../models/user";
+import User from "../modules/users/user.model";
 import { AuthenticatedRequest, AuthJwtPayload } from "../types";
 
 dotenv.config();
@@ -119,37 +119,3 @@ export const isAdmin = async (
   }
 };
 
-export const isInstructor = async (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-): Promise<any> => {
-  try {
-    if (!req.user?.email) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid token payload: email missing",
-      });
-    }
-
-    const userDetails = await User.findOne({ email: req.user.email });
-    if (!userDetails) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    if (userDetails.accountType !== "Instructor") {
-      return res.status(401).json({
-        success: false,
-        message: "This is a Protected Route for Instructor",
-      });
-    }
-    next();
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ success: false, message: "User Role Can't be Verified" });
-  }
-};

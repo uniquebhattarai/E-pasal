@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
-import { mailSender } from "../utils/mailSender";
-import { otpTemplate } from "../mail/templates/emailTemplates";
-import { IOtp } from "../types";
+import { mailSender } from "../../utils/mailSender";
+import { otpTemplate } from "../../mail/templates/emailTemplates";
+import { IOtp } from "../../types";
 
 const otpSchema = new Schema<IOtp>({
   email: {

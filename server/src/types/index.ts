@@ -14,7 +14,7 @@ export interface IUser extends Document {
   lastName: string;
   email: string;
   password?: string;
-  accountType: "Customer" | "Admin" | "Instructor";
+  accountType: "Customer" | "Admin";
   address?: IUserAddress;
   additionalDetails: Types.ObjectId;
   wishlist: Types.ObjectId[];
@@ -94,7 +94,14 @@ export interface AuthJwtPayload {
   role: string;
 }
 
-export interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest<
+  Params = any,
+  ResBody = any,
+  ReqBody = any,
+  ReqQuery = any
+> extends Request<Params, ResBody, ReqBody, ReqQuery> {
   user?: AuthJwtPayload;
   files?: any;
+  body: ReqBody;
+  cookies?: any;
 }

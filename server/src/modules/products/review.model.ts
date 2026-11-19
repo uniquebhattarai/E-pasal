@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { IRatingAndReview } from "../types";
+import { IRatingAndReview } from "../../types";
 
 const ratingAndReviewSchema = new Schema<IRatingAndReview>({
   user: {

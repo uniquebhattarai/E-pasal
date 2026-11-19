@@ -7,8 +7,8 @@ import {
   getProductDetails,
   searchProducts,
   filterProducts,
-} from "../controller/product";
-import { auth, isAdmin } from "../middleware/auth";
+} from "./product.controller";
+import { auth, isAdmin } from "../../middleware/auth";
 
 const router: Router = express.Router();
 

@@ -6,9 +6,9 @@ import {
   changePassword,
   logout,
   refreshToken,
-} from "../controller/auth";
-import { resetPasswordToken, resetPassword } from "../controller/resetPassword";
-import { auth } from "../middleware/auth";
+} from "./auth.controller";
+import { resetPasswordToken, resetPassword } from "./resetPassword.controller";
+import { auth } from "../../middleware/auth";
 
 const router: Router = express.Router();
 

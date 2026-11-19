@@ -14,8 +14,8 @@ import {
   removeFromCart,
   getCart,
   clearCart,
-} from "../controller/profile";
-import { auth } from "../middleware/auth";
+} from "./profile.controller";
+import { auth } from "../../middleware/auth";
 
 const router: Router = express.Router();
 

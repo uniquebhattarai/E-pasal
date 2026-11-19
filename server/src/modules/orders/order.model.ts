@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { IOrder } from "../types";
+import { IOrder } from "../../types";
 
 const orderSchema = new Schema<IOrder>({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },

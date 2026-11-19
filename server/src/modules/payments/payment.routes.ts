@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import { initEsewa, statusEsewa } from "../controller/Payment";
+import { initEsewa, statusEsewa } from "./payment.controller";
 
 const router: Router = express.Router();
 

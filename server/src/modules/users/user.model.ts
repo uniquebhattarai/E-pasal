@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { IUser } from "../types";
+import { IUser } from "../../types";
 
 const userSchema = new Schema<IUser>({
   firstName: { type: String, required: true, trim: true },
@@ -8,7 +8,7 @@ const userSchema = new Schema<IUser>({
   password: { type: String, required: true },
   accountType: {
     type: String,
-    enum: ["Customer", "Admin", "Instructor"],
+    enum: ["Customer", "Admin"],
     default: "Customer",
   },
   address: {
